@@ -1,0 +1,40 @@
+/* CSS for QuestionGeneratorXBlock (student_view) */
+
+pre {
+    display: block;
+    font-family: monospace;
+    white-space: pre;
+    margin: 1em 0;
+}
+
+.fe_student_expressions_table {
+    width: 100%;
+}
+
+.formula_edit_table_row {
+    height: 40px;
+}
+
+.table_cell_alignment {
+    vertical-align: middle;
+}
+
+.expression_name_alignment {
+    float: right;
+}
+
+.expression_value_alignment {
+	float: left;
+}
+
+.formula_value_input {
+	padding: 5px !important;
+}
+
+.formula_exercise_block_block .count {
+    font-weight: bold;
+}
+
+.formula_exercise_block_block p {
+    cursor: pointer;
+}

@@ -16,6 +16,8 @@ def package_data(pkg, root_list):
 BLOCKS = [
     'template_builder = template_builder.mentoring:TemplateBlock',
     'tb-fancy = template_builder.mentoring:FancyXBlock',
+    'tb-question-answer = template_builder.mentoring:QuestionAnswerXBlock',
+    'tb-question-generator = template_builder.question_generator_block:QuestionGeneratorXBlock',
     ]
 
 

@@ -1,0 +1,188 @@
+{
+  "properties": {
+    "title": "Problem Grading Template",
+    "locale": "en_US",
+    "autoRecalc": "ON_CHANGE",
+    "timeZone": "Asia/Jakarta"
+
+  },
+  "sheets": [
+    {
+      "properties": {
+        "sheetId": 0,
+        "title": "Answer Input",
+        "index": 0,
+        "sheetType": "GRID",
+        "gridProperties": {
+          "rowCount": 1000,
+          "columnCount": 26
+        }
+      },
+      "data": [
+        {
+          "rowData": [
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Teacher Answer"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Teacher Answer"
+                  },
+                  "formattedValue": "Teacher Answer",
+                  "userEnteredFormat": {
+                    "textFormat": {
+                      "bold": true
+                    }
+                  },
+                  "effectiveFormat": {
+                    "backgroundColor": {
+                      "red": 1,
+                      "green": 1,
+                      "blue": 1
+                    },
+                    "padding": {
+                      "top": 2,
+                      "right": 3,
+                      "bottom": 2,
+                      "left": 3
+                    },
+                    "horizontalAlignment": "LEFT",
+                    "verticalAlignment": "BOTTOM",
+                    "wrapStrategy": "OVERFLOW_CELL",
+                    "textFormat": {
+                      "foregroundColor": {},
+                      "fontFamily": "arial,sans,sans-serif",
+                      "fontSize": 10,
+                      "bold": true,
+                      "italic": false,
+                      "strikethrough": false,
+                      "underline": false
+                    },
+                    "hyperlinkDisplayType": "PLAIN_TEXT"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "stringValue": "Student Answer"
+                  },
+                  "effectiveValue": {
+                    "stringValue": "Student Answer"
+                  },
+                  "formattedValue": "Student Answer",
+                  "userEnteredFormat": {
+                    "textFormat": {
+                      "bold": true
+                    }
+                  },
+                  "effectiveFormat": {
+                    "backgroundColor": {
+                      "red": 1,
+                      "green": 1,
+                      "blue": 1
+                    },
+                    "padding": {
+                      "top": 2,
+                      "right": 3,
+                      "bottom": 2,
+                      "left": 3
+                    },
+                    "horizontalAlignment": "LEFT",
+                    "verticalAlignment": "BOTTOM",
+                    "wrapStrategy": "OVERFLOW_CELL",
+                    "textFormat": {
+                      "foregroundColor": {},
+                      "fontFamily": "arial,sans,sans-serif",
+                      "fontSize": 10,
+                      "bold": true,
+                      "italic": false,
+                      "strikethrough": false,
+                      "underline": false
+                    },
+                    "hyperlinkDisplayType": "PLAIN_TEXT"
+                  }
+                }
+              ]
+            },
+            {
+              "values": [
+                {
+                  "userEnteredValue": {
+                    "formulaValue": "=SUM(5,8)"
+                  },
+                  "effectiveValue": {
+                    "numberValue": 13
+                  },
+                  "formattedValue": "13",
+                  "effectiveFormat": {
+                    "backgroundColor": {
+                      "red": 1,
+                      "green": 1,
+                      "blue": 1
+                    },
+                    "padding": {
+                      "top": 2,
+                      "right": 3,
+                      "bottom": 2,
+                      "left": 3
+                    },
+                    "horizontalAlignment": "RIGHT",
+                    "verticalAlignment": "BOTTOM",
+                    "wrapStrategy": "OVERFLOW_CELL",
+                    "textFormat": {
+                      "foregroundColor": {},
+                      "fontFamily": "arial,sans,sans-serif",
+                      "fontSize": 10,
+                      "bold": false,
+                      "italic": false,
+                      "strikethrough": false,
+                      "underline": false
+                    },
+                    "hyperlinkDisplayType": "PLAIN_TEXT"
+                  }
+                },
+                {
+                  "userEnteredValue": {
+                    "formulaValue": "=SUM(8,5)"
+                  },
+                  "effectiveValue": {
+                    "numberValue": 13
+                  },
+                  "formattedValue": "13",
+                  "effectiveFormat": {
+                    "backgroundColor": {
+                      "red": 1,
+                      "green": 1,
+                      "blue": 1
+                    },
+                    "padding": {
+                      "top": 2,
+                      "right": 3,
+                      "bottom": 2,
+                      "left": 3
+                    },
+                    "horizontalAlignment": "RIGHT",
+                    "verticalAlignment": "BOTTOM",
+                    "wrapStrategy": "OVERFLOW_CELL",
+                    "textFormat": {
+                      "foregroundColor": {},
+                      "fontFamily": "arial,sans,sans-serif",
+                      "fontSize": 10,
+                      "bold": false,
+                      "italic": false,
+                      "strikethrough": false,
+                      "underline": false
+                    },
+                    "hyperlinkDisplayType": "PLAIN_TEXT"
+                  }
+                }
+              ]
+            }
+          ]
+
+        }
+      ]
+    }
+  ]
+}

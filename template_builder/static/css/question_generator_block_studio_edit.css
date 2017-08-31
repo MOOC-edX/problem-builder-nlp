@@ -1,0 +1,86 @@
+/* CSS for QuestionGeneratorXBlock (studio_view) */
+
+.variables_table {
+    border: 2px solid #009fe6 !important;
+    width: 100%;
+}
+
+.formula_edit_table_header_color {
+    background-color: #009fe6;
+    height: 40px;
+    color: white;
+    font-weight: bold;
+}
+
+.formula_edit_table_row {
+    height: 45px;
+}
+
+.table_cell_alignment {
+    vertical-align: middle;
+}
+
+.formula_input_text {
+	width: 90% !important;
+	padding: 5px !important;
+}
+
+.number_input_cell {
+	padding: 5px !important;
+}
+
+.remove_button {
+	width: 100px !important;
+	height: 35px !important;
+	padding: 2px !important;
+}
+
+.variable_remove_button_alignment {
+	text-align: center;
+}
+
+.general_information {
+    width: 100%;
+}
+
+.question_template {
+    width: 100%;
+}
+
+.validation_error {
+	color: rgb(255, 14, 14);
+	font-weight: bold;
+}
+
+/*
+canhdq: added css for UI tunning
+*/
+.edit-content-visibility {
+    margin-bottom: 20px;
+}
+
+
+.modal-window .modal-section-title {
+    margin: 0 0 10px 0;
+    border-bottom: 2px solid #e5e5e5;
+    padding-bottom: 5px;
+    color: #4c4c4c;
+    font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 1.6rem;
+}
+
+.modal-window .modal-section-content .list-fields .list-actions {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    box-sizing: border-box;
+    padding: 0;
+}
+
+.course-outline-modal .list-fields .field-message {
+    color: #666;
+    font-size: 10px;
+}
+
