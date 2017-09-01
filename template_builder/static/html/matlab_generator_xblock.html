@@ -1,0 +1,29 @@
+<div name="attempt-number" class=".attempt-number">{{ attempt_number }}</div>
+<div name="problem-progress" class=".problem-progress">{{ point_string }}</div>
+
+
+<div class="formula_exercise_block_block">
+
+	<pre>{{ question }}</pre>
+
+	<image src="{{ image_url }}" width="50%"/>
+
+	<!-- Student answer -->
+	<div class="student_answer_div">
+		<label for="student_answer">Answer:</label>
+		<br/>
+		<textarea name="student_answer" cols="50" rows="15" style="height: 250px; width: 100%; margin-bottom: 10px;">{{student_answer}}</textarea>
+	</div>
+
+
+	<!-- Teacher answer -->
+	<div name="teacher_answer_div">
+	</div>
+
+
+	<br/>
+    <input type="button" class="input-main" name='submit-button' {{disabled}} value="Submit" />
+    {% if show_answer %}
+    	<input type="button" class="input-main" name='show_answer-button' value="Show Answer" />
+    {% endif %}
+</div>
