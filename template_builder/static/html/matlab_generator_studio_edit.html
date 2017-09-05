@@ -38,14 +38,14 @@
                                 {% endfor %}
                             </select>
                         {% elif field.type == "string" or field.type == "datepicker" %}
-                            {% if field.name != "_image_url" %}
-                                <input
-                                  type="text"
-                                  class="field-data-control"
-                                  id="xb-field-edit-{{field.name}}"
-                                  value="{{field.value|default_if_none:""}}"
-                                >
-                            {% endif %}
+                            
+                            <input
+                                type="text"
+                                class="field-data-control"
+                                id="xb-field-edit-{{field.name}}"
+                                value="{{field.value|default_if_none:""}}"
+                            >
+                            
                         {% elif field.type == "integer" or field.type == "float" %}
                             <input
                               type="number"
@@ -159,6 +159,43 @@
 					</table>
 	        	</div>
 	        </li>
+            <li
+                class="field comp-setting-entry metadata_entry"
+                data-field-name="Strings"
+                data-default="Strings default value"
+                data-cast="String"
+            >
+                <div class="wrapper-comp-setting">
+
+                     <table name="string_variables_table" class="variables_table">
+                        <tr class="formula_edit_table_header_color">
+                            <th width="15%" class="table_cell_alignment">Variables</th>
+                            <th width="18%" class="table_cell_alignment">Name</th>
+                            <th width="52%" class="table_cell_alignment">Dictionary</th>
+                            <th width="10%"></th>
+                            <th width="5%"></th>
+                        </tr>
+                        {% for variable_name, dictionaries in variables.iteritems %}
+                            <tr class="formula_edit_table_row">
+                                <td></td>
+                                <td class="table_cell_alignment"><input type="text" name="variable-{{ variable_name }}" class="formula_input_text" value="{{ variable_name }}"></td>
+                                    
+                                <td class="table_cell_alignment">
+                                    {% for option in dictionaries %}
+                                        <option value="{{option.value}}" 
+                                            {% if field.value == option.value %}selected{% endif %}> {{option.display_name}} 
+                                            {% if option.value == field.default %}&nbsp;&nbsp;&nbsp;&nbsp;(Default) {% endif %}
+                                        </option>
+                                    {% endfor %}
+
+                                </td>
+                                <td class="table_cell_alignment"><input type="button" class="remove_button" value="Remove"></td>
+                                <td></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </li>
 
 
 	        <li class="field comp-setting-entry metadata_entry">

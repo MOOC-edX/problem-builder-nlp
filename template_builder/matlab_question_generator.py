@@ -17,19 +17,21 @@ import matlab_service
 import qgb_question_service
 import json
 from resolver_machine import resolver_machine
-
+import logging
+log =logging.getLogger(__name__)
+from .models import MatlabQuestion, QuestionNode
 # import xblock_deletion_handler
 
 loader = ResourceLoader(__name__)
 def _(text):
     return text
 @XBlock.needs("i18n")
-class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBlockMixin):
+class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBlockMixin):
     """
     Question Generator XBlock
     """
-    CATEGORY ='tb-question-generator'
-    STUDIO_LABEL = _(u'Question Generator XBlock')
+    CATEGORY ='tb-matlab-question'
+    STUDIO_LABEL = _(u'Matlab Question Generator')
     display_name = String(
         display_name="Question Generator XBlock",
         help="This name appears in the horizontal navigation at the top of the page.",
@@ -66,6 +68,22 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
         help="Defines when to show the 'Show/Hide Answer' button",
         default=True,
         scope=Scope.settings)
+
+    resolver_selection = Integer(
+        display_name = "Resolver Selection",
+        default = 0,
+        help = "Please choose Matlab if you want to auto grading the matlab exercise",
+        values=(
+                {"display_name": "None", "value": 0},
+                {"display_name": "Matlab", "value": 1},
+            )
+        )
+    student_answer = String (
+        display_name = "Student Answer Box",
+        default = "",
+        scope = Scope.user_state
+        )
+
     question_template = "Given a = <a> and b = <b>. Calculate the sum, difference of a and b."
     variables =  {
                 'a': {'name': 'a',
@@ -86,32 +104,65 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
                        'show_submission_times', 'show_answer','resolver_selection')
     image_url = ""
     resolver_handling = resolver_machine()
-    resolver_selection = resolver_handling.getDefaultResolver()
     has_score = True
     matlab_server_url = resolver_handling.getDefaultAddress()
     matlab_solver_url = resolver_handling.getDefaultURL()
     attempt_number = 0
-    generated_question = ""
-    generated_variables = ""
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
+    def get_models_object(self):
+        models = None
+        try:
+            models = QuestionNode.objects.get(block_id = self.scope_ids.usage_id)
+            log.error("This block {%s} have been created ", self.scope_ids.usage_id)
+        except QuestionNode.DoesNotExist:
+            models = QuestionNode.objects.get(block_id=self.parent)
+            models.pk = None
+            models.pre_block_id = self.parent
+            models.block_id = self.scope_ids.usage_id
+            models.input_question = models.parsed_question
+            models.input_answer = models.parsed_answer
+            parent_upper_1 = self.runtime.get_block(self.parent)
+            parent_upper_2 = self.runtime.get_block(parent_upper_1.parent)
+            parent_upper_3 = self.runtime.get_block(parent_upper_2.parent)
+            models.outermost_block_id = parent_upper_3.scope_ids.usage_id
+            log.error("This matlab question block {%s} have been created:" , models.outermost_block_id)
+            models.save()
+        matlab_models = None
+        self_is_exist = False
+        try:
+            matlab_models = MatlabQuestion.objects.get(block_id = self.scope_ids.usage_id)
+            log.error("This matlab question block {%s} have been created:" , self.scope_ids.usage_id)
+        except MatlabQuestion.DoesNotExist:
+            obj = MatlabQuestion.objects.create(block_id = self.scope_ids.usage_id)
+            matlab_models = MatlabQuestion.objects.get(block_id = self.scope_ids.usage_id)
+            matlab_models.save()
+        return models, matlab_models
+
     def student_view(self, context):
         """
         The primary view of the QuestionGeneratorXBlock, shown to students when viewing courses.
         """
 
-        if self.xblock_id is None:
-            self.xblock_id = unicode(self.location.replace(branch=None, version=None))
         should_disbled = ''
+        models, matlab_models = self.get_models_object()
+        if matlab_models.question_template is None:
+            question_template = self.question_template
+        else:
+            question_template = matlab_models.question_template
 
+        if matlab_models.variables is None:
+            variables = self.variables
+        else:
+            variables = json.loads(matlab_models.variables)
         # generate question from template if necessary
-        self.generated_question, self.generated_variables = qgb_question_service.generate_question(
-            self._question_template, self._variables)
-
+        matlab_models.generated_question, generated_variables = qgb_question_service.generate_question(question_template, variables)
+        logging.error("Tammd wants to know generated_question %s , generated_variables %s", matlab_models.generated_question, generated_variables)
+        matlab_models.generated_variable = json.dumps(generated_variables)
         # load submission data to display the previously submitted result
         submissions = sub_api.get_submissions(self.student_item_key, 1)
         if submissions:
@@ -124,28 +175,30 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
             self.attempt_number = latest_submission['attempt_number']
             if (self.attempt_number >= self.max_attempts):
                 should_disbled = 'disabled'
-        else:
+        #else:
             # save the submission
-            submission_data = {
-                'student_answer': "",
+        #    submission_data = {
+        #        'student_answer': "",
 
-            }
-            submission = sub_api.create_submission(self.student_item_key, submission_data)
-            sub_api.set_score(submission['uuid'], 0, self.max_points)
+         #   }
+         #   submission = sub_api.create_submission(self.student_item_key, submission_data)
+         #   sub_api.set_score(submission['uuid'], 0, self.max_points)
 
         context['disabled'] = should_disbled
         context['student_answer'] = self.student_answer
         context['image_url'] = self.image_url
         context['attempt_number'] = self.attempt_number_string
         context['point_string'] = self.point_string
-        context['question'] = self.generated_question
+        context['question'] = matlab_models.generated_question
         context['show_answer'] = self.show_answer
 
         frag = Fragment()
-        frag.content = loader.render_template('static/html/question_generator_block.html', context)
+        frag.content = loader.render_template('static/html/matlab_generator_xblock.html', context)
         frag.add_css(self.resource_string("static/css/question_generator_block.css"))
-        frag.add_javascript(self.resource_string("static/js/src/question_generator_block.js"))
+        frag.add_javascript(self.resource_string("static/js/src/matlab_generator_xblock.js"))
         frag.initialize_js('QuestionGeneratorXBlock')
+        matlab_models.save()
+        models.save()
         return frag
 
     def studio_view(self, context):
@@ -153,9 +206,6 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
         Render a form for editing this XBlock (override the StudioEditableXBlockMixin's method)
         """
 
-        # if the XBlock has been submitted already then disable the studio_edit screen
-        location = self.location.replace(branch=None, version=None)  # Standardize the key in case it isn't already
-        item_id = unicode(location)
 
         # Student not yet submit then we can edit the XBlock
         fragment = Fragment()
@@ -172,15 +222,28 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
             if field_info is not None:
                 context["fields"].append(field_info)
 
-        context['image_url'] = self._image_url
-        context['question_template'] = self._question_template
-        context["variables"] = self._variables
-        context['answer_template'] = self._answer_template
+        models, matlab_models = self.get_models_object()
+        if matlab_models.image_url is None:
+            context['image_urls'] = ""
+        else:
+            context['image_url'] =matlab_models.image_url
+        if matlab_models.question_template is None:
+            context['question_template'] = self.question_template
+        else:
+            context['question_template'] = matlab_models.question_template
+        if matlab_models.variables is None:
+            context['variables'] = self.variables
+        else:
+            context["variables"] = json.loads(matlab_models.variables)
+        if matlab_models.answer_template is None:
+            context['answer_template'] = self.answer_template
+        else:
+            context['answer_template'] = matlab_models.answer_template
         context['is_submitted'] = 'False'
 
-        fragment.content = loader.render_template('static/html/question_generator_studio_edit.html', context)
+        fragment.content = loader.render_template('static/html/matlab_generator_studio_edit.html', context)
         fragment.add_css(self.resource_string("static/css/question_generator_block_studio_edit.css"))
-        fragment.add_javascript(loader.load_unicode('static/js/src/question_generator_studio_edit.js'))
+        fragment.add_javascript(loader.load_unicode('static/js/src/matlab_generator_studio_edit.js'))
         fragment.initialize_js('StudioEditableXBlockMixin')
         return fragment
 
@@ -189,18 +252,23 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
         """
         AJAX handler for Submit button
         """
+        models, matlab_models = self.get_models_object()
+        generated_variables = json.loads(matlab_models.generated_variable)
 
         points_earned = 0
 
         # TODO generate the teacher's answer
 
-        student_answer = data['student_answer']
+        self.student_answer = data['student_answer']
 
         # save the submission
         submission_data = {
-            'student_answer': student_answer,
+            'student_answer': self.student_answer,
 
         }
+        generated_answer = qgb_question_service.generate_answer(generated_variables, self.answer_template)
+        matlab_models.generated_answer = generated_answer
+        matlab_models.save()
 
         # call matlab
         evaluation_result = self.resolver_handling.syncCall(self.resolver_selection, generated_answer, student_answer)
@@ -229,11 +297,13 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
         AJAX handler for studio edit submission
         """
 
-        if self.xblock_id is None:
-            self.xblock_id = unicode(self.location.replace(branch=None, version=None))
-
-
-
+        models, matlab_models = self.get_models_object()
+        matlab_models.question_template = data['question_template']
+        matlab_models.answer_template = data['answer_template']
+        matlab_models.image_url = data['image_url']
+        matlab_models.variables = json.dumps(data['variables'])
+        logging.error("Tammd wants to know variables %s", matlab_models.variables)
+        matlab_models.save()
         # call parent method
         # StudioEditableXBlockMixin.submit_studio_edits(self, data, suffix)
         # self.submit_studio_edits(data, suffix)
@@ -292,8 +362,17 @@ class QuestionGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBloc
         AJAX handler for "Show/Hide Answer" button
         """
 
-        generated_answer = qgb_question_service.generate_answer(self.generated_variables, self.answer_template)
+        models, matlab_models = self.get_models_object()
+        generated_variable = json.loads(matlab_models.generated_variable)
+        if matlab_models.answer_template is None:
+            answer_template = self.answer_template
+        else:
+            answer_template = matlab_models.answer_template
+        generated_answer = qgb_question_service.generate_answer(generated_variable, answer_template)
+        matlab_models.generated_answer = generated_answer
+        matlab_models.save()
 
+        log.error("Tammd wants to know generated_anser: %s, generated_variables : %s, answer_template : %s", generated_answer, str(self.generated_variables), self.answer_template)
         return {
             'generated_answer': generated_answer
         }

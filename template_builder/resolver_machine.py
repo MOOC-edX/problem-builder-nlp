@@ -28,6 +28,10 @@ class resolver_machine():
         JAVA="java",
         CSHARP="c#",
         Default="none")
+    NAME_INTEGER = Constants (
+        NONE = 0,
+        MATLAB = 1
+        )
     def getResolverAddress(self, query):
         if query == self.APIAddress.MATLAB:
             return self.APIAddress.MATLAB
@@ -51,16 +55,12 @@ class resolver_machine():
 
     def syncCall(self, resolver, ansT, ans):
         callback = False
-        if resolver == self.NAME.NONE:
+        if resolver == self.NAME_INTEGER.NONE:
             print "self.NAME.NONE"
             callback =  False       
-        elif resolver == self.NAME.MATLAB:
+        elif resolver == self.NAME_INTEGER.MATLAB:
             print "self.NAME.MATLAB:"
             callback = matlab_service.evaluate_matlab_answer(self.APIAddress.MATLAB, self.APIURL.MATLAB, ansT, ans)
-        elif resolver == self.NAME.EXCEL:
-            print "self.NAME.EXCEL:"
-            my_sheet = gsheets()
-            callback = my_sheet.check_answer(ansT, ans)
         else:
             print "self.NAME.OTHER:"
             callback = False

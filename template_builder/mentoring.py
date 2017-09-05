@@ -18,11 +18,14 @@ from xblockutils.settings import XBlockWithSettingsMixin, ThemableXBlockMixin
 from uuid import uuid4
 from opaque_keys.edx.keys import CourseKey
 from .models import Templates
+from .models import QuestionNode
+from .models import MatlabQuestion
 from xblock.validation import ValidationMessage
 from xblockutils.studio_editable import (
     NestedXBlockSpec, StudioEditableXBlockMixin, StudioContainerWithNestedXBlocksMixin,
     )
 from .question_generator_block import QuestionGeneratorXBlock
+from .matlab_question_generator import MatlabExerciseGeneratorXBlock
 try: 
     from workbench.runtime import WorkbenchRuntime
 except ImportError:
@@ -58,23 +61,26 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
         default = None,
         multiline_editor  = True
     )
+
     editable_fields = ('display_name', 'question', 'answer')
 
     @property
     def allowed_nested_blocks(self):
-        return [QuestionGeneratorXBlock]
+        return [QuestionGeneratorXBlock, MatlabExerciseGeneratorXBlock]
     def get_models_object(self):
-        templates = None
+        models = None
         try:
-            templates = Templates.objects.get(block_id = self.parent)
-            log.error("This block {%s} have been created ", self.parent)
-        except Templates.DoesNotExist:
-            log.error(u'This block has not created yet')
-            obj = Templates.objects.create(block_id = self.parent)
-            templates = Templates.objects.get(block_id = self.parent)
-        templates.outer_block_id1 = self.scope_ids.usage_id
-        templates.save()
-        return templates
+            models = QuestionNode.objects.get(block_id = self.scope_ids.usage_id)
+            log.error("This block {%s} have been created ", self.scope_ids.usage_id)
+        except QuestionNode.DoesNotExist:
+            models = QuestionNode.objects.get(block_id=self.parent)
+            models.pk = None
+            models.pre_block_id = self.parent
+            models.block_id = self.scope_ids.usage_id
+            models.input_question = models.parsed_question
+            models.input_answer = models.parsed_answer
+            models.save()
+        return models
     def studio_view(self, context):
         templates = self.get_models_object()
         q = templates.parsed_question
@@ -99,7 +105,7 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
         return frag
 class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableXBlockMixin):
     CATEGORY = 'tb-fancy'
-    STUDIO_LABEL = _(u"Question")
+    STUDIO_LABEL = _(u"Matlab Question Helper")
     display_name = String (
         display_name = _("Title"),
         scope = Scope.settings,
@@ -109,6 +115,7 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
         display_name = _("question"),
         scope = Scope.content,
         default = None,
+        help = _("Please input the question answer pair as following format. Question content Answer: Answer content "),
         multiline_editor = True
     )
     editable_fields = ('display_name', 'question')
@@ -131,19 +138,17 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
         
         return frag
     def get_models_object(self):
-        templates = None
+        question_node = None
         try:
-            templates = Templates.objects.get(block_id = self.scope_ids.usage_id)
+            question_node = QuestionNode.objects.get(block_id = self.scope_ids.usage_id)
             log.error("This block {%s} have been created ", self.scope_ids.usage_id)
-        except Templates.DoesNotExist:
+        except QuestionNode.DoesNotExist:
             log.error(u'This block has not created yet')
-            obj = Templates.objects.create(block_id = self.scope_ids.usage_id)
-            templates = Templates.objects.get(block_id = self.scope_ids.usage_id)
-        templates.course_key = getattr(self.runtime, 'course_id', 'all')
-        templates.outermost_block_id = self.parent
-        templates.question = self.question
-        templates.save()
-        return templates
+            obj = QuestionNode.objects.create(block_id = self.scope_ids.usage_id)
+            question_node = QuestionNode.objects.get(block_id = self.scope_ids.usage_id)
+        question_node.pre_block_id =self.parent
+        question_node.save()
+        return question_node
 
     def validate_field_data(self, validation, data):
         """""
@@ -161,7 +166,7 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
             add_error(u'Please input a question along with answer into Question Text Box. Otherwise nothing can be done')
         import re
         answer_string = re.search(r'Answer:', data.question)
-        models.question = data.question
+        models.input_question = data.question
         if answer_string is None:
             add_warning(u'There is no answer yet. Please help to fill it separating by "Answer:". Otherwise We cannot process futher')
             models.parsed_answer = None
@@ -181,13 +186,14 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
 class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableXBlockMixin):
     display_name = String (
         display_name = _("Title"),
-        help =_("The title of this Xblock"),
+        help =_("This block is a group question block developed by GCS"),
         scope = Scope.settings,
-        default = _("Stuff")
+        default = _("GCS Question Generator")
         )
     question = Integer (
-        display_name = _("Maximun Question"),
+        display_name = _("Maximun Displayed Question"),
         default = 1,
+        help=_("Please choose the maximum question will be showed to student"),
         scope = Scope.settings,
         )
     editable_fields = ('display_name', 'question')

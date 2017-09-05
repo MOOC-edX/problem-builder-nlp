@@ -59,3 +59,31 @@ class Templates(models.Model):
         self.full_clean()
         super(Templates, self).save(*args, **kwargs)
 
+class QuestionNode(models.Model):
+    block_id = models.CharField(max_length=255, db_index=True, blank=True, default=None, null=True)
+    next_block_id = models.CharField(max_length=255, db_index=True, blank=True, default=None, null=True)
+    pre_block_id = models.CharField(max_length=255, db_index=True, blank=True, default=None, null=True)
+    outermost_block_id = models.CharField(max_length=255, db_index=True, blank=True, default=None, null=True)
+    input_question = models.TextField(blank=True, default=None, null=True)
+    input_answer = models.TextField(blank=True, default=None, null=True)
+    image_url = models.TextField(blank=True, default=None, null=True)
+    parsed_question = models.TextField(blank=True, default=None, null=True)
+    parsed_answer = models.TextField(blank=True, default=None, null=True)
+    parsed_number_variables = models.TextField(blank=True, default=None, null=True)
+    parsed_string_variables = models.TextField(blank=True, default=None, null=True)
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(QuestionNode, self).save(*args, **kwargs)
+class MatlabQuestion(models.Model):
+    block_id = models.CharField(max_length=255, db_index=True, blank=True, default=None, null=True)
+    question_template = models.TextField(blank=True, default=None, null=True)
+    answer_template = models.TextField(blank=True, default=None, null=True)
+    variables = models.TextField(blank=True, default=None, null=True)
+    image_url = models.TextField(blank=True, default=None, null=True)
+    outermost_block_id = models.CharField(max_length=255, db_index=True, blank=True, default=None, null=True)
+    generated_variable = models.TextField(blank=True, default=None, null=True)
+    generated_question = models.TextField(blank=True, default=None, null=True)
+    generated_answer = models.TextField(blank=True, default=None, null=True)
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(MatlabQuestion, self).save(*args, **kwargs)

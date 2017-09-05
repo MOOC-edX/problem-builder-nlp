@@ -49,7 +49,7 @@ def parse_question(sentences):
                     {   'name' : 'var{}'.format(i) ,
                         'min_value' : 1,
                         'max_value' : 100,
-                        'type' : 'int',
+                        'type' : variables[i][1],
                         'decimal_places' : 2
                     }
                 },
