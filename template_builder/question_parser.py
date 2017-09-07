@@ -15,9 +15,37 @@ def omit_stop_word(list_of_string):
 def is_numerical(tag):
     	return tag == 'CD'
 
+
 # Simple way to tagging the single word 
 def part_of_speech_tagging(list_of_string):
     	return [t for t in pos_tag(list_of_string)]
+
+
+def parse_noun(sentences):
+    words = tokenization(sentences)
+    list_pos = part_of_speech_tagging(words)
+    import string
+    punctuations = list(string.punctuation)
+    allNoun = [word for word, tag in list_pos if tag in ['NN', 'NNP'] and word not in punctuations ]
+    allNoun = set(allNoun)     
+    allNoun = list(allNoun)
+    import nltk
+    from nltk.corpus import wordnet
+    list_dict = []
+    for i in range(len(allNoun)):
+        synonyms = []
+        for syn in wordnet.synsets(allNoun[i]):
+            for l in syn.lemmas:
+                synonyms.append(l.name)
+        list_dict.append (
+            {
+                "name" : "string{}".format(i),
+                "example" : allNoun[i],
+                "synonyms" : list(set([allNoun[i]] + synonyms) )
+            }
+        )
+        #print list_dict[i]
+    return list_dict
 def parse_answer(answer, variables):
     words = tokenization(answer)
     answer_template = ""
@@ -67,20 +95,19 @@ def parse_question(sentences):
         for i in range(len(words)):
             if words[i] == variable[0]:
                 words[i] = '[{}]'.format(variable[1]['var'])
-                
-                print words[i]
-
     template = ' '.join(words)
     
     return template, variable_names
     
 if __name__ == '__main__':
-	ex1 = """
+    ex1 = """
 		You throw a ball straight up in the air with an initial speed of 40 m/s. [g = 9.8 m/s2]. Write a
         code to determine the maximum height (H) the ball rise from the release point?
-	"""
-	question, variable = parse_question(ex1)
-	print question, variable
+    """
+    #question, variable = parse_question(ex1)
+    noun = parse_noun(ex1)
+    print noun
+    #print question, variable
 			
 		
 

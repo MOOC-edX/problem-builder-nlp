@@ -27,7 +27,7 @@ from xblockutils.studio_editable import (
     )
 from .question_generator_block import QuestionGeneratorXBlock
 from .matlab_question_generator import MatlabExerciseGeneratorXBlock
-from .question_parser import parse_question, parse_answer
+from .question_parser import parse_question, parse_answer, parse_noun
 try: 
     from workbench.runtime import WorkbenchRuntime
 except ImportError:
@@ -68,7 +68,7 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
 
     @property
     def allowed_nested_blocks(self):
-        return [QuestionGeneratorXBlock, MatlabExerciseGeneratorXBlock]
+        return [MatlabExerciseGeneratorXBlock]
     def get_models_object(self):
         models = None
         try:
@@ -84,23 +84,27 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
         return models
     def studio_view(self, context):
         templates = self.get_models_object()
-        q = templates.parsed_question
-        a = templates.parsed_answer
+        q = templates.input_question
+        a = templates.input_answer
         setattr(self, 'question', q)
         setattr(self, 'answer', a)
         frag = super(QuestionAnswerXBlock, self).studio_view(context)
         return frag
-    def author_edit_view(self, context):
-        templates = self.get_models_object()
-        if templates.input_question is not None:
-            question_template, number_variables = parse_question(templates.input_question)
-            templates.parsed_question = question_template
-            templates.parsed_number_variables = json.dumps(number_variables)
-            if templates.input_answer is not None:
-                answer_template = parse_answer(templates.input_answer, number_variables)
-                templates.parsed_answer = answer_template
-        templates.save()
+    def validate_field_data(self, validation, data):
+        """""
+        Ask this xblock to validate itself.
+        XBlock subclass are expected to override this method. Any overiding method should call super() to collect 
+        validation results from its superclass, and then add any additional results as necesary.
+        """""
+        super(QuestionAnswerXBlock, self).validate_field_data(validation, data)
+        models = self.get_models_object()
+        if data.question != models.input_question:
+            models.input_question = data.question
+        if data.answer != models.input_answer:
+            models.input_answer = data.answer
+        models.save()
 
+    def author_edit_view(self, context):
         frag = super(QuestionAnswerXBlock, self).author_edit_view(context)
         return frag
     def student_view(self, context = None):
@@ -112,14 +116,20 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
             if templates.input_answer is not None:
                 answer_template = parse_answer(templates.input_answer, number_variables)
                 templates.parsed_answer = answer_template
+            string_variables = parse_noun(templates.input_question)
+            templates.parsed_string_variables = json.dumps(string_variables)
         context = {
-              'question' : templates.parsed_question,
-               'answer' : templates.parsed_answer
+            'question' : templates.parsed_question,
+            'answer' : templates.parsed_answer
         }
         templates.save()
         frag = Fragment() 
         frag.add_content(loader.render_template('templates/question_template.html', context)) 
         return frag
+    def author_preview_view(self, context):
+        frag = self.student_view(context)
+        return frag
+
 class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableXBlockMixin):
     CATEGORY = 'tb-fancy'
     STUDIO_LABEL = _(u"Matlab Question Helper")
@@ -143,16 +153,13 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
 
     def student_view(self, context = None):
         templates = self.get_models_object()
-        log.error("templates.parsed_question : %s", templates.parsed_question)
-        log.error("templates.parsed_answer: %s", templates.parsed_answer)
         context = {
             'question' : templates.parsed_question,
             'answer' : templates.parsed_answer
         }
         frag = Fragment()
                 
-        frag.add_content(loader.render_template('templates/question_template.html', context))
-        
+        frag.add_content(loader.render_template('templates/original_question.html', context))
         return frag
     def get_models_object(self):
         question_node = None
@@ -205,6 +212,9 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
         elif models.parsed_question is None or models.parsed_question == "None" or models.parsed_question == "":
             raise JsonHandlerError(403, _("There is nothing to move forward. You haven't input any question yet"))
         frag = super(FancyXBlock, self).author_edit_view(context)
+        return frag
+    def author_preview_view(self, context):
+        frag = self.student_view(context)
         return frag
 
 
