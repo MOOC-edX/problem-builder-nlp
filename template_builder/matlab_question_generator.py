@@ -84,7 +84,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         scope = Scope.user_state
         )
 
-    question_template = "Given a = <a> and b = <b>. Calculate the sum, difference of a and b."
+    question_template = "Given a =[a] and b = [b]. Calculate the sum, difference of a and b."
     variables =  {
                 'a': {'name': 'a',
                 'min_value': 0,
@@ -99,7 +99,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
                 'decimal_places': 2
                 }
             }
-    answer_template = "x =<a> + <b>"
+    answer_template = "x =[a] + [b]"
     editable_fields = ('display_name', 'max_attempts', 'max_points', 'show_points_earned',
                        'show_submission_times', 'show_answer','resolver_selection')
     image_url = ""
@@ -124,22 +124,23 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
             models.pk = None
             models.pre_block_id = self.parent
             models.block_id = self.scope_ids.usage_id
-            models.input_question = models.parsed_question
-            models.input_answer = models.parsed_answer
             parent_upper_1 = self.runtime.get_block(self.parent)
             parent_upper_2 = self.runtime.get_block(parent_upper_1.parent)
             parent_upper_3 = self.runtime.get_block(parent_upper_2.parent)
             models.outermost_block_id = parent_upper_3.scope_ids.usage_id
             log.error("This matlab question block {%s} have been created:" , models.outermost_block_id)
             models.save()
+        models = QuestionNode.objects.get(block_id = self.scope_ids.usage_id)
         matlab_models = None
-        self_is_exist = False
         try:
             matlab_models = MatlabQuestion.objects.get(block_id = self.scope_ids.usage_id)
             log.error("This matlab question block {%s} have been created:" , self.scope_ids.usage_id)
         except MatlabQuestion.DoesNotExist:
             obj = MatlabQuestion.objects.create(block_id = self.scope_ids.usage_id)
             matlab_models = MatlabQuestion.objects.get(block_id = self.scope_ids.usage_id)
+            matlab_models.question_template = models.parsed_question
+            matlab_models.answer_template = models.parsed_answer
+            matlab_models.variables = models.parsed_number_variables
             matlab_models.save()
         return models, matlab_models
 
@@ -150,6 +151,8 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
 
         should_disbled = ''
         models, matlab_models = self.get_models_object()
+
+        variables = {}
         if matlab_models.question_template is None:
             question_template = self.question_template
         else:
@@ -158,7 +161,10 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         if matlab_models.variables is None:
             variables = self.variables
         else:
-            variables = json.loads(matlab_models.variables)
+            variable_dict = json.loads(matlab_models.variables)
+            for variable in variable_dict:
+                variables[variable[1]['var']] = variable[1]['shadow'][variable[1]['var']]
+            logging.error("Tammd wants to know generated variables %s", variables)
         # generate question from template if necessary
         matlab_models.generated_question, generated_variables = qgb_question_service.generate_question(question_template, variables)
         logging.error("Tammd wants to know generated_question %s , generated_variables %s", matlab_models.generated_question, generated_variables)
@@ -234,7 +240,11 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         if matlab_models.variables is None:
             context['variables'] = self.variables
         else:
-            context["variables"] = json.loads(matlab_models.variables)
+            variables = {}
+            variable_dict = json.loads(matlab_models.variables)
+            for variable in variable_dict:
+                variables[variable[1]['var']] = variable[1]['shadow'][variable[1]['var']]
+            context["variables"] = variables
         if matlab_models.answer_template is None:
             context['answer_template'] = self.answer_template
         else:
@@ -271,7 +281,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         matlab_models.save()
 
         # call matlab
-        evaluation_result = self.resolver_handling.syncCall(self.resolver_selection, generated_answer, student_answer)
+        evaluation_result = self.resolver_handling.syncCall(self.resolver_selection, generated_answer, self.student_answer)
 
         if evaluation_result == True:
             points_earned = self.max_points
@@ -301,8 +311,8 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         matlab_models.question_template = data['question_template']
         matlab_models.answer_template = data['answer_template']
         matlab_models.image_url = data['image_url']
-        matlab_models.variables = json.dumps(data['variables'])
-        logging.error("Tammd wants to know variables %s", matlab_models.variables)
+        #matlab_models.variables = json.dumps(data['variables'])
+        logging.error("Tammd wants to know variables %s",data['variables'])
         matlab_models.save()
         # call parent method
         # StudioEditableXBlockMixin.submit_studio_edits(self, data, suffix)
@@ -364,6 +374,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
 
         models, matlab_models = self.get_models_object()
         generated_variable = json.loads(matlab_models.generated_variable)
+        answer_template = ""
         if matlab_models.answer_template is None:
             answer_template = self.answer_template
         else:
@@ -372,7 +383,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         matlab_models.generated_answer = generated_answer
         matlab_models.save()
 
-        log.error("Tammd wants to know generated_anser: %s, generated_variables : %s, answer_template : %s", generated_answer, str(self.generated_variables), self.answer_template)
+        log.error("Tammd wants to know generated_anser: %s, generated_variables : %s, answer_template : %s", generated_answer, str(generated_variable), self.answer_template)
         return {
             'generated_answer': generated_answer
         }

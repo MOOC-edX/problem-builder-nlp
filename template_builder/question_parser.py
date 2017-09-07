@@ -18,12 +18,19 @@ def is_numerical(tag):
 # Simple way to tagging the single word 
 def part_of_speech_tagging(list_of_string):
     	return [t for t in pos_tag(list_of_string)]
-
-
+def parse_answer(answer, variables):
+    words = tokenization(answer)
+    answer_template = ""
+    for variable in variables:
+        for i in range(len(words)):
+            if words[i] == variable[0]:
+                words[i] = '[{}]'.format(variable[1]['var'])
+    answer_template = ' '.join(words)
+    return answer_template
 
 def parse_question(sentences):
 
-    words = tokenization(ex1)
+    words = tokenization(sentences)
     list_pos = part_of_speech_tagging(words)
     variables = []
     for word in list_pos:
@@ -64,6 +71,7 @@ def parse_question(sentences):
                 print words[i]
 
     template = ' '.join(words)
+    
     return template, variable_names
     
 if __name__ == '__main__':

@@ -9,7 +9,8 @@ from xblock.exceptions import NoSuchViewError, JsonHandlerError
 from xblock.fields import Boolean, Scope, String, Integer, Float, List, ScopeIds
 from xblock.fragment import Fragment
 from xblock.runtime import MemoryIdManager
-
+from xblock.validation import ValidationMessage
+from xblock.exceptions import JsonHandlerError
 from xblock.validation import Validation
 from xblockutils.helpers import child_isinstance
 from xblockutils.resources import ResourceLoader
@@ -26,6 +27,7 @@ from xblockutils.studio_editable import (
     )
 from .question_generator_block import QuestionGeneratorXBlock
 from .matlab_question_generator import MatlabExerciseGeneratorXBlock
+from .question_parser import parse_question, parse_answer
 try: 
     from workbench.runtime import WorkbenchRuntime
 except ImportError:
@@ -71,7 +73,6 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
         models = None
         try:
             models = QuestionNode.objects.get(block_id = self.scope_ids.usage_id)
-            log.error("This block {%s} have been created ", self.scope_ids.usage_id)
         except QuestionNode.DoesNotExist:
             models = QuestionNode.objects.get(block_id=self.parent)
             models.pk = None
@@ -90,16 +91,32 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
         frag = super(QuestionAnswerXBlock, self).studio_view(context)
         return frag
     def author_edit_view(self, context):
+        templates = self.get_models_object()
+        if templates.input_question is not None:
+            question_template, number_variables = parse_question(templates.input_question)
+            templates.parsed_question = question_template
+            templates.parsed_number_variables = json.dumps(number_variables)
+            if templates.input_answer is not None:
+                answer_template = parse_answer(templates.input_answer, number_variables)
+                templates.parsed_answer = answer_template
+        templates.save()
+
         frag = super(QuestionAnswerXBlock, self).author_edit_view(context)
         return frag
     def student_view(self, context = None):
         templates = self.get_models_object()
-        log.error("templates.parsed_question : %s", templates.parsed_question)
-        log.error("templates.parsed_answer: %s", templates.parsed_answer)
+        if templates.input_question is not None:
+            question_template, number_variables = parse_question(templates.input_question)
+            templates.parsed_question = question_template
+            templates.parsed_number_variables = json.dumps(number_variables)
+            if templates.input_answer is not None:
+                answer_template = parse_answer(templates.input_answer, number_variables)
+                templates.parsed_answer = answer_template
         context = {
               'question' : templates.parsed_question,
                'answer' : templates.parsed_answer
         }
+        templates.save()
         frag = Fragment() 
         frag.add_content(loader.render_template('templates/question_template.html', context)) 
         return frag
@@ -141,7 +158,6 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
         question_node = None
         try:
             question_node = QuestionNode.objects.get(block_id = self.scope_ids.usage_id)
-            log.error("This block {%s} have been created ", self.scope_ids.usage_id)
         except QuestionNode.DoesNotExist:
             log.error(u'This block has not created yet')
             obj = QuestionNode.objects.create(block_id = self.scope_ids.usage_id)
@@ -161,9 +177,14 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
         def add_error(msg):
             validation.add(ValidationMessage(ValidationMessage.ERROR, msg))
         def add_warning(msg):
-            validation.add(ValidationMesssage(ValidationMessage.WARNING, msg))
-        if data.question is None or data.question == "None" or data.question == "":
+            validation.add(ValidationMessage(ValidationMessage.WARNING, msg))
+        if data.question is None:
+            data.question = ""
             add_error(u'Please input a question along with answer into Question Text Box. Otherwise nothing can be done')
+        elif data.question == "None" or data.question == "":
+            add_error(u'Please input a question along with answer into Question Text Box. Otherwise nothing can be done')
+        else:
+            pass
         import re
         answer_string = re.search(r'Answer:', data.question)
         models.input_question = data.question
@@ -175,10 +196,14 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
             text_list = re.split(r'Answer:', data.question)
             models.parsed_question = text_list[0]
             models.parsed_answer = text_list[1]
-            log.error("models.parsed_question = %s, models.parsed_answer = %s", models.parsed_question, models.parsed_answer)
         models.save()
 
     def author_edit_view(self, context = None):
+        models = self.get_models_object()
+        if self.question is None or self.question == "None" or self.question == "":
+            raise JsonHandlerError(403, _("There is nothing to move forward. You haven't input any question yet"))
+        elif models.parsed_question is None or models.parsed_question == "None" or models.parsed_question == "":
+            raise JsonHandlerError(403, _("There is nothing to move forward. You haven't input any question yet"))
         frag = super(FancyXBlock, self).author_edit_view(context)
         return frag
 

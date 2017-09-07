@@ -20,7 +20,7 @@ def generate_question_template():
     """
     Generates data for a newly created question template
     """
-    sample_question_template = "Given a = <a> and b = <b>. Calculate the sum, difference of a and b."
+    sample_question_template = "Given a = [a] and b = [b]. Calculate the sum, difference of a and b."
     
     a_variable = {
         'name': 'a',
@@ -65,7 +65,7 @@ def generate_question(question_template, variables):
     
     # generate variables' value
     for var_name, variable in variables.iteritems():
-        compiled_variable_patterns[var_name] = re.compile('<' + var_name + '>')
+        compiled_variable_patterns[var_name] = re.compile(r'\[' + var_name + r'\]')
         var_type = variable['type']
         var_decimal_places_int = int(variable['decimal_places'])
         
@@ -93,7 +93,7 @@ def generate_answer(generated_variables, answer_template):
     
     compiled_variable_patterns = {}
     for var_name, var_value in generated_variables.iteritems():
-        compiled_variable_patterns[var_name] = re.compile('<' + var_name + '>')
+        compiled_variable_patterns[var_name] = re.compile('\[' + var_name + '\]')
     
     generated_answer = answer_template
     for var_name, var_value in generated_variables.iteritems():
