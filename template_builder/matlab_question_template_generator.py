@@ -138,36 +138,37 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
         default =
             {
                 'a': {'name': 'a',
-                'min_value': 0,
-                'max_value': 10,
+                'min_value': 1,
+                'max_value': 200,
                 'type': 'int',
-                'decimal_places': 2
+                'decimal_places': 0
                 } ,
                 'b' :{'name': 'b',
-                'min_value': 10,
-                'max_value': 20,
-                'type': 'int',
+                'min_value': 1.00,
+                'max_value': 20.99,
+                'type': 'float',
                 'decimal_places': 2
                 }
             },
         scope = Scope.settings)
 
-    raw_editor_xml_data = '''<problem>
+    # Default XML string passed to Advanced Editor's value when create an xBlock
+    raw_editor_xml_data = '''
+    <problem>
         <description>Given a = [a] and b = [b]. Calculate the sum, difference of a and b. </description>
         <image_group>
-                <image_url link="http://example.com/image1">Image 1</image_url>
+            <image_url link="http://example.com/image1">Image</image_url>
         </image_group>
         <variable_group>
-                <variable name="a" type="integer" min_value="1" max_value="20"/>
-                <variable name="b" type="float" min_value="1.0" max_value="20.5" decimal_places="2"/>
+            <variable name="a" min="1" max="200" type="integer"/>
+            <variable name="b" min="1.00" max="20.99" type="float" decimal_places="2"/>
         </variable_group>
-        <solution_group>
-                <solution sum = "[a] + [b]" difference = "[a] - [b]">Answer 1</solution>
-        </solution_group>
-</problem>
-    '''
+        <answer_template_group>
+            <answer sum = "[a] + [b]" difference = "[a] - [b]">Teacher's answer</answer>
+        </answer_template_group>
+    </problem>'''
 
-    # This field is to store editor's value for next display of xBlock after studio edit submit
+    # This field is to store editor's value to keep for future initilize (student_view, studio_view) of xBlock after edit.
     _raw_editor_xml_data = String(
         display_name="Raw edit",
         help="Raw edit fields value for XML editor",
@@ -561,7 +562,7 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
             }
 
             # Convert dict data to xml
-            xml_string = xml_helper.convert_problem_data_to_xml(input_data)
+            xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
 
             # Finally, update value for field attribute
             setattr(self, '_raw_editor_xml_data', xml_string)
@@ -572,8 +573,7 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
             updated_xml_string = data['raw_editor_xml_data']
 
             # Extract data fields from xml string
-            # TODO: Process XML data using XML parser cElementTree,
-            raw_edit_data = xml_helper.read_data_from_xml_string(updated_xml_string)
+            raw_edit_data = xml_helper.extract_data_from_xmlstring_to_dict(updated_xml_string)
 
             # TODO: then save to DB model? To remove this line
             # qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
@@ -582,12 +582,11 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
             updated_url_image = raw_edit_data['image_url']
             updated_variables = raw_edit_data['variables']
             # get only one firt answer for now. TODO: update to support multi-answers attributes for multiple solutions
-            updated_answer_template_dict = raw_edit_data['solutions'][1]
+            updated_answer_template_dict = raw_edit_data['answer_template'][1]
             # updated_resolver_selection = data['problem_solver']
 
             # convert answer dict to string
-            # updated_answer_template = self.dict_to_string(updated_answer_template_dict)
-            updated_answer_template = xml_helper.dict_to_string(updated_answer_template_dict)
+            updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
 
 
             print("BEFORE, self._answer_template_string = ")

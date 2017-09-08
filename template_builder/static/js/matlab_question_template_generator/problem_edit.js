@@ -159,7 +159,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
      Returns true if the user clicked OK, else false.
      */
     function confirmConversionToXml() {
-        return confirm(gettext('If you use the Advanced Editor, this problem template will be converted to XML for raw edit. The default interface is still Simple Template. You can toggle between them\n\nProceed to the Advanced Editor?')); // eslint-disable-line max-len, no-alert
+        return confirm(gettext('If you switch to the Advanced Editor, the TEMPLATE tab will be replaced by an XML Editor for raw edit the problem. You can toggle back and forth between Simple Template and Advanced Editor anytime.\n\nProceed to the Advanced Editor?')); // eslint-disable-line max-len, no-alert
     };
 
     /*
@@ -167,7 +167,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
      Returns true if the user clicked OK, else false.
      */
     function confirmConversionToTemplate() {
-        return confirm(gettext('Are you sure you want to switch back to Simple Template interface.\n\nProceed ?')); // eslint-disable-line max-len, no-alert
+        return confirm(gettext('Are you sure you want to switch back to the Simple Template interface. You can toggle back and forth between Simple Template and Advanced Editor anytime.\n\nProceed ?')); // eslint-disable-line max-len, no-alert
     };
 
 
@@ -582,8 +582,4 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         
         update_buttons(toShow);
     }
-
-
-
-
 }
