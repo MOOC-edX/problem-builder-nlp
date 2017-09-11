@@ -8,6 +8,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     var csxColor = ["#009FE6", "black"];
     var studio_buttons = {
+        "question_text-tab": "QUESTION PARSER",
         "question_template-tab": "TEMPLATE",
         "editor-tab": "EDITOR",
         "general_information-tab": "SETTINGS",
@@ -31,11 +32,17 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     var variables_table_element = $(xblockElement).find('table[name=variables_table]');
     var add_variable_button_element = $(xblockElement).find('li[name=add_variable]');
     var answer_template_textarea_element =  $(xblockElement).find('textarea[name=answer_template]');
+
     // for editor mode toggle
+    var btn_switch_editor_mode_element = $(xblockElement).find('button[id=btn_switch_editor_mode]');
     var enable_advanced_editor_element = $(xblockElement).find('input[name=enable_advanced_editor]');
     var enable_advanced_editor = enable_advanced_editor_element.val();
     var editor_mode_name_element = $(xblockElement).find('input[name=current_editor_mode_name]');
     var editor_mode_name = editor_mode_name_element.val();
+
+    // for question parser tab
+    var is_question_text_parsed_element = $(xblockElement).find('input[name=is_question_text_parsed]');
+    var is_question_text_parsed = editor_mode_name_element.val();
 
     // DOM object for xml editor
     var xml_editor_element = $(xblockElement).find('textarea[name=raw_editor_xml_data]');
@@ -61,22 +68,40 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //                );
 //        }
 
-        $('.editor-modes')
+        if (is_question_text_parsed == 'False'){
+//        Show question parser tab
+            $('.editor-modes')
+                .append(
+                    $('<li>', {class: "action-item"}).append(
+                        $('<a />', {class: "action-primary", id: 'question_text-tab', text: studio_buttons['question_text-tab']})
+                    )
+                );
+            btn_switch_editor_mode_element.hide();
+        } else {
+//        Show template tab
+            $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
                         $('<a />', {class: "action-primary", id: 'question_template-tab', text: studio_buttons['question_template-tab']})
                     )
                 );
-
-        $('.editor-modes')
+//        Show settings tab
+            $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
                         $('<a />', {class: "action-primary", id: 'general_information-tab', text: studio_buttons['general_information-tab']})
                     )
                 );
+        }
+
+
 
         // Set default tab
-        tab_switch("question_template-tab");
+        tab_switch("question_text-tab");
+
+        $('#question_text-tab').click(function() {
+            tab_switch("question_text-tab");
+        });
 
         $('#question_template-tab').click(function() {
             tab_switch("question_template-tab");
@@ -141,7 +166,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             // switch to the targeted tab
             tab_switch(target_tabId_map[current_tab]);
 
-            // TODO: update enable_advanced_editor_element.val() and xblock global variable 'enable_advanced_editor'
         });
 
         // listeners for "Remove" buttons of "Variables"
@@ -564,12 +588,16 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     
     
     function update_buttons(toShow) {
-    	if (toShow == 'question_template-tab') {
+        if (toShow == 'question_text-tab') {
+            $("li[name=add_variable]").hide();
+//            $("button[id=btn_switch_editor_mode]").hide();
+            btn_switch_editor_mode_element.hide();
+    	} else if (toShow == 'question_template-tab') {
     	    // show "Add variable" and "Add expression" buttons
-    		$("li[name=add_variable]").show()
+    		$("li[name=add_variable]").show();
     	} else {
     	    // hide "Add variable" and "Add expression" buttons
-    		$("li[name=add_variable]").hide()
+    		$("li[name=add_variable]").hide();
     	}
     }
 

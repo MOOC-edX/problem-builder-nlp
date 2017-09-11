@@ -209,6 +209,9 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     # Define current editor mode
     enable_advanced_editor = False  # True: Editor mode, False: Template mode.
 
+    # Define if original text question parsed yet
+    is_question_text_parsed = False
+
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -308,7 +311,6 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         print "self._raw_editor_xml_data = {}".format(self._raw_editor_xml_data)
 
         # Student not yet submit then we can edit the XBlock
-        fragment = Fragment()
         context = {'fields': []}
         # Build a list of all the fields that can be edited:
         for field_name in self.editable_fields:
@@ -331,12 +333,16 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         context['variables'] = self._variables
         context['answer_template_string'] = self._answer_template_string
         context['is_submitted'] = 'False'
-        context['enable_advanced_editor'] = self.enable_advanced_editor
-        context['current_editor_mode_name'] = SIMPLE_EDITOR_NAME
-        context['next_editor_mode_name'] = ADVANCED_EDITOR_NAME
+
+        # Check default edit mode
         if self.enable_advanced_editor:
             context['current_editor_mode_name'] = ADVANCED_EDITOR_NAME
             context['next_editor_mode_name'] = SIMPLE_EDITOR_NAME
+        else:
+            context['current_editor_mode_name'] = SIMPLE_EDITOR_NAME
+            context['next_editor_mode_name'] = ADVANCED_EDITOR_NAME
+        context['enable_advanced_editor'] = self.enable_advanced_editor
+        context['is_question_text_parsed'] = self.is_question_text_parsed
 
         # append xml data for raw xml editor
         context['raw_editor_xml_data'] = self._raw_editor_xml_data
@@ -344,12 +350,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         print("context = {}".format(context))
         print("## End DEBUG INFO ##")
 
+        fragment = Fragment()
         # fragment.content = loader.render_template('static/html/matlab_question_template_builder/problem_edit.html', context)
-        fragment.content = loader.render_template('static/html/matlab_question_template_builder/studio_view.html',
+        fragment.content = loader.render_template('static/html/matlab_question_template_builder/studio_view_updated.html',
                                                   context)
         fragment.add_css(self.resource_string("static/css/question_generator_block_studio_edit.css"))
         # fragment.add_javascript(loader.load_unicode('static/js/matlab_question_template_builder/problem_edit.js'))
-        fragment.add_javascript(loader.load_unicode('static/js/matlab_question_template_builder/studio_view.js'))
+        fragment.add_javascript(loader.load_unicode('static/js/matlab_question_template_builder/studio_view_updated.js'))
         fragment.initialize_js('StudioEditableXBlockMixin')
 
         print("## End FUNCTION studio_view() ##")

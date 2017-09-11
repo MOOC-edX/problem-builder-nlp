@@ -4,6 +4,7 @@
     <div>
         <input type="hidden" class="hidden" name="enable_advanced_editor" value="{{ enable_advanced_editor }}" />
 		<input type="hidden" class="hidden" name="current_editor_mode_name" value="{{ current_editor_mode_name }}" />
+		<input type="hidden" class="hidden" name="is_question_text_parsed" value="{{ is_question_text_parsed }}" />
     </div>
 
 	<div name="error-message"></div>
@@ -221,6 +222,25 @@
 					</li>
 				{% endif %}
 			{% endfor %}
+		</ul>
+	</div>
+
+	<!--PARSE ORIGINAL QUESTION-->
+	<div class="wrapper-comp-settings is-active editor-with-buttons" name="question_text-tab" id="question_text-tab">
+        <ul class="list-input settings-list" name="question_text_list">
+			<li class="field comp-setting-entry metadata_entry">
+				<div class="wrapper-comp-setting">
+					<label class="label setting-label" for="question_text">Question</label>
+					<textarea name="question_text" rows=10 cols=80>{{ question_template }}</textarea>
+	        	</div>
+	        </li>
+
+			<li class="field comp-setting-entry metadata_entry">
+				<div class="wrapper-comp-setting">
+					<label class="label setting-label" for="answer_text">Answer</label>
+					<textarea name="answer_template" rows=10 cols=80>{{ answer_template_string }}</textarea>
+	        	</div>
+	        </li>
 		</ul>
 	</div>
 
