@@ -37,19 +37,19 @@ def _(text):
 
 
 @XBlock.needs("i18n")
-class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBlockMixin):
+class MatlabQuestionXBlock(XBlock, SubmittingXBlockMixin, StudioEditableXBlockMixin):
     """
     Question Generator XBlock
     """
     #
-    CATEGORY = 'tb-matlab-question-template-generator'
-    STUDIO_LABEL = _(u'Matlab Question from Text')
+    CATEGORY = 'tb-matlab-question-generator'
+    STUDIO_LABEL = _(u'Matlab Question')
 
     display_name = String(
         display_name="Display Name",
         help="This name appears in the horizontal navigation at the top of the page.",
         scope=Scope.settings,
-        default="Question Generator Block"
+        default="Matlab Question"
     )
 
     max_attempts = Integer(
@@ -160,8 +160,8 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
             <image_url link="http://example.com/image1">Image</image_url>
         </image_group>
         <variable_group>
-            <variable name="a" min="1" max="200" type="integer"/>
-            <variable name="b" min="1.00" max="20.99" type="float" decimal_places="2"/>
+            <variable name="a" min_value="1" max_value="200" type="integer"/>
+            <variable name="b" min_value="1.00" max_value="20.99" type="float" decimal_places="2"/>
         </variable_group>
         <answer_template_group>
             <answer sum = "[a] + [b]" difference = "[a] - [b]">Teacher's answer</answer>
@@ -218,7 +218,8 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
 
     def student_view(self, context):
         """
-        The primary view of the MatlabQuestionTemplateGeneratorXBlock, shown to students when viewing courses.
+        The primary view of the MatlabQuestionXBlock
+, shown to students when viewing courses.
         """
         print("## Calling FUNCTION student_view() ##")
         print("## START DEBUG INFO ##")
@@ -281,10 +282,10 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
 
 
         frag = Fragment()
-        frag.content = loader.render_template('static/html/matlab_question_template_generator/student_view.html', context)
+        frag.content = loader.render_template('static/html/matlab_question/student_view.html', context)
         frag.add_css(self.resource_string("static/css/question_generator_block.css"))
-        frag.add_javascript(self.resource_string("static/js/matlab_question_template_generator/student_view.js"))
-        frag.initialize_js('MatlabQuestionTemplateGeneratorXBlock')
+        frag.add_javascript(self.resource_string("static/js/matlab_question/student_view.js"))
+        frag.initialize_js('MatlabQuestionXBlock')
 
         print("context = {}".format(context))
         print("## End FUNCTION student_view() ##")
@@ -304,6 +305,8 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
         location = self.location.replace(branch=None, version=None)  # Standardize the key in case it isn't already
         item_id=unicode(location)
 
+        print("self._variables = {}".format(self._variables))
+        print "self._raw_editor_xml_data = {}".format(self._raw_editor_xml_data)
 
         # Student not yet submit then we can edit the XBlock
         fragment = Fragment()
@@ -339,13 +342,16 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
         # append xml data for raw xml editor
         context['raw_editor_xml_data'] = self._raw_editor_xml_data
 
-        fragment.content = loader.render_template('static/html/matlab_question_template_generator/problem_edit.html', context)
-        fragment.add_css(self.resource_string("static/css/question_generator_block_studio_edit.css"))
-        fragment.add_javascript(loader.load_unicode('static/js/matlab_question_template_generator/problem_edit.js'))
-        fragment.initialize_js('StudioEditableXBlockMixin')
-
         print("context = {}".format(context))
         print("## End DEBUG INFO ##")
+
+        # fragment.content = loader.render_template('static/html/matlab_question/problem_edit.html', context)
+        fragment.content = loader.render_template('static/html/matlab_question/studio_view.html', context)
+        fragment.add_css(self.resource_string("static/css/question_generator_block_studio_edit.css"))
+        # fragment.add_javascript(loader.load_unicode('static/js/matlab_question/problem_edit.js'))
+        fragment.add_javascript(loader.load_unicode('static/js/matlab_question/studio_view.js'))
+        fragment.initialize_js('StudioEditableXBlockMixin')
+
         print("## End FUNCTION studio_view() ##")
 
         return fragment
@@ -709,10 +715,10 @@ class MatlabQuestionTemplateGeneratorXBlock(XBlock, SubmittingXBlockMixin, Studi
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
         return [
-            ("MatlabQuestionTemplateGeneratorXBlock",
+            ("MatlabQuestionXBlock",
              """<question_generator_block/>
              """),
-            ("Multiple MatlabQuestionTemplateGeneratorXBlock",
+            ("Multiple MatlabQuestionXBlock",
              """<vertical_demo>
                 <question_generator_block/>
                 <question_generator_block/>

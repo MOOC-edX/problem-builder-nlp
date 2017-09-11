@@ -1,5 +1,5 @@
-/* Javascript for MatlabQuestionTemplateGeneratorXBlock. */
-function MatlabQuestionTemplateGeneratorXBlock(runtime, xblockElement) {
+/* Javascript for MatlabQuestionXBlock. */
+function MatlabQuestionXBlock(runtime, xblockElement) {
 	"use strict";
 
   		

@@ -19,7 +19,8 @@ BLOCKS = [
     'tb-question-answer = template_builder.mentoring:QuestionAnswerXBlock',
     'tb-question-generator = template_builder.question_generator_block:QuestionGeneratorXBlock',
     'tb-matlab-question = template_builder.matlab_question_generator:MatlabExerciseGeneratorXBlock',
-    'tb-matlab-question-template-generator = template_builder.matlab_question_template_generator:MatlabQuestionTemplateGeneratorXBlock',
+    'tb-matlab-question-template-builder = template_builder.matlab_question_template_builder:MatlabQuestionTemplateBuilderXBlock',
+    'tb-matlab-question-generator = template_builder.matlab_question:MatlabQuestionXBlock',
     ]
 
 

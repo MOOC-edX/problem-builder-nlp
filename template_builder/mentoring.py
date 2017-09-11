@@ -33,7 +33,8 @@ try:
 except ImportError:
     WorkbenchRuntime = False
 
-from .matlab_question_template_generator import MatlabQuestionTemplateGeneratorXBlock
+from .matlab_question_template_builder import MatlabQuestionTemplateBuilderXBlock
+from .matlab_question import MatlabQuestionXBlock
 
 log =logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
@@ -238,7 +239,7 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
         '''
         Define nested XBlock list
         '''
-        return [FancyXBlock, MatlabQuestionTemplateGeneratorXBlock]
+        return [FancyXBlock, MatlabQuestionTemplateBuilderXBlock, MatlabQuestionXBlock]
 
     def validate_field_data(self, validation, data):
         """""

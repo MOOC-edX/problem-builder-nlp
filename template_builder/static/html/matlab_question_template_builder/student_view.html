@@ -1,0 +1,38 @@
+<div name="attempt-number" class=".attempt-number">{{ attempt_number }}</div>
+<div name="problem-progress" class=".problem-progress">{{ point_string }}</div>
+
+<input type="hidden" name="question_template" value="{{saved_question_template}}">
+<input type="hidden" name="image_url" value="{{saved_url_image}}">
+<input type="hidden" name="resolver_selection" value="{{saved_resolver_selection}}">
+<input type="hidden" name="answer_template" value="{{saved_answer_template}}">
+<input type="hidden" name="variables" value="{{serialized_variables}}">
+<input type="hidden" name="generated_variables" value="{{serialized_generated_variables}}">
+<input type="hidden" name="generated_question" value="{{question}}">
+<input type="hidden" name="xblock_id" value="{{xblock_id}}">
+
+
+<div class="formula_exercise_block_block">
+
+	<pre>{{ question }}</pre>
+	
+	<image src="{{ image_url }}" width="50%"/>
+	
+	<!-- Student answer -->
+	<div class="student_answer_div">
+		<label for="student_answer">Answer:</label>
+		<br/>
+		<textarea name="student_answer" cols="50" rows="15" style="height: 250px; width: 100%; margin-bottom: 10px;">{{student_answer}}</textarea>
+	</div>
+	
+	
+	<!-- Teacher answer -->
+	<div name="teacher_answer_div">
+	</div>
+
+
+	<br/>
+    <input type="button" class="input-main" name='submit-button' {{disabled}} value="Submit" />
+    {% if show_answer %}
+    	<input type="button" class="input-main" name='show_answer-button' value="Show Answer" />
+    {% endif %}
+</div>

@@ -8,13 +8,6 @@
 
 	<div name="error-message"></div>
 
-    <!-- SWITCH UI DISPLAY OF EDITOR -->
-    <!--<div class="editor-bar">-->
-        <!--<ul class="editor-tabs">-->
-            <!--<li><button type="button" id="btn_switch_editor_mode" tab-name="question_template-tab" class="xml-tab advanced-toggle " data-tab="xml" title="Switch Editor mode">Advanced Editor</button></li>-->
-        <!--</ul>-->
-    <!--</div>-->
-
 	<div class="wrapper-comp-settings is-active editor-with-buttons question_template" name="question_template-tab" id="question_template-tab">
         <ul class="list-input settings-list" name="question_template_list">
 
@@ -68,6 +61,44 @@
 								<!--<td></td>-->
 							</tr>
 						{% endfor %}
+					</table>
+
+					<!--NOUND / PRONOUND VARIABLE CONFIGURATION-->
+					<table name="word_variables_table" class="variables_table">
+						<tbody>
+                            <tr class="formula_edit_table_header_color">
+                                <th width="15%" class="table_cell_alignment">Linguistic Variables</th>
+                                <th width="18%" class="table_cell_alignment">Name</th>
+                                <th width="13%" class="table_cell_alignment">Value</th>
+                                <th width="10%"></th>
+                            </tr>
+
+
+							<tr class="formula_edit_table_row">
+								<td></td>
+								<td class="table_cell_alignment"><input type="text" name="variable-apple" class="formula_input_text" value="apple"></td>
+								<td class="table_cell_alignment">
+									<select name="variable_value-apple" class="formula_input_text">
+										<option value="mango" selected="true">mango</option>
+										<option value="pear">pear</option>
+									</select>
+								</td>
+								<td class="table_cell_alignment"><input type="button" class="remove_button" value="Remove"></td>
+							</tr>
+
+							<tr class="formula_edit_table_row">
+								<td></td>
+								<td class="table_cell_alignment"><input type="text" name="variable-kiwi" class="formula_input_text" value="kiwi"></td>
+								<td class="table_cell_alignment">
+									<select name="variable_value-kiwi" class="formula_input_text">
+										<option value="mango" selected="true">mango</option>
+										<option value="pear">pear</option>
+									</select>
+								</td>
+								<td class="table_cell_alignment"><input type="button" class="remove_button" value="Remove"></td>
+							</tr>
+
+						</tbody>
 					</table>
 	        	</div>
 	        </li>
