@@ -92,32 +92,20 @@
                                 <th width="13%" class="table_cell_alignment">Value</th>
                                 <th width="10%"></th>
                             </tr>
-
-
-							<tr class="formula_edit_table_row">
-								<td></td>
-								<td class="table_cell_alignment"><input type="text" name="variable-apple" class="formula_input_text" value="apple"></td>
-								<td class="table_cell_alignment">
-									<select name="variable_value-apple" class="formula_input_text">
-										<option value="mango" selected="true">mango</option>
-										<option value="pear">pear</option>
-									</select>
-								</td>
-								<td class="table_cell_alignment"><input type="button" class="remove_word_variable_button" value="Remove"></td>
-							</tr>
-
-							<tr class="formula_edit_table_row">
-								<td></td>
-								<td class="table_cell_alignment"><input type="text" name="variable-kiwi" class="formula_input_text" value="kiwi"></td>
-								<td class="table_cell_alignment">
-									<select name="variable_value-kiwi" class="formula_input_text">
-										<option value="mango" selected="true">mango</option>
-										<option value="pear">pear</option>
-									</select>
-								</td>
-								<td class="table_cell_alignment"><input type="button" class="remove_word_variable_button" value="Remove"></td>
-							</tr>
-
+                            {% for vars in string_variables %}
+                                <tr class="formula_edit_table_row">
+                                    <td></td>
+                                    <td class="table_cell_alignment"><input type="text" name="string-{{vars.name}}" class="formula_input_text" value= {{ vars.name }}></td>
+                                    <td class="table_cell_aligment">
+                                        <select name="variable-value-{{ vars.default }}" class="formula_input_text">
+                                            {% for option in vars.synonyms %}
+                                                <option value="{{option}}" {% if vars.example == option %} selected="true" {% endif %}> {{option}} </option> 
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td class="table_cell_alignment"><input type="button" class="remove_word_variable_button" value="Remove"></td>
+                                </tr>
+                            {% endfor %}
 						</tbody>
 					</table>
 	        	</div>

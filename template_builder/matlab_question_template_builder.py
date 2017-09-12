@@ -4,7 +4,7 @@ import sys
 import pkg_resources
 
 from xblock.core import XBlock
-from xblock.fields import Scope, JSONField, Integer, String, Boolean, Dict
+from xblock.fields import Scope, JSONField, Integer, String, Boolean, Dict, List
 from xblock.fragment import Fragment
 
 from xblock.exceptions import JsonHandlerError, NoSuchViewError
@@ -23,7 +23,8 @@ import json
 from resolver_machine import resolver_machine
 import logging
 # import xblock_deletion_handler
-
+from question_parser import parse_question_v2, parse_answer_v2
+import qgb_question_service
 import xml_helper
 
 loader = ResourceLoader(__name__)
@@ -177,11 +178,23 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     )
     _question_text = String (
         scope = Scope.content,
-        default=None
+        default="Given a = 5 and b = 10. Calculate the sum of a and b."
     )
     _answer_text = String (
         scope = Scope.content,
-        default = None
+        default = "sum = 5 + 10"
+    )
+    _string_vars = List (
+        scope = Scope.content,
+        default =
+        [
+            {
+                'default' : 'sum',
+                'name' : 'string0',
+                'example' : 'sum',
+                'synonyms' : ['sum', 'differece']
+            }
+        ]
     )
 
 
@@ -252,7 +265,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         # self._generated_question, self._generated_variables = matlab_question_service.generate_question_old(self._question_template, self._variables)
         self._generated_question, self._generated_variables = matlab_question_service.generate_question(
             self._question_template, self._variables)
-
+        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
         print("self._generated_question = {}".format(self._generated_question))
         print("self._generated_variables = {}".format(self._generated_variables))
 
@@ -340,8 +353,8 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
         # self.serialize_data_to_context(context) ??? REMOVE not necessary, remove ???
         context['is_question_text_parsed'] = self.is_question_text_parsed
-        context['question_text_origin'] = self.question_text_origin
-        context['answer_text_origin'] = self.answer_text_origin
+        context['question_text_origin'] = self._question_text
+        context['answer_text_origin'] = self._answer_text
 
         context['image_url'] = self._image_url
         # context['resolver_selection'] = self._resolver_selection
@@ -349,6 +362,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         context['question_template'] = self._question_template
         context['variables'] = self._variables
         context['answer_template_string'] = self._answer_template_string
+        context['string_variables'] = self._string_vars
         context['is_submitted'] = 'False'
 
         # Check default edit mode
@@ -521,12 +535,29 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
         return submit_result
 
-    #@XBlock.json_handler
-    #def fe_parse_question_studio_edits(self, data, suffix=''):
-    #    q = data['question']
-    #    a = data['answer']
-    #    logging.error("Tammd wants to know q = %s, a = %a", q, a)
-    #    return {'result': 'success'}
+    @XBlock.json_handler
+    def fe_parse_question_studio_edits(self, data, suffix=''):
+        
+        q = data['question']
+        a = data['answer']
+        setattr(self, '_question_text', q)
+        setattr(self, '_answer_text', a)
+        logging.error("Tammd wants to know q = %s, a = %s", q, a)
+        template, variables, strings = parse_question_v2(q)
+        logging.error("Tammd wants to know template = %s", template)
+        logging.error("Tammd wants to know variables = %s", variables)
+        logging.error("Tammd wants to know strings = %s", strings)
+        answer = parse_answer_v2(a, variables)
+        logging.error("Tammd wants to know answer = %s", answer)
+        var = {}
+        for i in range(len(variables)):
+            var['var{}'.format(i)] = variables[i][1]['var{}'.format(i)]
+        setattr(self,'_variables', var)
+        setattr(self,'_question_template', template)
+        setattr(self,'_answer_template_string', answer)
+        setattr(self,'_string_vars', strings)
+
+        return {'result': 'success'}
 
     @XBlock.json_handler
     def fe_submit_studio_edits(self, data, suffix=''):
@@ -561,7 +592,17 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             # updated_resolver_selection = data['resolver_selection']
             updated_variables = data['variables']
             updated_answer_template = data['answer_template']
-
+            update_words = data['strings']
+            string_variables = self._string_vars
+            update_strings = []
+            for string in update_words:
+                for i in range(len(string_variables)):
+                    if string_variables[i]['name'] == string['name']:
+                        string_variables[i]['example'] = string['example']
+                        update_strings.append(string_variables[i])
+            new_list = [ string for string in string_variables if string not in update_strings ] 
+            updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
+            logging.error("Tammd wants to know: %s", update_words)
             #qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
 
             print("BEFORE, self._answer_template_string = ")
@@ -580,7 +621,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             print("AFTER, self._answer_template_string = ")
             print(self._answer_template_string)
             print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-
+            setattr(self,'_string_vars', update_strings)
             setattr(self, '_image_url', updated_url_image)
             # setattr(self, '_resolver_selection', updated_resolver_selection)
             setattr(self, '_question_template', updated_question_template)
@@ -698,7 +739,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             raise JsonHandlerError(400, validation.to_json())
     
     @XBlock.json_handler
-    def fe_parse_question_studio_edits(self, data, suffix=''):
+    def fe_parse_question_studio_edits_update(self, data, suffix=''):
     
         #AJAX handler for studio edit submission, two edit modes:
 
@@ -840,7 +881,9 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                     raise JsonHandlerError(400, "Unsupported field type: {}".format(field_name))
             elif field_name in data['defaults'] and field.is_set_on(self):
                 to_reset.append(field_name)
-
+        q = data['question']
+        a = data['answer']
+        logging.error("Tammd wants to know q = %s, a = %s", q, a)
         self.clean_studio_edits(values)
         validation = Validation(self.scope_ids.usage_id)
 

@@ -419,6 +419,21 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //        var resolver_selection = resolver_element.val();
 //        console.log('resolver_selection: ' + resolver_selection);
         
+
+        var strings = []
+        word_variables_table_element.find('tr').each(function(row_index)
+        {
+            if (row_index > 0)
+            {
+                var variable = {};
+                var columns = $(this).find('td');
+                var variable_name = columns.eq(1).children().eq(0).val();
+                variable['name'] = variable_name;
+                var string = columns.eq(2).children().eq(0).val();
+                variable['example'] = string;
+                strings.push(variable);                                                            
+            }        
+        });
         // 2. variables_table_element
         var variables = {};
     	variables_table_element.find('tr').each(function(row_index) {
@@ -500,7 +515,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //        debugger;
         // server side validation
         // perform studio submit and update default editor mode
-        var submit_data = {enable_advanced_editor: enable_advanced_editor, values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, raw_editor_xml_data: raw_editor_xml_data};
+        var submit_data = {enable_advanced_editor: enable_advanced_editor, values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, raw_editor_xml_data: raw_editor_xml_data, strings: strings};
 	    studioSubmit(submit_data);
     });
 
