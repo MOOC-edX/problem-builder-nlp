@@ -84,7 +84,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         scope = Scope.user_state
         )
 
-    question_template = "Given a =[a] and b = [b]. Calculate the sum, difference of a and b."
+    question_template = "Given a =[a] and b = [b]. Calculate the [string0] of a and b."
     variables =  {
                 'a': {'name': 'a',
                 'min_value': 0,
@@ -108,6 +108,14 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
     matlab_server_url = resolver_handling.getDefaultAddress()
     matlab_solver_url = resolver_handling.getDefaultURL()
     attempt_number = 0
+    var0 = {
+        "name" : "string0",
+        "default" : "sum",
+        "example" : "sum",
+        "synonyms" : ["sum", "difference"]
+    }
+    string_variables = []
+    string_variables.append(var0)
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -153,6 +161,8 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         models, matlab_models = self.get_models_object()
 
         variables = {}
+        question_template = ""
+        string_variables = []
         if matlab_models.question_template is None:
             question_template = self.question_template
         else:
@@ -165,9 +175,16 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
             for variable in variable_dict:
                 variables[variable[1]['var']] = variable[1]['shadow'][variable[1]['var']]
             logging.error("Tammd wants to know generated variables %s", variables)
+        if models.parsed_string_variables is None:
+            string_variables = self.string_variables
+        else:
+            string_variables = json.loads(models.parsed_string_variables)
         # generate question from template if necessary
         matlab_models.generated_question, generated_variables = qgb_question_service.generate_question(question_template, variables)
+        matlab_models.generated_question = qgb_question_service.append_string(matlab_models.generated_question, string_variables)
         logging.error("Tammd wants to know generated_question %s , generated_variables %s", matlab_models.generated_question, generated_variables)
+        logging.error("Tammd wants to know string_variables: %s", string_variables)
+
         matlab_models.generated_variable = json.dumps(generated_variables)
         # load submission data to display the previously submitted result
         submissions = sub_api.get_submissions(self.student_item_key, 1)
@@ -250,6 +267,12 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         else:
             context['answer_template'] = matlab_models.answer_template
         context['is_submitted'] = 'False'
+        if models.parsed_string_variables is None:
+
+            context['string_variables'] = self.string_variables
+        else:
+            context['string_variables'] = json.loads(models.parsed_string_variables)
+            
 
         fragment.content = loader.render_template('static/html/matlab_generator_studio_edit.html', context)
         fragment.add_css(self.resource_string("static/css/question_generator_block_studio_edit.css"))
@@ -312,8 +335,50 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
         matlab_models.answer_template = data['answer_template']
         matlab_models.image_url = data['image_url']
         #matlab_models.variables = json.dumps(data['variables'])
-        logging.error("Tammd wants to know variables %s",data['variables'])
+        update_variables = []
+        variables = json.loads(matlab_models.variables)
+        for k,v in data['variables'].iteritems() :
+            found = False
+            for i in range(len(variables)):
+                if k == variables[i][1]['var']:
+                    variables[i][1]['shadow'][variables[i][1]['var']] = v
+                    found = True
+                if found == True:
+                    update_variables.append(variables[i])
+                    break
+                else:
+                    temp2 = {}
+                    temp1 = None
+                    if v['type'] == 'int':
+                        temp1 = 1
+                        temp2['type'] = 'int'
+                    else:
+                        temp1 = 3.14
+                        temp2['type'] = 'float'
+                    temp2['var'] = k
+                    temp2['shadow'] = {
+                        k : v
+                    }
+                    update_variables.append((temp1,temp2))
+                    break
+                        
+        matlab_models.variables = json.dumps(update_variables)
+        string_variables = json.loads(models.parsed_string_variables)
+        update_strings = []
+        for string in data['strings']:
+            for i in range(len(string_variables)):
+                if string_variables[i]['name'] == string['name']:
+                    string_variables[i]['example'] = string['example']
+                    update_strings.append(string_variables[i])
+    
+        new_list = [ string for string in string_variables if string not in update_strings ]
+         
+        matlab_models.question_template = qgb_question_service.update_default(matlab_models.question_template, new_list)
+
+        logging.error("Tammd wants to know strings %s %", data['strings'], update_strings)
         matlab_models.save()
+        models.parsed_string_variables = json.dumps(update_strings)
+        models.save()
         # call parent method
         # StudioEditableXBlockMixin.submit_studio_edits(self, data, suffix)
         # self.submit_studio_edits(data, suffix)

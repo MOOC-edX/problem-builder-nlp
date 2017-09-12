@@ -1,0 +1,309 @@
+diff --git a/template_builder/matlab_question_generator.py b/template_builder/matlab_question_generator.py
+index 8d55ba2..c12226f 100755
+--- a/template_builder/matlab_question_generator.py
++++ b/template_builder/matlab_question_generator.py
+@@ -84,7 +84,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
+         scope = Scope.user_state
+         )
+ 
+-    question_template = "Given a =[a] and b = [b]. Calculate the sum, difference of a and b."
++    question_template = "Given a =[a] and b = [b]. Calculate the [string0] of a and b."
+     variables =  {
+                 'a': {'name': 'a',
+                 'min_value': 0,
+@@ -108,6 +108,14 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
+     matlab_server_url = resolver_handling.getDefaultAddress()
+     matlab_solver_url = resolver_handling.getDefaultURL()
+     attempt_number = 0
++    var0 = {
++        "name" : "string0",
++        "default" : "sum",
++        "example" : "sum",
++        "synonyms" : ["sum", "difference"]
++    }
++    string_variables = []
++    string_variables.append(var0)
+ 
+     def resource_string(self, path):
+         """Handy helper for getting resources from our kit."""
+@@ -153,6 +161,8 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
+         models, matlab_models = self.get_models_object()
+ 
+         variables = {}
++        question_template = ""
++        string_variables = []
+         if matlab_models.question_template is None:
+             question_template = self.question_template
+         else:
+@@ -165,9 +175,16 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
+             for variable in variable_dict:
+                 variables[variable[1]['var']] = variable[1]['shadow'][variable[1]['var']]
+             logging.error("Tammd wants to know generated variables %s", variables)
++        if models.parsed_string_variables is None:
++            string_variables = self.string_variables
++        else:
++            string_variables = json.loads(models.parsed_string_variables)
+         # generate question from template if necessary
+         matlab_models.generated_question, generated_variables = qgb_question_service.generate_question(question_template, variables)
++        matlab_models.generated_question = qgb_question_service.append_string(matlab_models.generated_question, string_variables)
+         logging.error("Tammd wants to know generated_question %s , generated_variables %s", matlab_models.generated_question, generated_variables)
++        logging.error("Tammd wants to know string_variables: %s", string_variables)
++
+         matlab_models.generated_variable = json.dumps(generated_variables)
+         # load submission data to display the previously submitted result
+         submissions = sub_api.get_submissions(self.student_item_key, 1)
+@@ -250,6 +267,12 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
+         else:
+             context['answer_template'] = matlab_models.answer_template
+         context['is_submitted'] = 'False'
++        if models.parsed_string_variables is None:
++
++            context['string_variables'] = self.string_variables
++        else:
++            context['string_variables'] = json.loads(models.parsed_string_variables)
++            
+ 
+         fragment.content = loader.render_template('static/html/matlab_generator_studio_edit.html', context)
+         fragment.add_css(self.resource_string("static/css/question_generator_block_studio_edit.css"))
+@@ -312,8 +335,50 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
+         matlab_models.answer_template = data['answer_template']
+         matlab_models.image_url = data['image_url']
+         #matlab_models.variables = json.dumps(data['variables'])
+-        logging.error("Tammd wants to know variables %s",data['variables'])
++        update_variables = []
++        variables = json.loads(matlab_models.variables)
++        for k,v in data['variables'].iteritems() :
++            found = False
++            for i in range(len(variables)):
++                if k == variables[i][1]['var']:
++                    variables[i][1]['shadow'][variables[i][1]['var']] = v
++                    found = True
++                if found == True:
++                    update_variables.append(variables[i])
++                    break
++                else:
++                    temp2 = {}
++                    temp1 = None
++                    if v['type'] == 'int':
++                        temp1 = 1
++                        temp2['type'] = 'int'
++                    else:
++                        temp1 = 3.14
++                        temp2['type'] = 'float'
++                    temp2['var'] = k
++                    temp2['shadow'] = {
++                        k : v
++                    }
++                    update_variables.append((temp1,temp2))
++                    break
++                        
++        matlab_models.variables = json.dumps(update_variables)
++        string_variables = json.loads(models.parsed_string_variables)
++        update_strings = []
++        for string in data['strings']:
++            for i in range(len(string_variables)):
++                if string_variables[i]['name'] == string['name']:
++                    string_variables[i]['example'] = string['example']
++                    update_strings.append(string_variables[i])
++    
++        new_list = [ string for string in string_variables if string not in update_strings ]
++         
++        matlab_models.question_template = qgb_question_service.update_default(matlab_models.question_template, new_list)
++
++        logging.error("Tammd wants to know strings %s %", data['strings'], update_strings)
+         matlab_models.save()
++        models.parsed_string_variables = json.dumps(update_strings)
++        models.save()
+         # call parent method
+         # StudioEditableXBlockMixin.submit_studio_edits(self, data, suffix)
+         # self.submit_studio_edits(data, suffix)
+diff --git a/template_builder/mentoring.py b/template_builder/mentoring.py
+index 4c6f0b3..ff6a4c2 100755
+--- a/template_builder/mentoring.py
++++ b/template_builder/mentoring.py
+@@ -110,14 +110,13 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
+     def student_view(self, context = None):
+         templates = self.get_models_object()
+         if templates.input_question is not None:
+-            question_template, number_variables = parse_question(templates.input_question)
++            question_template, number_variables, string_variables = parse_question(templates.input_question)
+             templates.parsed_question = question_template
+             templates.parsed_number_variables = json.dumps(number_variables)
++            templates.parsed_string_variables = json.dumps(string_variables)
+             if templates.input_answer is not None:
+                 answer_template = parse_answer(templates.input_answer, number_variables)
+                 templates.parsed_answer = answer_template
+-            string_variables = parse_noun(templates.input_question)
+-            templates.parsed_string_variables = json.dumps(string_variables)
+         context = {
+             'question' : templates.parsed_question,
+             'answer' : templates.parsed_answer
+diff --git a/template_builder/mentoring.pyc b/template_builder/mentoring.pyc
+index 67d3c7c..a499a98 100644
+Binary files a/template_builder/mentoring.pyc and b/template_builder/mentoring.pyc differ
+diff --git a/template_builder/qgb_question_service.py b/template_builder/qgb_question_service.py
+index 7bb7116..1df5490 100755
+--- a/template_builder/qgb_question_service.py
++++ b/template_builder/qgb_question_service.py
+@@ -100,6 +100,14 @@ def generate_answer(generated_variables, answer_template):
+         generated_answer = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]), generated_answer)
+     
+     return generated_answer
++def append_string(template, string_variables):
++    for string in string_variables:
++        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['example']), template )
++    return template
++def update_default(template, string_variables):
++    for string in string_variables:
++        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['default']), template )
++    return template
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/template_builder/question_parser.py b/template_builder/question_parser.py
+index 3f006d6..c56a4ed 100755
+--- a/template_builder/question_parser.py
++++ b/template_builder/question_parser.py
+@@ -40,6 +40,7 @@ def parse_noun(sentences):
+         list_dict.append (
+             {
+                 "name" : "string{}".format(i),
++                "default" : allNoun[i],
+                 "example" : allNoun[i],
+                 "synonyms" : list(set([allNoun[i]] + synonyms) )
+             }
+@@ -72,6 +73,7 @@ def parse_question(sentences):
+                     variables.append((word[0],'float'))
+             except ValueError:
+                 print "oops: the last call this is the string"
++    variables = list(set(variables))
+     variable_names =  []
+     for i in range(len(variables)):
+         variable_names.append((variables[i][0],
+@@ -90,24 +92,26 @@ def parse_question(sentences):
+                 },
+             })
+         )
++    string_variables = parse_noun(sentences)
+     template = ""
+     for variable in variable_names:
+         for i in range(len(words)):
+             if words[i] == variable[0]:
+                 words[i] = '[{}]'.format(variable[1]['var'])
+     template = ' '.join(words)
+-    
+-    return template, variable_names
++    for variable in string_variables:
++        template = re.sub( " {} ".format(variable["default"]) , " [{}] ".format(variable["name"]), template )
++    return template, variable_names, string_variables
+     
+ if __name__ == '__main__':
+     ex1 = """
+ 		You throw a ball straight up in the air with an initial speed of 40 m/s. [g = 9.8 m/s2]. Write a
+         code to determine the maximum height (H) the ball rise from the release point?
+     """
+-    #question, variable = parse_question(ex1)
+-    noun = parse_noun(ex1)
++    question, variable, noun = parse_question(ex1)
++    #noun = parse_noun(ex1)
+     print noun
+-    #print question, variable
++    print question, variable
+ 			
+ 		
+ 
+diff --git a/template_builder/static/html/matlab_generator_studio_edit.html b/template_builder/static/html/matlab_generator_studio_edit.html
+index c1f5709..50bcb9f 100755
+--- a/template_builder/static/html/matlab_generator_studio_edit.html
++++ b/template_builder/static/html/matlab_generator_studio_edit.html
+@@ -175,19 +175,18 @@
+                             <th width="10%"></th>
+                             <th width="5%"></th>
+                         </tr>
+-                        {% for variable_name, dictionaries in variables.iteritems %}
++                        {% for variables in string_variables %}
+                             <tr class="formula_edit_table_row">
+                                 <td></td>
+-                                <td class="table_cell_alignment"><input type="text" name="variable-{{ variable_name }}" class="formula_input_text" value="{{ variable_name }}"></td>
+-                                    
++                                <td class="table_cell_alignment"><input type="text" name="variable-{{ variables.name }}" class="formula_input_text" value="{{ variables.name }}"></td>
+                                 <td class="table_cell_alignment">
+-                                    {% for option in dictionaries %}
+-                                        <option value="{{option.value}}" 
+-                                            {% if field.value == option.value %}selected{% endif %}> {{option.display_name}} 
+-                                            {% if option.value == field.default %}&nbsp;&nbsp;&nbsp;&nbsp;(Default) {% endif %}
+-                                        </option>
+-                                    {% endfor %}
+-
++                                    <select name="{{ variables.name }}-{{ variables.default }}" class="formula_input_text">
++                                        {% for example in variables.synonyms %}
++                                            <option value="{{ example }}"
++                                                {% if example == variables.example %} selected=True {% endif %} > {{ example }} 
++                                            </option>
++                                        {% endfor %}
++                                    </select>
+                                 </td>
+                                 <td class="table_cell_alignment"><input type="button" class="remove_button" value="Remove"></td>
+                                 <td></td>
+diff --git a/template_builder/static/js/src/matlab_generator_studio_edit.js b/template_builder/static/js/src/matlab_generator_studio_edit.js
+index dbfcc2f..b048205 100755
+--- a/template_builder/static/js/src/matlab_generator_studio_edit.js
++++ b/template_builder/static/js/src/matlab_generator_studio_edit.js
+@@ -14,6 +14,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
+ 
+     var question_template_textarea_element = $(xblockElement).find('textarea[name=question_template]');
+     var variables_table_element = $(xblockElement).find('table[name=variables_table]');
++    var string_table_element = $(xblockElement).find('table[name=string_variables_table]');
+     var url_image_input = $(xblockElement).find('input[name=image_url]');
+     var answer_template_textarea_element =  $(xblockElement).find('textarea[name=answer_template]');
+ 
+@@ -179,12 +180,28 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
+         console.log('question_template: ' + question_template);
+         var image_url = url_image_input.val();
+         console.log('image_url: ' + image_url);
++        
++        var strings = []
++        string_table_element.find('tr').each(function(row_index)
++        {
++            if (row_index > 0)
++            {
++                var variable = {};
++                var columns = $(this).find('td');
++                var variable_name = columns.eq(1).children().eq(0).val();
++                variable['name'] = variable_name;
++                var string = columns.eq(2).children().eq(0).val();
++                variable['example'] = string
++                strings.push(variable)
++
++            }
++        });
+ 
+         // 2. variables_table_element
+         var variables = {};
+     	variables_table_element.find('tr').each(function(row_index) {
+     		if (row_index > 0) { // first row is the header
+-    			var variable = {}
++    			var variable = {};
+ 
+     			var columns = $(this).find('td');
+ 
+@@ -260,7 +277,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
+ 
+         // server side validation
+         debugger;
+-	    studioSubmit({values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template});
++	    studioSubmit({values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, strings: strings });
+     });
+ 
+ 
+@@ -448,5 +465,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
+         	var parentRow = removeButton.closest('tr');
+         	parentRow.remove();
+         });
++        string_table_element.find('input[type=button][class=remove_button]').bind('click', function(e) {
++            var removeButton = $(this);
++            var parentRow = removeButton.closest('tr');
++            parentRow.remove();
++        });
+     });
+ }

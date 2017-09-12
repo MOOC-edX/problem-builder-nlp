@@ -1,0 +1,75 @@
+diff --git a/template_builder/matlab_question_generator.py b/template_builder/matlab_question_generator.py
+index 8d55ba2..b16a9dd 100755
+--- a/template_builder/matlab_question_generator.py
++++ b/template_builder/matlab_question_generator.py
+@@ -230,7 +230,7 @@ class MatlabExerciseGeneratorXBlock(XBlock, SubmittingXBlockMixin, StudioEditabl
+ 
+         models, matlab_models = self.get_models_object()
+         if matlab_models.image_url is None:
+-            context['image_urls'] = ""
++            context['image_url'] = ""
+         else:
+             context['image_url'] =matlab_models.image_url
+         if matlab_models.question_template is None:
+diff --git a/template_builder/mentoring.py b/template_builder/mentoring.py
+index 61490f9..1256b7c 100755
+--- a/template_builder/mentoring.py
++++ b/template_builder/mentoring.py
+@@ -110,13 +110,13 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
+     def student_view(self, context = None):
+         templates = self.get_models_object()
+         if templates.input_question is not None:
+-            question_template, number_variables = parse_question(templates.input_question)
++            question_template, number_variables, string_variables = parse_question(templates.input_question)
+             templates.parsed_question = question_template
+             templates.parsed_number_variables = json.dumps(number_variables)
+             if templates.input_answer is not None:
+                 answer_template = parse_answer(templates.input_answer, number_variables)
+                 templates.parsed_answer = answer_template
+-            string_variables = parse_noun(templates.input_question)
++            #string_variables = parse_noun(templates.input_question)
+             templates.parsed_string_variables = json.dumps(string_variables)
+         context = {
+             'question' : templates.parsed_question,
+diff --git a/template_builder/question_parser.py b/template_builder/question_parser.py
+index 3f006d6..b2f2e27 100755
+--- a/template_builder/question_parser.py
++++ b/template_builder/question_parser.py
+@@ -44,7 +44,6 @@ def parse_noun(sentences):
+                 "synonyms" : list(set([allNoun[i]] + synonyms) )
+             }
+         )
+-        #print list_dict[i]
+     return list_dict
+ def parse_answer(answer, variables):
+     words = tokenization(answer)
+@@ -95,19 +94,23 @@ def parse_question(sentences):
+         for i in range(len(words)):
+             if words[i] == variable[0]:
+                 words[i] = '[{}]'.format(variable[1]['var'])
++    string_variables = parse_noun(sentences)
++    for variable in string_variables:
++        for i in range(len(words)):
++            if words[i] == variable['example']:
++                words[i] = "[{}]".format(variable['name'])
+     template = ' '.join(words)
+-    
+-    return template, variable_names
++    return template, variable_names, string_variables
+     
+ if __name__ == '__main__':
+     ex1 = """
+ 		You throw a ball straight up in the air with an initial speed of 40 m/s. [g = 9.8 m/s2]. Write a
+         code to determine the maximum height (H) the ball rise from the release point?
+     """
+-    #question, variable = parse_question(ex1)
+-    noun = parse_noun(ex1)
+-    print noun
+-    #print question, variable
++    question, variable, string_variables = parse_question(ex1)
++    #noun = parse_noun(ex1)
++    #print noun
++    print question, variable, string_variables
+ 			
+ 		
+ 

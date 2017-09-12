@@ -111,14 +111,13 @@ class QuestionAnswerXBlock( StudioContainerWithNestedXBlocksMixin, XBlock, Studi
     def student_view(self, context = None):
         templates = self.get_models_object()
         if templates.input_question is not None:
-            question_template, number_variables = parse_question(templates.input_question)
+            question_template, number_variables, string_variables = parse_question(templates.input_question)
             templates.parsed_question = question_template
             templates.parsed_number_variables = json.dumps(number_variables)
+            templates.parsed_string_variables = json.dumps(string_variables)
             if templates.input_answer is not None:
                 answer_template = parse_answer(templates.input_answer, number_variables)
                 templates.parsed_answer = answer_template
-            string_variables = parse_noun(templates.input_question)
-            templates.parsed_string_variables = json.dumps(string_variables)
         context = {
             'question' : templates.parsed_question,
             'answer' : templates.parsed_answer

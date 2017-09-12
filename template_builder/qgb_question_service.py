@@ -100,6 +100,14 @@ def generate_answer(generated_variables, answer_template):
         generated_answer = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]), generated_answer)
     
     return generated_answer
+def append_string(template, string_variables):
+    for string in string_variables:
+        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['example']), template )
+    return template
+def update_default(template, string_variables):
+    for string in string_variables:
+        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['default']), template )
+    return template
 
 
 if __name__ == "__main__":

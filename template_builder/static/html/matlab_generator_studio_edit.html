@@ -175,19 +175,18 @@
                             <th width="10%"></th>
                             <th width="5%"></th>
                         </tr>
-                        {% for variable_name, dictionaries in variables.iteritems %}
+                        {% for variables in string_variables %}
                             <tr class="formula_edit_table_row">
                                 <td></td>
-                                <td class="table_cell_alignment"><input type="text" name="variable-{{ variable_name }}" class="formula_input_text" value="{{ variable_name }}"></td>
-                                    
+                                <td class="table_cell_alignment"><input type="text" name="variable-{{ variables.name }}" class="formula_input_text" value="{{ variables.name }}"></td>
                                 <td class="table_cell_alignment">
-                                    {% for option in dictionaries %}
-                                        <option value="{{option.value}}" 
-                                            {% if field.value == option.value %}selected{% endif %}> {{option.display_name}} 
-                                            {% if option.value == field.default %}&nbsp;&nbsp;&nbsp;&nbsp;(Default) {% endif %}
-                                        </option>
-                                    {% endfor %}
-
+                                    <select name="{{ variables.name }}-{{ variables.default }}" class="formula_input_text">
+                                        {% for example in variables.synonyms %}
+                                            <option value="{{ example }}"
+                                                {% if example == variables.example %} selected=True {% endif %} > {{ example }} 
+                                            </option>
+                                        {% endfor %}
+                                    </select>
                                 </td>
                                 <td class="table_cell_alignment"><input type="button" class="remove_button" value="Remove"></td>
                                 <td></td>

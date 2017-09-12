@@ -14,6 +14,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     var question_template_textarea_element = $(xblockElement).find('textarea[name=question_template]');
     var variables_table_element = $(xblockElement).find('table[name=variables_table]');
+    var string_table_element = $(xblockElement).find('table[name=string_variables_table]');
     var url_image_input = $(xblockElement).find('input[name=image_url]');
     var answer_template_textarea_element =  $(xblockElement).find('textarea[name=answer_template]');
 
@@ -179,12 +180,28 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         console.log('question_template: ' + question_template);
         var image_url = url_image_input.val();
         console.log('image_url: ' + image_url);
+        
+        var strings = []
+        string_table_element.find('tr').each(function(row_index)
+        {
+            if (row_index > 0)
+            {
+                var variable = {};
+                var columns = $(this).find('td');
+                var variable_name = columns.eq(1).children().eq(0).val();
+                variable['name'] = variable_name;
+                var string = columns.eq(2).children().eq(0).val();
+                variable['example'] = string
+                strings.push(variable)
+
+            }
+        });
 
         // 2. variables_table_element
         var variables = {};
     	variables_table_element.find('tr').each(function(row_index) {
     		if (row_index > 0) { // first row is the header
-    			var variable = {}
+    			var variable = {};
 
     			var columns = $(this).find('td');
 
@@ -260,7 +277,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
         // server side validation
         debugger;
-	    studioSubmit({values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template});
+	    studioSubmit({values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, strings: strings });
     });
 
 
@@ -447,6 +464,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         	var removeButton = $(this);
         	var parentRow = removeButton.closest('tr');
         	parentRow.remove();
+        });
+        string_table_element.find('input[type=button][class=remove_button]').bind('click', function(e) {
+            var removeButton = $(this);
+            var parentRow = removeButton.closest('tr');
+            parentRow.remove();
         });
     });
 }

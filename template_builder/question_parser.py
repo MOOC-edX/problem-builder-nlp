@@ -40,6 +40,7 @@ def parse_noun(sentences):
         list_dict.append (
             {
                 "name" : "string{}".format(i),
+                "default" : allNoun[i],
                 "example" : allNoun[i],
                 "synonyms" : list(set([allNoun[i]] + synonyms) )
             }
@@ -72,6 +73,7 @@ def parse_question(sentences):
                     variables.append((word[0],'float'))
             except ValueError:
                 print "oops: the last call this is the string"
+    variables = list(set(variables))
     variable_names =  []
     for i in range(len(variables)):
         variable_names.append((variables[i][0],
@@ -90,24 +92,26 @@ def parse_question(sentences):
                 },
             })
         )
+    string_variables = parse_noun(sentences)
     template = ""
     for variable in variable_names:
         for i in range(len(words)):
             if words[i] == variable[0]:
                 words[i] = '[{}]'.format(variable[1]['var'])
     template = ' '.join(words)
-    
-    return template, variable_names
+    for variable in string_variables:
+        template = re.sub( " {} ".format(variable["default"]) , " [{}] ".format(variable["name"]), template )
+    return template, variable_names, string_variables
     
 if __name__ == '__main__':
     ex1 = """
 		You throw a ball straight up in the air with an initial speed of 40 m/s. [g = 9.8 m/s2]. Write a
         code to determine the maximum height (H) the ball rise from the release point?
     """
-    #question, variable = parse_question(ex1)
-    noun = parse_noun(ex1)
+    question, variable, noun = parse_question(ex1)
+    #noun = parse_noun(ex1)
     print noun
-    #print question, variable
+    print question, variable
 			
 		
 
