@@ -1,13 +1,32 @@
 {% load i18n %}
 
 <div class="editor-with-buttons" xmlns="http://www.w3.org/1999/html">
-    <div>
+	<div name="error-message"></div>
+
+    <div name="hidden_inputs">
         <input type="hidden" class="hidden" name="enable_advanced_editor" value="{{ enable_advanced_editor }}" />
 		<input type="hidden" class="hidden" name="current_editor_mode_name" value="{{ current_editor_mode_name }}" />
 		<input type="hidden" class="hidden" name="is_question_text_parsed" value="{{ is_question_text_parsed }}" />
     </div>
 
-	<div name="error-message"></div>
+	<!--QUESTION PARSER TAB-->
+	<div class="wrapper-comp-settings is-active editor-with-buttons" name="question_text-tab" id="question_text-tab">
+        <ul class="list-input settings-list" name="question_text_list">
+			<li class="field comp-setting-entry metadata_entry">
+				<div class="wrapper-comp-setting">
+					<label class="label setting-label" for="question_text">Original Question</label>
+					<textarea name="question_text" rows=10 cols=80>{{ question_text_origin }}</textarea>
+	        	</div>
+	        </li>
+
+			<li class="field comp-setting-entry metadata_entry">
+				<div class="wrapper-comp-setting">
+					<label class="label setting-label" for="answer_text">Original Answer</label>
+					<textarea name="answer_template" rows=10 cols=80>{{ answer_text_origin }}</textarea>
+	        	</div>
+	        </li>
+		</ul>
+	</div>
 
 	<div class="wrapper-comp-settings is-active editor-with-buttons question_template" name="question_template-tab" id="question_template-tab">
         <ul class="list-input settings-list" name="question_template_list">
@@ -225,31 +244,14 @@
 		</ul>
 	</div>
 
-	<!--PARSE ORIGINAL QUESTION-->
-	<div class="wrapper-comp-settings is-active editor-with-buttons" name="question_text-tab" id="question_text-tab">
-        <ul class="list-input settings-list" name="question_text_list">
-			<li class="field comp-setting-entry metadata_entry">
-				<div class="wrapper-comp-setting">
-					<label class="label setting-label" for="question_text">Question</label>
-					<textarea name="question_text" rows=10 cols=80>{{ question_template }}</textarea>
-	        	</div>
-	        </li>
-
-			<li class="field comp-setting-entry metadata_entry">
-				<div class="wrapper-comp-setting">
-					<label class="label setting-label" for="answer_text">Answer</label>
-					<textarea name="answer_template" rows=10 cols=80>{{ answer_template_string }}</textarea>
-	        	</div>
-	        </li>
-		</ul>
-	</div>
-
-
 	<div class="xblock-actions">
 		<ul>
+				<li class="action-item" name="parse">
+					<a href="#" class="button action-primary" name="parse_button">{% trans "Parse" %}</a>
+				</li>
 
 			{% if is_submitted == 'False' %}
-				<li class="action-item">
+				<li class="action-item" name="save">
 					<a href="#" class="button action-primary save-button" name="save_button">{% trans "Save" %}</a>
 				</li>
 			{% endif %}
@@ -265,8 +267,9 @@
 			{% endif %}
 
 			<!-- SWITCH UI DISPLAY OF EDITOR -->
-			<li style="margin-right:50px;" class="pull-right">
-				<button type="button" id="btn_switch_editor_mode" tab-name="question_template-tab" data-tab="xml" title="Switch problem edit interface">{{ next_editor_mode_name }}</button>
+			<li style="margin-right:50px;" class="pull-right" name="switch_editor_mode_button">
+				<button type="button" id="btn_switch_editor_mode" tab-name="question_template-tab" data-tab="xml" title="Switch editor interface">{{ next_editor_mode_name }}</button>
+				<!--<a href="#" class="button cancel-button" id="btn_switch_editor_mode" tab-name="question_template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
 			</li>
 		</ul>
 	</div>

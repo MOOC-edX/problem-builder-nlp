@@ -8,7 +8,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     var csxColor = ["#009FE6", "black"];
     var studio_buttons = {
-        "question_text-tab": "QUESTION PARSER",
+        "question_text-tab": "PARSER",
         "question_template-tab": "TEMPLATE",
         "editor-tab": "EDITOR",
         "general_information-tab": "SETTINGS",
@@ -35,6 +35,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     // for editor mode toggle
     var btn_switch_editor_mode_element = $(xblockElement).find('button[id=btn_switch_editor_mode]');
+//    var btn_switch_editor_mode_element = $(xblockElement).find('li[name=switch_editor_mode_button]');
     var enable_advanced_editor_element = $(xblockElement).find('input[name=enable_advanced_editor]');
     var enable_advanced_editor = enable_advanced_editor_element.val();
     var editor_mode_name_element = $(xblockElement).find('input[name=current_editor_mode_name]');
@@ -42,7 +43,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     // for question parser tab
     var is_question_text_parsed_element = $(xblockElement).find('input[name=is_question_text_parsed]');
-    var is_question_text_parsed = editor_mode_name_element.val();
+    var is_question_text_parsed = is_question_text_parsed_element.val();
 
     // DOM object for xml editor
     var xml_editor_element = $(xblockElement).find('textarea[name=raw_editor_xml_data]');
@@ -67,9 +68,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //                    )
 //                );
 //        }
+        console.log('is_question_text_parsed =' + is_question_text_parsed)
 
-        if (is_question_text_parsed == 'False'){
-//        Show question parser tab
+//        if (is_question_text_parsed == 'False'){
+            // Show question parser tab
             $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
@@ -77,24 +79,22 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
                     )
                 );
             btn_switch_editor_mode_element.hide();
-        } else {
-//        Show template tab
+//        } else {
+            // Show template tab
             $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
                         $('<a />', {class: "action-primary", id: 'question_template-tab', text: studio_buttons['question_template-tab']})
                     )
                 );
-//        Show settings tab
+            // Show settings tab
             $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
                         $('<a />', {class: "action-primary", id: 'general_information-tab', text: studio_buttons['general_information-tab']})
                     )
                 );
-        }
-
-
+//        }
 
         // Set default tab
         tab_switch("question_text-tab");
@@ -150,9 +150,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
             // update attributes for the switching editor button
             // update text
-            $('#btn_switch_editor_mode').text(target_tabName_map[current_tab]);
+//            $('#btn_switch_editor_mode').text(target_tabName_map[current_tab]);
+            btn_switch_editor_mode_element.text(target_tabName_map[current_tab]);
             // update attribute
-            $('#btn_switch_editor_mode').attr('tab-name',target_tabId_map[current_tab]);
+//            $('#btn_switch_editor_mode').attr('tab-name',target_tabId_map[current_tab]);
+            btn_switch_editor_mode_element.attr('tab-name',target_tabId_map[current_tab]);
 
             // targeted editor_mode_name
 //            TODO: Check why this cause JS error ???
@@ -176,6 +178,48 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         });
 
     });
+
+    function tab_highlight(toHighlight) {
+        for (var b in studio_buttons) {
+            if (b != toHighlight) $("a[id=" + b + "]").css({"color": csxColor[0]});
+        }
+        $("a[id=" + toHighlight + "]").css({"color": csxColor[1]});
+    }
+
+
+    function update_buttons(toShow) {
+        if (toShow == 'question_text-tab') {
+            $("li[name=parse]").show();
+
+            $("li[name=add_variable]").hide();
+            $("li[name=save]").hide();
+            btn_switch_editor_mode_element.hide();
+    	} else if (toShow == 'question_template-tab') {
+    	    $("li[name=save]").show();
+    	    btn_switch_editor_mode_element.show();
+    	    // only show "Add variable" on TEMPLATE tab
+    		$("li[name=add_variable]").show();
+    		// hide button Parse
+    		$("li[name=parse]").hide();
+    	} else {
+    	    $("li[name=save]").show();
+    	    btn_switch_editor_mode_element.show();
+    	    // hide "Add variable"
+    		$("li[name=add_variable]").hide();
+    		// hide button Parse
+    		$("li[name=parse]").hide();
+    	}
+    }
+
+
+    // Hide all panes except toShow
+    function tab_switch(toShow) {
+        tab_highlight(toShow);
+        for (var b in studio_buttons) $("div[name=" + b + "]").hide();
+        $("div[name=" + toShow + "]").show();
+
+        update_buttons(toShow);
+    }
 
 
     /*
@@ -451,6 +495,165 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     });
 
 
+    // Handle parse question text
+    var studioPasreQuestion = function(data) {
+        var handlerUrl = runtime.handlerUrl(xblockElement, 'fe_parse_question_studio_edits');
+        runtime.notify('save', {state: 'start', message: gettext("Parsing text ...")});
+        $.ajax({
+            type: "POST",
+            url: handlerUrl,
+            data: JSON.stringify(data),
+            dataType: "json",
+            global: false,  // Disable Studio's error handling that conflicts with studio's notify('save') and notify('cancel') :-/
+            success: function(response) { runtime.notify('save', {state: 'end'}); }
+        }).fail(function(jqXHR) {
+            var message = gettext("This may be happening because of an error with our server or your internet connection. Try refreshing the page or making sure you are online.");
+            if (jqXHR.responseText) { // Is there a more specific error message we can show?
+                try {
+                    message = JSON.parse(jqXHR.responseText).error;
+                    if (typeof message === "object" && message.messages) {
+                        // e.g. {"error": {"messages": [{"text": "Unknown user 'bob'!", "type": "error"}, ...]}} etc.
+                        message = $.map(message.messages, function(msg) { return msg.text; }).join(", ");
+                    }
+                } catch (error) { message = jqXHR.responseText.substr(0, 300); }
+            }
+            runtime.notify('error', {title: gettext("Unable to update settings"), message: message});
+        });
+    };
+
+    // Handle parse button click, collect data
+    $(xblockElement).find('a[name=parse_button]').bind('click', function(e) {
+    	console.log("Save button clicked");
+
+    	error_message_element.empty();
+
+    	// "General information" tab
+        e.preventDefault();
+        var fieldValues = {};
+        var fieldValuesNotSet = []; // List of field names that should be set to default values
+        for (var i in fields) {
+            var field = fields[i];
+            if (field.isSet()) {
+                fieldValues[field.name] = field.val();
+            } else {
+                fieldValuesNotSet.push(field.name);
+            }
+            // Remove TinyMCE instances to make sure jQuery does not try to access stale instances
+            // when loading editor for another block:
+            if (field.hasEditor()) {
+                field.removeEditor();
+            }
+        }
+
+        // 1. xml_editor_element
+        var raw_editor_xml_data = xml_editor.getValue();
+        console.log('raw_editor_xml_data: ' + raw_editor_xml_data);
+
+
+        // "Template" tab
+        /*
+			1. question_template
+			2. variables (name, min_valua, max_value, type, decimal_places)
+			3. answer_template
+        */
+        // 1. question_template_textarea_element
+        var question_template = question_template_textarea_element.val();
+        console.log('question_template: ' + question_template);
+
+        // image
+        var image_url = url_image_input.val();
+        console.log('image_url: ' + image_url);
+
+//        var resolver_element = $(xblockElement).find('input[name=Resolver]:checked');
+//        var resolver_selection = resolver_element.val();
+//        console.log('resolver_selection: ' + resolver_selection);
+
+        // 2. variables_table_element
+        var variables = {};
+    	variables_table_element.find('tr').each(function(row_index) {
+    		if (row_index > 0) { // first row is the header
+    			var variable = {}
+
+    			var columns = $(this).find('td');
+
+    			// 2nd column: "variable name"
+    			var variable_name = columns.eq(1).children().eq(0).val();
+
+    			if (variable_name.length == 0) { // empty variable name
+    				fillErrorMessage('Variable name can not be empty');
+    				return false;
+    			}
+
+    			if (variables.hasOwnProperty(variable_name)) { // duplicate verification
+    				fillErrorMessage('Variable names can not be duplicated');
+    				return false;
+    			}
+
+    			variable['name'] = variable_name;
+
+
+    			// 3rd column: "min_value"
+    			var min_value = columns.eq(2).children().eq(0).val();
+
+    			if (min_value.length == 0) { // empty min_value
+    				fillErrorMessage('min_value can not be empty');
+    				return false;
+    			}
+
+    			variable['min_value'] = min_value;
+
+
+    			// 4th column: "max_value"
+    			var max_value = columns.eq(3).children().eq(0).val();
+
+    			if (max_value.length == 0) { // empty max_value
+    				fillErrorMessage('max_value can not be empty');
+    				return false;
+    			}
+
+    			var min_value_numer = Number(min_value);
+    			var max_value_number = Number(max_value);
+    			if (min_value_numer > max_value_number) {
+    				fillErrorMessage('min_value can not be bigger than max_value');
+    				return false;
+    			}
+
+    			variable['max_value'] = max_value;
+
+
+    			// 5th column: "type"
+    			var type = columns.eq(4).children().eq(0).val();
+    			variable['type'] = type;
+
+
+    			// 6th column: "decimal_places"
+    			var decimal_places = columns.eq(5).children().eq(0).val();
+    			variable['decimal_places'] = decimal_places;
+
+    			variables[variable_name] = variable;
+    			console.log('Row ' + row_index + ': variable_name: ' + variable_name + ', min: ' + min_value + ', max: ' + max_value + ', type: ' + type + ', decimal_places: ' + decimal_places);
+    		}
+    	});
+
+
+    	// 3. answer_template
+        var answer_template = answer_template_textarea_element.val();
+        console.log('answer_template: ' + answer_template);
+
+
+        // client-side validation error
+        if (error_message_element.children().length > 0) {
+        	return;
+        }
+
+//        debugger;
+        // server side validation
+        // perform studio submit and update default editor mode
+        var data = {enable_advanced_editor: enable_advanced_editor, values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, raw_editor_xml_data: raw_editor_xml_data};
+	    studioPasreQuestion(data);
+    });
+
+
     $(xblockElement).find('.cancel-button').bind('click', function(e) {
         // Remove TinyMCE instances to make sure jQuery does not try to access stale instances
         // when loading editor for another block:
@@ -577,37 +780,4 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	variables_table_element.append(new_row);
     });
     
-
-
-    function tab_highlight(toHighlight) {
-        for (var b in studio_buttons) {
-            if (b != toHighlight) $("a[id=" + b + "]").css({"color": csxColor[0]});
-        }
-        $("a[id=" + toHighlight + "]").css({"color": csxColor[1]});
-    }
-    
-    
-    function update_buttons(toShow) {
-        if (toShow == 'question_text-tab') {
-            $("li[name=add_variable]").hide();
-//            $("button[id=btn_switch_editor_mode]").hide();
-            btn_switch_editor_mode_element.hide();
-    	} else if (toShow == 'question_template-tab') {
-    	    // show "Add variable" and "Add expression" buttons
-    		$("li[name=add_variable]").show();
-    	} else {
-    	    // hide "Add variable" and "Add expression" buttons
-    		$("li[name=add_variable]").hide();
-    	}
-    }
-
-
-    // Hide all panes except toShow
-    function tab_switch(toShow) {
-        tab_highlight(toShow);
-        for (var b in studio_buttons) $("div[name=" + b + "]").hide();
-        $("div[name=" + toShow + "]").show();
-        
-        update_buttons(toShow);
-    }
 }

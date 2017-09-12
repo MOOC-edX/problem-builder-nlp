@@ -212,6 +212,10 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     # Define if original text question parsed yet
     is_question_text_parsed = False
 
+    # Default value of original Q & A
+    question_text_origin = "Given a = 5 and b = 10. Calculate the sum, difference of a and b."
+    answer_text_origin = "sum = 15\ndiff = -5"
+
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -282,7 +286,6 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         context['xblock_id'] = self.xblock_id
         context['show_answer'] = self.show_answer
 
-
         frag = Fragment()
         frag.content = loader.render_template('static/html/matlab_question_template_builder/student_view.html', context)
         frag.add_css(self.resource_string("static/css/question_generator_block.css"))
@@ -324,8 +327,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             if field_info is not None:
                 context["fields"].append(field_info)
 
+        print("self.is_question_text_parsed = {}".format(self.is_question_text_parsed))
 
         # self.serialize_data_to_context(context) ??? REMOVE not necessary, remove ???
+        context['is_question_text_parsed'] = self.is_question_text_parsed
+        context['question_text_origin'] = self.question_text_origin
+        context['answer_text_origin'] = self.answer_text_origin
+
         context['image_url'] = self._image_url
         # context['resolver_selection'] = self._resolver_selection
         # context['problem_solver'] = self._problem_solver
@@ -342,7 +350,6 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             context['current_editor_mode_name'] = SIMPLE_EDITOR_NAME
             context['next_editor_mode_name'] = ADVANCED_EDITOR_NAME
         context['enable_advanced_editor'] = self.enable_advanced_editor
-        context['is_question_text_parsed'] = self.is_question_text_parsed
 
         # append xml data for raw xml editor
         context['raw_editor_xml_data'] = self._raw_editor_xml_data
@@ -601,6 +608,174 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             # convert answer dict to string
             updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
 
+
+            print("BEFORE, self._answer_template_string = ")
+            print(self._answer_template_string)
+
+            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
+            print("Data type of updated_answer_template = {}".format(type(updated_answer_template)))
+
+            # "refresh" XBlock's values
+            # update values to global variables
+            self.enable_advanced_editor = True
+            self.question_template_string = updated_question_template
+            self.image_url = updated_url_image
+            self.variables = updated_variables
+            # setattr(self, '_answer_template', updated_answer_template)
+            self._answer_template_string = updated_answer_template
+            # self.resolver_selection = updated_resolver_selection
+
+            print("AFTER, self._answer_template_string = ")
+            print(self._answer_template_string)
+
+            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
+
+            # update values to global fields
+            setattr(self, '_question_template', updated_question_template)
+            setattr(self, '_image_url', updated_url_image)
+            # setattr(self, '_answer_template', updated_answer_template)
+            setattr(self, '_answer_template_string', updated_answer_template)
+            setattr(self, '_variables', updated_variables)
+            # setattr(self, '_resolver_selection', updated_resolver_selection)
+
+            # update raw edit fields data
+            self.raw_editor_xml_data = updated_xml_string
+            setattr(self, '_raw_editor_xml_data', updated_xml_string)
+
+        print("AFTER SAVE, self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
+
+        # copy from StudioEditableXBlockMixin (can not call parent method)
+        values = {}  # dict of new field values we are updating
+        to_reset = []  # list of field names to delete from this XBlock
+        for field_name in self.editable_fields:
+            field = self.fields[field_name]
+            if field_name in data['values']:
+                if isinstance(field, JSONField):
+                    values[field_name] = field.from_json(data['values'][field_name])
+                else:
+                    raise JsonHandlerError(400, "Unsupported field type: {}".format(field_name))
+            elif field_name in data['defaults'] and field.is_set_on(self):
+                to_reset.append(field_name)
+
+        self.clean_studio_edits(values)
+        validation = Validation(self.scope_ids.usage_id)
+
+        # We cannot set the fields on self yet, because even if validation fails, studio is going to save any changes we
+        # make. So we create a "fake" object that has all the field values we are about to set.
+        preview_data = FutureFields(
+            new_fields_dict=values,
+            newly_removed_fields=to_reset,
+            fallback_obj=self
+        )
+
+        self.validate_field_data(validation, preview_data)
+        print("preview_data fields: {}".format(preview_data))
+        print("## End DEBUG INFO ###")
+
+        if validation:
+            for field_name, value in values.iteritems():
+                setattr(self, field_name, value)
+            for field_name in to_reset:
+                self.fields[field_name].delete_from(self)
+            return {'result': 'success'}
+        else:
+            raise JsonHandlerError(400, validation.to_json())
+
+    @XBlock.json_handler
+    def fe_parse_question_studio_edits(self, data, suffix=''):
+        """
+        AJAX handler for studio edit submission, two edit modes:
+
+        1. Basic template (Default mode)
+        2. Advanced editor
+
+        """
+
+        print("## Calling FUNCTION fe_submit_studio_edits() ###")
+        print("## DEBUG INFO ###")
+        print("data fields: {}".format(data))
+        print("### editor updated xml_data: ###")
+        print(data['raw_editor_xml_data'])
+
+        print("BEFORE SAVE, self.enable_advanced_editor = {}".format(self.enable_advanced_editor))
+        print("targeted mode, data['enable_advanced_editor'] = {}".format(data['enable_advanced_editor']))
+
+        print("self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
+        print("Data type of data['answer_template'] = {}".format(type(data['answer_template'])))
+
+        if self.xblock_id is None:
+            self.xblock_id = unicode(self.location.replace(branch=None, version=None))
+
+        if data['enable_advanced_editor'] == 'False':
+            print("### IN CASE self.enable_advanced_editor == False: ###")
+            # process problem edit via UI template
+            updated_question_template = data['question_template']
+            updated_url_image = data['image_url']
+            # updated_resolver_selection = data['resolver_selection']
+            updated_variables = data['variables']
+            updated_answer_template = data['answer_template']
+
+            # qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
+
+            print("BEFORE, self._answer_template_string = ")
+            print(self._answer_template_string)
+            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
+            print("Data type of updated_answer_template = {}".format(type(updated_answer_template)))
+
+            # Update XBlock's values
+            self.enable_advanced_editor = False
+            self.question_template_string = updated_question_template
+            self.image_url = updated_url_image
+            # self.resolver_selection = updated_resolver_selection
+            self.variables = updated_variables
+            self._answer_template_string = updated_answer_template
+
+            print("AFTER, self._answer_template_string = ")
+            print(self._answer_template_string)
+            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
+
+            setattr(self, '_image_url', updated_url_image)
+            # setattr(self, '_resolver_selection', updated_resolver_selection)
+            setattr(self, '_question_template', updated_question_template)
+            # setattr(self, '_answer_template', updated_answer_template)
+            setattr(self, '_answer_template_string', updated_answer_template)
+            setattr(self, '_variables', updated_variables)
+
+            # build xml string for problem raw edit fields,
+            # then update value to field '_raw_editor_xml_data' for editor
+            input_data = {
+                'question_template': self.question_template_string,
+                'image_url': self.image_url,
+                'variables': self.variables,
+                'answer_template': self._answer_template_string
+            }
+
+            # Convert dict data to xml
+            xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
+
+            # Finally, update value for field attribute
+            setattr(self, '_raw_editor_xml_data', xml_string)
+
+        elif data['enable_advanced_editor'] == 'True':
+            print("### IN CASE self.enable_advanced_editor == True: ###")
+            # Process raw edit
+            updated_xml_string = data['raw_editor_xml_data']
+
+            # Extract data fields from xml string
+            raw_edit_data = xml_helper.extract_data_from_xmlstring_to_dict(updated_xml_string)
+
+            # TODO: then save to DB model? To remove this line
+            # qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
+
+            updated_question_template = raw_edit_data['question_template']
+            updated_url_image = raw_edit_data['image_url']
+            updated_variables = raw_edit_data['variables']
+            # get only one firt answer for now. TODO: update to support multi-answers attributes for multiple solutions
+            updated_answer_template_dict = raw_edit_data['answer_template'][1]
+            # updated_resolver_selection = data['problem_solver']
+
+            # convert answer dict to string
+            updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
 
             print("BEFORE, self._answer_template_string = ")
             print(self._answer_template_string)
