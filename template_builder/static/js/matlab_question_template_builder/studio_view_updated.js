@@ -31,6 +31,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     var url_image_input = $(xblockElement).find('input[name=image_url]');
     var variables_table_element = $(xblockElement).find('table[name=variables_table]');
     var add_variable_button_element = $(xblockElement).find('li[name=add_variable]');
+    var word_variables_table_element = $(xblockElement).find('table[name=word_variables_table]');
     var answer_template_textarea_element =  $(xblockElement).find('textarea[name=answer_template]');
 
     // for editor mode toggle
@@ -171,7 +172,14 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         });
 
         // listeners for "Remove" buttons of "Variables"
-        variables_table_element.find('input[type=button][class=remove_button]').bind('click', function(e) {
+        variables_table_element.find('input[type=button][class=remove_variable_button]').bind('click', function(e) {
+        	var removeButton = $(this);
+        	var parentRow = removeButton.closest('tr');
+        	parentRow.remove();
+        });
+
+        // listeners for "Remove" buttons of "Variables"
+        word_variables_table_element.find('input[type=button][class=remove_word_variable_button]').bind('click', function(e) {
         	var removeButton = $(this);
         	var parentRow = removeButton.closest('tr');
         	parentRow.remove();
@@ -758,7 +766,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	var remove_variable_button = $('<input>');
     	remove_variable_button.attr("type", "button");
-    	remove_variable_button.attr("class", "remove_button");
+    	remove_variable_button.attr("class", "remove_button remove_variable_button");
+//    	remove_variable_button.attr("class", "remove_variable_button");
     	remove_variable_button.attr("value", "Remove");
     	seventh_column.append(remove_variable_button);
     	new_row.append(seventh_column);

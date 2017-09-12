@@ -35,6 +35,12 @@
 	padding: 2px !important;
 }
 
+.remove_variable_button .remove_word_variable_button {
+	width: 100px !important;
+	height: 35px !important;
+	padding: 2px !important;
+}
+
 .variable_remove_button_alignment {
 	text-align: center;
 }
