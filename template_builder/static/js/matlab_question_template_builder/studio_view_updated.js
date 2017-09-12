@@ -655,8 +655,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         if (error_message_element.children().length > 0) {
         	return;
         }
-        var q = question_text.val();
-        var a = answer_text.val();
+        var q = question_text_element.val();
+        var a = answer_text_element.val();
 
 //        debugger;
         // server side validation

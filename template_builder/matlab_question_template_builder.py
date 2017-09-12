@@ -21,7 +21,7 @@ import matlab_question_service
 import qgb_db_service
 import json
 from resolver_machine import resolver_machine
-
+import logging
 # import xblock_deletion_handler
 
 import xml_helper
@@ -175,6 +175,15 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         default=raw_editor_xml_data,
         scope=Scope.content
     )
+    _question_text = String (
+        scope = Scope.content,
+        default=None
+    )
+    _answer_text = String (
+        scope = Scope.content,
+        default = None
+    )
+
 
     xblock_id = None
     attempt_number = 0
@@ -512,11 +521,12 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
         return submit_result
 
-    @XBlock.json_handler
-    del fe_parse_question_studio_edits(self, data, suffix=''):
-        pass
-
-        
+    #@XBlock.json_handler
+    #def fe_parse_question_studio_edits(self, data, suffix=''):
+    #    q = data['question']
+    #    a = data['answer']
+    #    logging.error("Tammd wants to know q = %s, a = %a", q, a)
+    #    return {'result': 'success'}
 
     @XBlock.json_handler
     def fe_submit_studio_edits(self, data, suffix=''):
@@ -686,17 +696,17 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             return {'result': 'success'}
         else:
             raise JsonHandlerError(400, validation.to_json())
-
+    
     @XBlock.json_handler
     def fe_parse_question_studio_edits(self, data, suffix=''):
-        """
-        AJAX handler for studio edit submission, two edit modes:
+    
+        #AJAX handler for studio edit submission, two edit modes:
 
-        1. Basic template (Default mode)
-        2. Advanced editor
+        #1. Basic template (Default mode)
+        #2. Advanced editor
 
-        """
-
+        
+    
         print("## Calling FUNCTION fe_submit_studio_edits() ###")
         print("## DEBUG INFO ###")
         print("data fields: {}".format(data))
@@ -854,7 +864,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             return {'result': 'success'}
         else:
             raise JsonHandlerError(400, validation.to_json())
-
+    
 
     @property
     def point_string(self):
