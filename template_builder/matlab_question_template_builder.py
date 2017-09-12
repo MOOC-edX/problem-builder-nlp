@@ -513,6 +513,12 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         return submit_result
 
     @XBlock.json_handler
+    del fe_parse_question_studio_edits(self, data, suffix=''):
+        pass
+
+        
+
+    @XBlock.json_handler
     def fe_submit_studio_edits(self, data, suffix=''):
         """
         AJAX handler for studio edit submission, two edit modes:

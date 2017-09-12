@@ -57,6 +57,58 @@ def parse_answer(answer, variables):
     answer_template = ' '.join(words)
     return answer_template
 
+def parse_answer_v2(answer, variables):
+    words = tokenization(answer)
+    answer_template = ""
+    for i in range(len(variables)):
+        for j in range(len(words)):
+            if words[j] == variables[i][0]:
+                words[j] = '[{}]'.format(variables[i][1]['var{}'.format(i)]['name'])
+    answer_template = ' '.join(words)
+    return answer_template
+
+def parse_question_v2(sentences):
+    words = tokenization(sentences)
+    list_pos = part_of_speech_tagging(words)
+    variables = []
+    for word in list_pos:
+        try:
+            if is_numerical(word[1]) and isinstance(int(word[0]),int):
+                variables.append((word[0],'int'))
+        except ValueError:
+            print "oops !! There is a string or float in the list"
+            try:
+                if isinstance(float(word[0]), float):
+                    variables.append( (word[0],'float') )
+            except ValueError:
+                print "oops: the last call this is the string"
+    variables = list(set(variables))
+    variable_names =  []
+    for i in range(len(variables)):
+        variable_names.append( (variables[i][0],
+            {
+                'var{}'.format(i) :
+                {
+                    'name' : 'var{}'.format(i) ,
+                    'min_value' : 1,
+                    'max_value' : 100,
+                    'type' : variables[i][1],
+                    'decimal_places' : 2
+                }
+            })
+        )
+    string_variables = parse_noun(sentences)
+    template = ""
+    for i in range(len(variable_names)):
+        for j in range(len(words)):
+            if words[j] == variable_names[i][0]:
+                words[j] = '[{}]'.format( variable_names[i][1]['var{}'.format(i)]['name'] )
+    template = ' '.join(words)
+    for variable in string_variables:
+         template = re.sub( " {} ".format(variable["default"]) , " [{}] ".format(variable["name"]), template )
+    return template, variable_names, string_variables
+
+
 def parse_question(sentences):
 
     words = tokenization(sentences)
@@ -108,10 +160,17 @@ if __name__ == '__main__':
 		You throw a ball straight up in the air with an initial speed of 40 m/s. [g = 9.8 m/s2]. Write a
         code to determine the maximum height (H) the ball rise from the release point?
     """
-    question, variable, noun = parse_question(ex1)
+    ans1 = """
+            x = 40
+            g = 9.8
+            H = 2*x/g
+            """ 
+    question, variable, noun = parse_question_v2(ex1)
     #noun = parse_noun(ex1)
-    print noun
+    print noun, 
     print question, variable
+    answer = parse_answer_v2(ans1, variable)
+    print answer
 			
 		
 

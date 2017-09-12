@@ -50,6 +50,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     var xml_editor_element = $(xblockElement).find('textarea[name=raw_editor_xml_data]');
     var my_XML_Box = '.xml-box';
 
+    var question_text_element = $(xblockElement).find('textarea[name=question_text]');
+    var answer_text_element = $(xblockElement).find('textarea[name=answer_text]');
     // WORKING
     var xml_editor = CodeMirror.fromTextArea($(my_XML_Box)[0], {
         mode: 'xml',
@@ -653,11 +655,13 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         if (error_message_element.children().length > 0) {
         	return;
         }
+        var q = question_text.val();
+        var a = answer_text.val();
 
 //        debugger;
         // server side validation
         // perform studio submit and update default editor mode
-        var data = {enable_advanced_editor: enable_advanced_editor, values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, raw_editor_xml_data: raw_editor_xml_data};
+        var data = {enable_advanced_editor: enable_advanced_editor, values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, raw_editor_xml_data: raw_editor_xml_data, question: q, answer: a};
 	    studioPasreQuestion(data);
     });
 
