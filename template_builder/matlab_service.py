@@ -4,13 +4,14 @@ import json
  
 def evaluate_matlab_answer(matlab_server_url, matlab_solver_url, teacherAns, studentAns):
  
-    print matlab_server_url + matlab_solver_url
+    print "Matlab problem solver: " + matlab_server_url + matlab_solver_url
+    print "Teacher's answer:\n" + teacherAns
+    print "Student's answer:\n" + studentAns
+
     conn = httplib.HTTPConnection(matlab_server_url)
     headers = { "Content-Type": "application/json" }
     body = json.dumps({"teacherAns": teacherAns, "studentAns" : studentAns})
     conn.request("POST", matlab_solver_url, body, headers)
-    
-    print matlab_server_url + matlab_solver_url
     
     response = conn.getresponse()
     if response.status == 200:
@@ -26,8 +27,11 @@ if __name__ == "__main__":
     matlab_solver_url = '/check'
     
     teacherAns =  "A =[ 2, 1, 1 ; -1, 1, -1 ; 1, 2, 3] \n B = [ 2 ; 3 ; -10] \n  InvA = inv(A) \n  X=InvA * B"
-#    studentAns = "A =[ 2, 1, 1 ; -1, 1, -1 ; 1, 2, 3] \n B = [ 2 ; 3 ; -10] \n  InvA = inv(A) \n  X=InvA * B"
-    studentAns = "A =[ 21, 1, 1 ; -1, 1, -1 ; 1, 2, 3] \n B = [ 2 ; 3 ; -10] \n  InvA = inv(A) \n  X=InvA * B" # Wrong answer
+    studentAns = "A =[ 2, 1, 1 ; -1, 1, -1 ; 1, 2, 3] \n B = [ 2 ; 3 ; -10] \n  InvA = inv(A) \n  X=InvA * B"
+    # studentAns = "A =[ 21, 1, 1 ; -1, 1, -1 ; 1, 2, 3] \n B = [ 2 ; 3 ; -10] \n  InvA = inv(A) \n  X=InvA * B" # Wrong answer
+
+    teacherAns = "sum= 9 + 10\nprod = 10 * 9"
+    studentAns = "sum= 9 +10 \n prod = 10 * 9"
     
     result = evaluate_matlab_answer(matlab_server_url, matlab_solver_url, teacherAns, studentAns)
     print 'result = ' + str(result)

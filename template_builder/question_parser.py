@@ -59,9 +59,14 @@ def parse_answer(answer, variables):
 
 def parse_answer_v2(answer, variables):
     words = tokenization(answer)
+    print "words= {}".format(words)
+    print "variables= {}".format(variables)
     answer_template = ""
     for i in range(len(variables)):
         for j in range(len(words)):
+            print "i=" + str(i)
+            print "matched?:"
+            print(words[j] == variables[i][0])
             if words[j] == variables[i][0]:
                 words[j] = '[{}]'.format(variables[i][1]['var{}'.format(i)]['name'])
     answer_template = ' '.join(words)

@@ -12,6 +12,7 @@ class resolver_machine():
         JAVA="",
         CSHARP="",
         Default="")
+
     APIURL = Constants(
         NONE="/none", 
         MATLAB="/check",
@@ -20,18 +21,21 @@ class resolver_machine():
         JAVA="/none",
         CSHARP="/none",
         Default="/none")
+
     NAME = Constants(
         NONE="none", 
         MATLAB="matlab",
-        EXCEL="excel",
+        EXCEL="gsheet",
         CPLUSPLUS="c++",
         JAVA="java",
         CSHARP="c#",
         Default="none")
+
     NAME_INTEGER = Constants (
         NONE = 0,
         MATLAB = 1
         )
+
     def getResolverAddress(self, query):
         if query == self.APIAddress.MATLAB:
             return self.APIAddress.MATLAB
@@ -39,6 +43,7 @@ class resolver_machine():
             return self.APIAddress.NONE
         else:
             return self.APIAddress.NONE
+
     def getResolverURL(self, query):
         if query == self.APIURL.MATLAB:
             return self.APIURL.MATLAB
@@ -46,26 +51,32 @@ class resolver_machine():
             return self.APIURL.NONE
         else:
             return self.APIURL.NONE
+
     def getDefaultAddress(self):
         return self.APIAddress.NONE
+
     def getDefaultURL(self):
         return self.APIURL.NONE
+
     def getDefaultResolver(self):
         return self.NAME.NONE
 
-    def syncCall(self, resolver, ansT, ans):
-        callback = False
-        if resolver == self.NAME_INTEGER.NONE:
+    def syncCall(self, resolver, teacher_answer, student_answer):
+        result = False
+        if resolver == self.NAME.NONE:
             print "self.NAME.NONE"
-            callback =  False       
-        elif resolver == self.NAME_INTEGER.MATLAB:
+            result =  False
+        elif resolver == self.NAME.MATLAB:
             print "self.NAME.MATLAB:"
-            callback = matlab_service.evaluate_matlab_answer(self.APIAddress.MATLAB, self.APIURL.MATLAB, ansT, ans)
+            result = matlab_service.evaluate_matlab_answer(self.APIAddress.MATLAB, self.APIURL.MATLAB, teacher_answer, student_answer)
+        elif resolver == self.NAME.EXCEL:
+            print "self.NAME.EXCEL:"
+            gsheet = gsheets()
+            result = gsheet.check_answer(teacher_answer, student_answer)
         else:
             print "self.NAME.OTHER:"
-            callback = False
-        
-        return callback
+
+        return result
     
 if (__name__ == "__main__"):
     # Usage example.

@@ -44,7 +44,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     """
     #
     CATEGORY = 'tb-matlab-question-template-builder'
-    STUDIO_LABEL = _(u'Matlab Question from Natural Language')
+    STUDIO_LABEL = _(u'Question from Natural Language')
 
     display_name = String(
         display_name="Display Name",
@@ -100,10 +100,11 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     _problem_solver = String(
         display_name = "Problem Solver",
         help = "Select a solver for this problem",
-        default = 'none',
+        default = 'matlab',
         scope = Scope.settings,
         values = [
                     {"display_name": "MatLab", "value": "matlab"},
+                    {"display_name": "Google Sheets", "value": "gsheet"},
                     {"display_name": "None", "value": "none"},
                 ]
     )
@@ -235,8 +236,8 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     is_question_text_parsed = False
 
     # Default value of original Q & A
-    question_text_origin = "Given a = 5 and b = 10. Calculate the sum, difference of a and b."
-    answer_text_origin = "sum = 15\ndiff = -5"
+    # question_text_origin = "Given a = 5 and b = 10. Calculate the sum, difference of a and b."
+    # answer_text_origin = "sum = 15\ndiff = -5"
 
 
     def resource_string(self, path):
@@ -265,6 +266,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         # self._generated_question, self._generated_variables = matlab_question_service.generate_question_old(self._question_template, self._variables)
         self._generated_question, self._generated_variables = matlab_question_service.generate_question(
             self._question_template, self._variables)
+
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
         print("self._generated_question = {}".format(self._generated_question))
         print("self._generated_variables = {}".format(self._generated_variables))
@@ -508,9 +510,10 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             'generated_answer': generated_answer,
             'variable_values': data['serialized_generated_variables']
         }
-        print("submission_data = {}".format(submission_data))
+        print "submission_data = {}".format(submission_data)
+        print "self.resolver_selection = " + self.resolver_selection
 
-        # call matlab
+        # call problem grader
         evaluation_result = self.resolver_handling.syncCall(self.resolver_selection, generated_answer, student_answer )
         #evaluation_result = matlab_service.evaluate_matlab_answer(self.matlab_server_url, self.matlab_solver_url, generated_answer, student_answer)
 
@@ -542,13 +545,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         a = data['answer']
         setattr(self, '_question_text', q)
         setattr(self, '_answer_text', a)
-        logging.error("Tammd wants to know q = %s, a = %s", q, a)
+        logging.debug("Tammd wants to know q = %s, a = %s", q, a)
         template, variables, strings = parse_question_v2(q)
-        logging.error("Tammd wants to know template = %s", template)
-        logging.error("Tammd wants to know variables = %s", variables)
-        logging.error("Tammd wants to know strings = %s", strings)
+        logging.debug("Tammd wants to know template = {}", template)
+        logging.debug("Tammd wants to know variables = {}", variables)
+        logging.debug("Tammd wants to know strings = {}", strings)
         answer = parse_answer_v2(a, variables)
-        logging.error("Tammd wants to know answer = %s", answer)
+        logging.debug("Tammd wants to know answer = %s", answer)
         var = {}
         for i in range(len(variables)):
             var['var{}'.format(i)] = variables[i][1]['var{}'.format(i)]
@@ -602,7 +605,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                         update_strings.append(string_variables[i])
             new_list = [ string for string in string_variables if string not in update_strings ] 
             updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
-            logging.error("Tammd wants to know: %s", update_words)
+            logging.debug("Tammd wants to know: %s", update_words)
             #qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
 
             print("BEFORE, self._answer_template_string = ")
@@ -727,6 +730,22 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
         self.validate_field_data(validation, preview_data)
         print("preview_data fields: {}".format(preview_data))
+
+        self._generated_question, self._generated_variables = matlab_question_service.generate_question(
+            self._question_template, self._variables)
+        # add string_vars into generated question
+        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+                                                                          self._answer_template_string)
+        print "generated_answer = ", generated_answer
+        print("self._generated_question = {}".format(self._generated_question))
+        print("self._generated_variables = {}".format(self._generated_variables))
+
+        setattr(self, '_question_text', self._generated_question)
+        setattr(self, '_answer_text', generated_answer)
+
+
+
         print("## End DEBUG INFO ###")
 
         if validation:
