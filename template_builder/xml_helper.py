@@ -26,23 +26,25 @@ def convert_data_from_dict_to_xml(data):
     :return:
     <problem>
         <description>Given a = [a] and b = [b]. Calculate the [sum], [difference] of a and b. </description>
-        <image_group>
+        <images>
             <image_url link="http://example.com/image1">Image 1</image_url>
             <image_url link="http://example.com/image2">Image 2</image_url>
-        </image_group>
-        <variable_group>
+        </images>
+        <variables>
             <variable name="a" min="1" max="200" type="integer"/>
             <variable name="b" min="1.0" max="20.5" type="float" decimal_places="2"/>
-        </variable_group>
-        <answer_template_group>
+        </variables>
+        <answer_templates>
             <answer sum = "[a] + [b]" difference = "[a] - [b]">Teacher's answer</answer>
-        </answer_template_group>
+        </answer_templates>
     </problem>
     '''
     print("## CALLING FUNCTION convert_data_from_dict_to_xml() ##")
-    print("Input data dict: {}".format(data))
+    print("Input data type: {}".format(type(data)))
+    print("Input data: {}".format(data))
 
     xml_string = ''
+    # init the root element: problem
     problem = ET.Element('problem')
 
     # convert question template
@@ -54,17 +56,17 @@ def convert_data_from_dict_to_xml(data):
     # convert image
     field_image_url = data['image_url']
     # xml elements
-    image_group = ET.SubElement(problem, 'image_group')
-    image_url = ET.SubElement(image_group, 'image_url')
+    images = ET.SubElement(problem, 'images')
+    image_url = ET.SubElement(images, 'image_url')
     # Set attribute
     image_url.set('link', field_image_url)
 
     # convert variables
-    variables = data['variables']
+    field_variables = data['variables']
     # xml elements
-    variable_group = ET.SubElement(problem, 'variable_group')
-    for var_name, attributes in variables.iteritems():
-        var_name = ET.SubElement(variable_group, 'variable')
+    variables_elem = ET.SubElement(problem, 'variables')
+    for var_name, attributes in field_variables.iteritems():
+        var_name = ET.SubElement(variables_elem, 'variable')
         for attribute, value in attributes.iteritems():
             # Set attribute
             var_name.set(attribute, value)
@@ -120,8 +122,8 @@ def convert_data_from_dict_to_xml(data):
     print("Resulted answer_template_dict: {}".format(answer_template_dict))
 
     # xml elements
-    answer_template_group = ET.SubElement(problem, 'answer_template_group')
-    answer = ET.SubElement(answer_template_group, 'answer')
+    answer_templates = ET.SubElement(problem, 'answer_templates')
+    answer = ET.SubElement(answer_templates, 'answer')
     # Add the converted dict data to xml elements
     for attrib_key, attrib_value in answer_template_dict.iteritems():
         answer.set(attrib_key, attrib_value)
@@ -152,16 +154,16 @@ def extract_data_from_xmlstring_to_dict(xml_string):
 
         <problem>
             <description>Given a = [a] and b = [b]. Calculate the sum, difference of a and b. </description>
-            <image_group>
+            <images>
                 <image_url link="http://example.com/image1">Image 1</image_url>
-            </image_group>
-            <variable_group>
+            </images>
+            <variables>
                 <variable name="a" min="1" max="200" type="integer"/>
                 <variable name="b" min="1.0" max="20.5" type="float" decimal_places="2"/>
-            </variable_group>
-            <answer_template_group>
+            </variables>
+            <answer_templates>
                 <answer sum = "[a] + [b]" difference = "[a] - [b]">Teacher's answer</answer>
-            </answer_template_group>
+            </answer_templates>
         </problem>
 
     :return: raw_editor_data_fields -- a dictionary of raw edit supported fields
@@ -184,7 +186,7 @@ def extract_data_from_xmlstring_to_dict(xml_string):
         if field.tag == "description":
             # extract the question template
             raw_editor_data_fields["question_template"] = field.text
-        elif field.tag == "image_group":
+        elif field.tag == "images":
             # Extract image url
             #
             # A problem can have many images
@@ -193,10 +195,10 @@ def extract_data_from_xmlstring_to_dict(xml_string):
             image_urls = field.findall('image_url')  # find all direct children only for this field.
             # get first image_url
             raw_editor_data_fields["image_url"] = image_urls[0].get('link')  # get its link attrib
-        elif field.tag == "variable_group":
+        elif field.tag == "variables":
             # Extract variables info
             raw_editor_data_fields["variables"] = {}  # initialize the variables dict
-            # find all direct child elements named "variable" under 'variable_group' element
+            # find all direct child elements named "variable" under 'variables' element
             variable_list = field.findall("variable")
             for variable in variable_list:
                 variable_attributes = variable.attrib
@@ -204,10 +206,10 @@ def extract_data_from_xmlstring_to_dict(xml_string):
 
                 # add each variable into the variable dict
                 raw_editor_data_fields["variables"][var_name] = variable_attributes
-        elif field.tag == "answer_template_group":
+        elif field.tag == "answer_templates":
             # Extract the answers
             raw_editor_data_fields["answer_template"] = {}  # initialize the answers dict
-            # find all direct childs named "answer" of element 'answer_template_group'
+            # find all direct childs named "answer" of element 'answer_templates'
             answer_list = field.findall("answer")
             i = 0
             for answer in answer_list:

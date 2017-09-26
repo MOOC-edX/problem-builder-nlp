@@ -158,19 +158,41 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     raw_editor_xml_data = '''
     <problem>
         <description>Given a = [a] and b = [b]. Calculate the sum, difference of a and b. </description>
-        <image_group>
+        <images>
             <image_url link="http://example.com/image1">Image</image_url>
-        </image_group>
-        <variable_group>
+        </images>
+        <variables>
             <variable name="a" min_value="1" max_value="200" type="integer"/>
             <variable name="b" min_value="1.00" max_value="20.99" type="float" decimal_places="2"/>
-        </variable_group>
-        <answer_template_group>
+        </variables>
+        <string_variables>
+            <string_variable name="string0" value="str0">
+                <value_set>Synonym set 1
+                    <string>str0</string>
+                    <string>str1</string>
+                    <string>str2</string>
+                    <string>str3</string>
+                    <string>str4</string>
+                    <string>str5</string>
+                </value_set>
+            </string_variable>
+            <string_variable name="string1" value="str1">
+                <value_set>String set 2
+                    <string>str0</string>
+                    <string>str1</string>
+                    <string>str2</string>
+                    <string>str3</string>
+                    <string>str4</string>
+                    <string>str5</string>
+                </value_set>
+            </string_variable>
+        </string_variables>
+        <answer_templates>
             <answer sum = "[a] + [b]" difference = "[a] - [b]">Teacher's answer</answer>
-        </answer_template_group>
+        </answer_templates>
     </problem>'''
 
-    # This field is to store editor's value to keep for future initilize (student_view, studio_view) of xBlock after edit.
+    # This field is to store editor's value to keep for future initilization of xBlock after edit (student_view, studio_view).
     _raw_editor_xml_data = String(
         display_name="Raw edit",
         help="Raw edit fields value for XML editor",
@@ -179,11 +201,11 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     )
     _question_text = String (
         scope = Scope.content,
-        default="Given a = 5 and b = 10. Calculate the sum of a and b."
+        default="Given a = 5 and b = 10. Calculate the sum and difference of a and b."
     )
     _answer_text = String (
         scope = Scope.content,
-        default = "sum = 5 + 10"
+        default = "sum = 5 + 10\ndiff = 5 - 10"
     )
     _string_vars = List (
         scope = Scope.content,
@@ -267,6 +289,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         self._generated_question, self._generated_variables = matlab_question_service.generate_question(
             self._question_template, self._variables)
 
+        # append string variables
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
         print("self._generated_question = {}".format(self._generated_question))
         print("self._generated_variables = {}".format(self._generated_variables))
@@ -546,10 +569,12 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         setattr(self, '_question_text', q)
         setattr(self, '_answer_text', a)
         logging.debug("Tammd wants to know q = %s, a = %s", q, a)
+
         template, variables, strings = parse_question_v2(q)
         logging.debug("Tammd wants to know template = {}", template)
         logging.debug("Tammd wants to know variables = {}", variables)
         logging.debug("Tammd wants to know strings = {}", strings)
+
         answer = parse_answer_v2(a, variables)
         logging.debug("Tammd wants to know answer = %s", answer)
         var = {}
@@ -582,7 +607,6 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         print("targeted mode, data['enable_advanced_editor'] = {}".format(data['enable_advanced_editor']))
 
         print("self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
-        print("Data type of data['answer_template'] = {}".format(type(data['answer_template'])))
 
         if self.xblock_id is None:
             self.xblock_id = unicode(self.location.replace(branch=None, version=None))
@@ -592,45 +616,45 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             # process problem edit via UI template
             updated_question_template = data['question_template']
             updated_url_image = data['image_url']
-            # updated_resolver_selection = data['resolver_selection']
             updated_variables = data['variables']
             updated_answer_template = data['answer_template']
-            update_words = data['strings']
+            updated_string_variables = data['strings']
             string_variables = self._string_vars
-            update_strings = []
-            for string in update_words:
+
+            print("updated_string_variables = {}".format(updated_string_variables))
+            print("TYPE of updated_string_variables = {}".format(type(updated_string_variables)))
+            print("BEFORE, self._string_vars = {}".format(self._string_vars))
+
+            updated_strings = []
+            for string in updated_string_variables:
                 for i in range(len(string_variables)):
                     if string_variables[i]['name'] == string['name']:
                         string_variables[i]['example'] = string['example']
-                        update_strings.append(string_variables[i])
-            new_list = [ string for string in string_variables if string not in update_strings ] 
-            updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
-            logging.debug("Tammd wants to know: %s", update_words)
-            #qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
+                        updated_strings.append(string_variables[i])
 
-            print("BEFORE, self._answer_template_string = ")
-            print(self._answer_template_string)
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-            print("Data type of updated_answer_template = {}".format(type(updated_answer_template)))
+            print("Data type of updated_strings = {}".format(type(updated_strings)))
+            print("updated_strings = {}".format(updated_strings))
+            # update default value
+            new_list = [ string for string in string_variables if string not in updated_strings ]
+            updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
+            logging.debug("Tammd wants to know: %s", updated_string_variables)
 
             # Update XBlock's values
             self.enable_advanced_editor = False
             self.question_template_string = updated_question_template
             self.image_url = updated_url_image
-            # self.resolver_selection = updated_resolver_selection
             self.variables = updated_variables
             self._answer_template_string = updated_answer_template
 
-            print("AFTER, self._answer_template_string = ")
-            print(self._answer_template_string)
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-            setattr(self,'_string_vars', update_strings)
+            setattr(self,'_string_vars', updated_strings)
             setattr(self, '_image_url', updated_url_image)
-            # setattr(self, '_resolver_selection', updated_resolver_selection)
             setattr(self, '_question_template', updated_question_template)
             # setattr(self, '_answer_template', updated_answer_template)
             setattr(self, '_answer_template_string', updated_answer_template)
             setattr(self, '_variables', updated_variables)
+
+            print("Data type of self._variables = {}".format(type(self._variables)))
+            print("AFTER, self._variables = {}".format(self._variables))
 
             # build xml string for problem raw edit fields,
             # then update value to field '_raw_editor_xml_data' for editor
@@ -644,7 +668,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             # Convert dict data to xml
             xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
 
-            # Finally, update value for field attribute
+            # Finally, update value for editor field attribute
             setattr(self, '_raw_editor_xml_data', xml_string)
 
         elif data['enable_advanced_editor'] == 'True':
@@ -733,8 +757,10 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
         self._generated_question, self._generated_variables = matlab_question_service.generate_question(
             self._question_template, self._variables)
-        # add string_vars into generated question
+
+        # Now, append string_vars into the generated question
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        # generated answer string
         generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
                                                                           self._answer_template_string)
         print "generated_answer = ", generated_answer

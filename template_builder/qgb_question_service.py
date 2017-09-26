@@ -100,13 +100,29 @@ def generate_answer(generated_variables, answer_template):
         generated_answer = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]), generated_answer)
     
     return generated_answer
+
 def append_string(template, string_variables):
+    print("## Calling FUNCTION append_string() ##")
+    print("## START DEBUG INFO ##")
+    print("template = {}".format(template))
+    print("string_variables = {}".format(string_variables))
+
     for string in string_variables:
         template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['example']), template )
+
+    print("## End FUNCTION append_string() ##")
     return template
+
 def update_default(template, string_variables):
+    print("## Calling FUNCTION update_default() ##")
+    print("## START DEBUG INFO ##")
+    print("template = {}".format(template))
+    print("string_variables = {}".format(string_variables))
+
     for string in string_variables:
         template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['default']), template )
+
+    print("## End FUNCTION update_default() ##")
     return template
 
 
