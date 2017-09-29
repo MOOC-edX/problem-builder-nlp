@@ -52,6 +52,7 @@
 	          data-cast="String"
 	        >
 				<div class="wrapper-comp-setting">
+					<!-- NUMERIC VARIABLES SETTINGS-->
 					<table name="variables_table" class="variables_table">
 						<tr class="formula_edit_table_header_color">
 							<th width="15%" class="table_cell_alignment">Variables</th>
@@ -61,7 +62,6 @@
 							<th width="13%" class="table_cell_alignment">Type</th>
 							<th width="13%" class="table_cell_alignment">Decimal Places</th>
 							<th width="10%"></th>
-							<!--<th width="5%"></th>-->
 						</tr>
 
 						{% for variable_name, variable in variables.iteritems %}
@@ -72,34 +72,68 @@
 								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_max_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.max_value }}"></td>
 								<td class="table_cell_alignment">
 									<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="formula_input_text">
-										<option value="int" {% if variable.type == "int" %}selected="true"{% endif %}>int</option>
-										<option value="float" {% if variable.type == "float" %}selected="true"{% endif %}>float</option>
+										<option value="int" {% if variable.type == "int" %} selected="true" {% endif %}>int</option>
+										<option value="float" {% if variable.type == "float" %} selected="true" {% endif %}>float</option>
 									</select>
 								</td>
 								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="formula_input_text" min="0" max="7" value="{{ variable.decimal_places }}"></td>
 								<td class="table_cell_alignment"><input type="button" class="remove_variable_button" value="Remove"></td>
-								<!--<td></td>-->
 							</tr>
 						{% endfor %}
 					</table>
 
-					<!--NOUND / PRONOUND VARIABLE CONFIGURATION-->
+					<!-- STRING VARIABLES SETTINGS-->
+
+					<!--<table name="word_variables_table" class="variables_table">-->
+						<!--<tbody>-->
+                            <!--<tr class="formula_edit_table_header_color">-->
+                                <!--<th width="15%" class="table_cell_alignment">String Variables</th>-->
+                                <!--<th width="18%" class="table_cell_alignment">Name</th>-->
+                                <!--<th width="13%" class="table_cell_alignment">Value</th>-->
+                                <!--<th width="10%"></th>-->
+                            <!--</tr>-->
+                            <!--{% for str_var in string_variables %}-->
+                                <!--<tr class="formula_edit_table_row">-->
+                                    <!--<td></td>-->
+                                    <!--<td class="table_cell_alignment"><input type="text" name="string-{{str_var.name}}" class="formula_input_text" value= {{ str_var.name }}></td>-->
+                                    <!--<td class="table_cell_aligment">-->
+                                        <!--<select name="variable-value-{{ str_var.default }}" class="formula_input_text">-->
+                                            <!--{% for item in str_var.synonyms %}-->
+                                                <!--<option value="{{item}}" {% if str_var.value == item %} selected="true" {% endif %}> {{item}} </option>-->
+                                            <!--{% endfor %}-->
+                                        <!--</select>-->
+                                    <!--</td>-->
+                                    <!--<td class="table_cell_alignment"><input type="button" class="remove_word_variable_button" value="Remove"></td>-->
+                                <!--</tr>-->
+                            <!--{% endfor %}-->
+						<!--</tbody>-->
+					<!--</table>-->
+
 					<table name="word_variables_table" class="variables_table">
 						<tbody>
                             <tr class="formula_edit_table_header_color">
-                                <th width="15%" class="table_cell_alignment">Linguistic Variables</th>
+                                <th width="15%" class="table_cell_alignment">String Variables</th>
                                 <th width="18%" class="table_cell_alignment">Name</th>
-                                <th width="13%" class="table_cell_alignment">Value</th>
+                                <th width="13%" class="table_cell_alignment">Library</th>
+								<th width="13%" class="table_cell_alignment">Value</th>
                                 <th width="10%"></th>
                             </tr>
-                            {% for vars in string_variables %}
+                            {% for key, var in string_variables.iteritems() %}
+								{% current_context = var.context %}
                                 <tr class="formula_edit_table_row">
                                     <td></td>
-                                    <td class="table_cell_alignment"><input type="text" name="string-{{vars.name}}" class="formula_input_text" value= {{ vars.name }}></td>
+                                    <td class="table_cell_alignment"><input type="text" name="string-{{var.name}}" class="formula_input_text" value= {{ var.name }}></td>
                                     <td class="table_cell_aligment">
-                                        <select name="variable-value-{{ vars.default }}" class="formula_input_text">
-                                            {% for option in vars.synonyms %}
-                                                <option value="{{option}}" {% if vars.example == option %} selected="true" {% endif %}> {{option}} </option> 
+                                        <select name="variable-library-{{ var.name }}" class="formula_input_text">
+                                            {% for index, context in var.context_list.iteritems() %}
+                                                <option value="{{index}}" {% if var.context == index %} selected="true" {% endif %}> {{context.name}} </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+									<td class="table_cell_aligment">
+                                        <select name="variable-value-{{ var.name }}" class="formula_input_text">
+                                            {% for word in var.context_list.current_context.synonyms %}
+                                                <option value="{{word}}" {% if word == var.value %} selected="true" {% endif %}> {{word}} </option>
                                             {% endfor %}
                                         </select>
                                     </td>

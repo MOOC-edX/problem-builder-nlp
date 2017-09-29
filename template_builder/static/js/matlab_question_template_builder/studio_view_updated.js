@@ -429,11 +429,15 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
                 var columns = $(this).find('td');
                 var variable_name = columns.eq(1).children().eq(0).val();
                 variable['name'] = variable_name;
-                var string = columns.eq(2).children().eq(0).val();
-                variable['example'] = string;
+                var library = columns.eq(2).children().eq(0).val();
+                variable['context'] = library;
+                var value = columns.eq(3).children().eq(0).val();
+                variable['value'] = value;
                 strings.push(variable);                                                            
             }        
         });
+        console.log("string varirables: " + strings);
+
         // 2. variables_table_element
         var variables = {};
     	variables_table_element.find('tr').each(function(row_index) {
@@ -524,6 +528,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     var studioPasreQuestion = function(data) {
         var handlerUrl = runtime.handlerUrl(xblockElement, 'fe_parse_question_studio_edits');
         runtime.notify('save', {state: 'start', message: gettext("Parsing text ...")});
+        console.log(JSON.stringify(data));
+
         $.ajax({
             type: "POST",
             url: handlerUrl,

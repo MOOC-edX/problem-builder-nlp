@@ -105,14 +105,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         values = [
                     {"display_name": "MatLab", "value": "matlab"},
                     {"display_name": "Google Sheets", "value": "gsheet"},
-                    {"display_name": "None", "value": "none"},
                 ]
     )
 
     _question_template = String (
         display_name = "Question Template",
         help = "",
-        default = "Given a = [a] and b = [b]. Calculate the sum, difference of a and b.",
+        default = "Given [a] apples and [b] pearls. One apple cost [x] cents, one pearl cost [y] cents. \nCalculate the total price of them?",
         scope = Scope.settings
     )
 
@@ -121,8 +120,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         help="Teacher has to fill the answer template here!!!",
         default=
             {
-                "sum": "[a] + [b]",
-                "difference": "[a] - [b]"
+                "price": "[a] * [x] + [b] * [y]"
             },
         scope=Scope.settings
     )
@@ -130,34 +128,37 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     _answer_template_string = String(
         display_name="Answer Template",
         help="Teacher has to fill the answer template here!!!",
-        default= '''sum = [a] + [b]\ndifference = [a] - [b]''',
+        default= '''price = [a] * [x] + [b] * [y]''',
         scope=Scope.settings
     )
 
     _variables = Dict (
-        display_name = "Variable List",
+        display_name = "Numeric Variables",
         help = "",
         default =
             {
-                'a': {'name': 'a',
-                'min_value': 1,
-                'max_value': 200,
-                'type': 'int',
-                'decimal_places': 0
-                } ,
-                'b' :{'name': 'b',
-                'min_value': 1.00,
-                'max_value': 20.99,
-                'type': 'float',
-                'decimal_places': 2
-                }
+                'a':{
+                        'name': 'a',
+                        'min_value': 1,
+                        'max_value': 200,
+                        'type': 'int',
+                        'decimal_places': 0
+                    },
+                'b':{
+                        'name': 'b',
+                        'min_value': 1.00,
+                        'max_value': 20.99,
+                        'type': 'float',
+                        'decimal_places': 2
+                    }
             },
-        scope = Scope.settings)
+        scope = Scope.settings
+    )
 
     # Default XML string passed to Advanced Editor's value when create an xBlock
     raw_editor_xml_data = '''
     <problem>
-        <description>Given a = [a] and b = [b]. Calculate the sum, difference of a and b. </description>
+        <description>Given [a] apples and [b] pearls. One apple cost [x] cents, one pearl cost [y] cents. \nCalculate the total price of them? </description>
         <images>
             <image_url link="http://example.com/image1">Image</image_url>
         </images>
@@ -167,28 +168,44 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         </variables>
         <string_variables>
             <string_variable name="string0" value="str0">
-                <value_set>Synonym set 1
-                    <string>str0</string>
-                    <string>str1</string>
-                    <string>str2</string>
-                    <string>str3</string>
-                    <string>str4</string>
-                    <string>str5</string>
+                <value_set name="library1" default="none">Synonym set 1
+                    <option>str0</option>
+                    <option>str1</option>
+                    <option>str2</option>
+                    <option>str3</option>
+                    <option>str4</option>
+                    <option>str5</option>
+                </value_set>
+                <value_set name="library2">Synonym set 2
+                    <option>str0</option>
+                    <option>str1</option>
+                    <option>str2</option>
+                    <option>str3</option>
+                    <option>str4</option>
+                    <option>str5</option>
                 </value_set>
             </string_variable>
             <string_variable name="string1" value="str1">
-                <value_set>String set 2
-                    <string>str0</string>
-                    <string>str1</string>
-                    <string>str2</string>
-                    <string>str3</string>
-                    <string>str4</string>
-                    <string>str5</string>
+                <value_set name="library3" default="none">Synonym set 3
+                    <option>str0</option>
+                    <option>str1</option>
+                    <option>str2</option>
+                    <option>str3</option>
+                    <option>str4</option>
+                    <option>str5</option>
+                </value_set>
+                <value_set name="library4">Synonym set 4
+                    <option>str0</option>
+                    <option>str1</option>
+                    <option>str2</option>
+                    <option>str3</option>
+                    <option>str4</option>
+                    <option>str5</option>
                 </value_set>
             </string_variable>
         </string_variables>
         <answer_templates>
-            <answer sum = "[a] + [b]" difference = "[a] - [b]">Teacher's answer</answer>
+            <answer price = "[a] * [x] + [b] * [y]">Teacher's answer</answer>
         </answer_templates>
     </problem>'''
 
@@ -199,25 +216,67 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         default=raw_editor_xml_data,
         scope=Scope.content
     )
+
     _question_text = String (
         scope = Scope.content,
-        default="Given a = 5 and b = 10. Calculate the sum and difference of a and b."
+        default="Given 7 apples and 5 pearls. One apple cost 4 cents, one pearl cost 3 cents. \nCalculate the total price of them?"
     )
+
     _answer_text = String (
         scope = Scope.content,
-        default = "sum = 5 + 10\ndiff = 5 - 10"
+        default = "price = (7 * 4) + (5 * 3)"
     )
-    _string_vars = List (
-        scope = Scope.content,
-        default =
-        [
-            {
-                'default' : 'sum',
-                'name' : 'string0',
-                'example' : 'sum',
-                'synonyms' : ['sum', 'differece']
+
+    _string_vars = Dict(
+        scope=Scope.content,
+        default=
+        {
+            'string0': {
+                'name': 'string0',
+                'original_text': 'Calculate',
+                'default': 'Calculate',
+                'value': 'Calculate',
+                'context': 'context1',
+                'context_list':
+                    {
+                        'context0': {
+                            'name': "Context 1 of Calculate",
+                            'help': "Synonym set 1",
+                            'synonyms': ['Calculate', 'Compute'],
+                            'select': 'true',
+                        },
+                        'context1': {
+                            'name': "Context 2 of Calculate",
+                            'help': "Synonym set 2",
+                            'synonyms': ['Find', 'Figure out', 'Estimate'],
+                            'select': 'false',
+                        }
+                    }
+            },
+            'string1': {
+                'name': 'string1',
+                'original_text': 'apple',
+                'default': 'apple',
+                'value': 'apple',
+                'context': 'context0',
+                'context_list':
+                    {
+                        'context0': {
+                            'name': "Context 1 - Fruits",
+                            'help': "Synonym set 1",
+                            'synonyms': ['apple', 'mango', 'pearl'],
+                            'select': 'true',
+                        },
+                        'context1': {
+                            'name': "Context 2 - Computer",
+                            'help': "Synonym set 2",
+                            'synonyms': ['Apple', 'IBM', 'Google', 'GCS'],
+                            'select': 'false',
+                        }
+
+                    }
             }
-        ]
+        }
     )
 
 
@@ -358,7 +417,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         item_id=unicode(location)
 
         print("self._variables = {}".format(self._variables))
-        print "self._raw_editor_xml_data = {}".format(self._raw_editor_xml_data)
+        print "self._string_vars = {}".format(self._string_vars)
 
         # Student not yet submit then we can edit the XBlock
         context = {'fields': []}
@@ -382,12 +441,10 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         context['answer_text_origin'] = self._answer_text
 
         context['image_url'] = self._image_url
-        # context['resolver_selection'] = self._resolver_selection
-        # context['problem_solver'] = self._problem_solver
         context['question_template'] = self._question_template
         context['variables'] = self._variables
-        context['answer_template_string'] = self._answer_template_string
         context['string_variables'] = self._string_vars
+        context['answer_template_string'] = self._answer_template_string
         context['is_submitted'] = 'False'
 
         # Check default edit mode
@@ -566,20 +623,27 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         
         q = data['question']
         a = data['answer']
+        # update fields
         setattr(self, '_question_text', q)
         setattr(self, '_answer_text', a)
         logging.debug("Tammd wants to know q = %s, a = %s", q, a)
 
+        # parse question text
         template, variables, strings = parse_question_v2(q)
         logging.debug("Tammd wants to know template = {}", template)
         logging.debug("Tammd wants to know variables = {}", variables)
         logging.debug("Tammd wants to know strings = {}", strings)
 
+        # parse answer text
         answer = parse_answer_v2(a, variables)
         logging.debug("Tammd wants to know answer = %s", answer)
+
+        # TODO: use dict for numeric variables so we can remove this conversion for var
         var = {}
         for i in range(len(variables)):
             var['var{}'.format(i)] = variables[i][1]['var{}'.format(i)]
+
+        # update fields
         setattr(self,'_variables', var)
         setattr(self,'_question_template', template)
         setattr(self,'_answer_template_string', answer)
@@ -625,17 +689,31 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             print("TYPE of updated_string_variables = {}".format(type(updated_string_variables)))
             print("BEFORE, self._string_vars = {}".format(self._string_vars))
 
-            updated_strings = []
+            # use list
+            # updated_strings = []
+            # for string in updated_string_variables:
+            #     for i in range(len(string_variables)):
+            #         if string_variables[i]['name'] == string['name']:
+            #             string_variables[i]['value'] = string['value']
+            #             updated_strings.append(string_variables[i])
+
+            # get updated value of string variables
+            # use dictionary instead of list
+            updated_strings = {}
             for string in updated_string_variables:
-                for i in range(len(string_variables)):
-                    if string_variables[i]['name'] == string['name']:
-                        string_variables[i]['example'] = string['example']
-                        updated_strings.append(string_variables[i])
+                for var_name, string_var in string_variables.iteritems():
+                    if string_var['name'] == string['name']:
+                        string_var['value'] = string['value']
+                        updated_strings[var_name] = string_var
 
             print("Data type of updated_strings = {}".format(type(updated_strings)))
             print("updated_strings = {}".format(updated_strings))
+
             # update default value
-            new_list = [ string for string in string_variables if string not in updated_strings ]
+            # new_list = [ string for string in string_variables if string not in updated_strings ]
+            # use dictionary
+            new_list = [string_var for var_name, string_var in string_variables.iteritems() if string_var not in updated_strings]
+
             updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
             logging.debug("Tammd wants to know: %s", updated_string_variables)
 
@@ -772,176 +850,6 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
 
 
-        print("## End DEBUG INFO ###")
-
-        if validation:
-            for field_name, value in values.iteritems():
-                setattr(self, field_name, value)
-            for field_name in to_reset:
-                self.fields[field_name].delete_from(self)
-            return {'result': 'success'}
-        else:
-            raise JsonHandlerError(400, validation.to_json())
-    
-    @XBlock.json_handler
-    def fe_parse_question_studio_edits_update(self, data, suffix=''):
-    
-        #AJAX handler for studio edit submission, two edit modes:
-
-        #1. Basic template (Default mode)
-        #2. Advanced editor
-
-        
-    
-        print("## Calling FUNCTION fe_submit_studio_edits() ###")
-        print("## DEBUG INFO ###")
-        print("data fields: {}".format(data))
-        print("### editor updated xml_data: ###")
-        print(data['raw_editor_xml_data'])
-
-        print("BEFORE SAVE, self.enable_advanced_editor = {}".format(self.enable_advanced_editor))
-        print("targeted mode, data['enable_advanced_editor'] = {}".format(data['enable_advanced_editor']))
-
-        print("self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
-        print("Data type of data['answer_template'] = {}".format(type(data['answer_template'])))
-
-        if self.xblock_id is None:
-            self.xblock_id = unicode(self.location.replace(branch=None, version=None))
-
-        if data['enable_advanced_editor'] == 'False':
-            print("### IN CASE self.enable_advanced_editor == False: ###")
-            # process problem edit via UI template
-            updated_question_template = data['question_template']
-            updated_url_image = data['image_url']
-            # updated_resolver_selection = data['resolver_selection']
-            updated_variables = data['variables']
-            updated_answer_template = data['answer_template']
-
-            # qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
-
-            print("BEFORE, self._answer_template_string = ")
-            print(self._answer_template_string)
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-            print("Data type of updated_answer_template = {}".format(type(updated_answer_template)))
-
-            # Update XBlock's values
-            self.enable_advanced_editor = False
-            self.question_template_string = updated_question_template
-            self.image_url = updated_url_image
-            # self.resolver_selection = updated_resolver_selection
-            self.variables = updated_variables
-            self._answer_template_string = updated_answer_template
-
-            print("AFTER, self._answer_template_string = ")
-            print(self._answer_template_string)
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-
-            setattr(self, '_image_url', updated_url_image)
-            # setattr(self, '_resolver_selection', updated_resolver_selection)
-            setattr(self, '_question_template', updated_question_template)
-            # setattr(self, '_answer_template', updated_answer_template)
-            setattr(self, '_answer_template_string', updated_answer_template)
-            setattr(self, '_variables', updated_variables)
-
-            # build xml string for problem raw edit fields,
-            # then update value to field '_raw_editor_xml_data' for editor
-            input_data = {
-                'question_template': self.question_template_string,
-                'image_url': self.image_url,
-                'variables': self.variables,
-                'answer_template': self._answer_template_string
-            }
-
-            # Convert dict data to xml
-            xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
-
-            # Finally, update value for field attribute
-            setattr(self, '_raw_editor_xml_data', xml_string)
-
-        elif data['enable_advanced_editor'] == 'True':
-            print("### IN CASE self.enable_advanced_editor == True: ###")
-            # Process raw edit
-            updated_xml_string = data['raw_editor_xml_data']
-
-            # Extract data fields from xml string
-            raw_edit_data = xml_helper.extract_data_from_xmlstring_to_dict(updated_xml_string)
-
-            # TODO: then save to DB model? To remove this line
-            # qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
-
-            updated_question_template = raw_edit_data['question_template']
-            updated_url_image = raw_edit_data['image_url']
-            updated_variables = raw_edit_data['variables']
-            # get only one firt answer for now. TODO: update to support multi-answers attributes for multiple solutions
-            updated_answer_template_dict = raw_edit_data['answer_template'][1]
-            # updated_resolver_selection = data['problem_solver']
-
-            # convert answer dict to string
-            updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
-
-            print("BEFORE, self._answer_template_string = ")
-            print(self._answer_template_string)
-
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-            print("Data type of updated_answer_template = {}".format(type(updated_answer_template)))
-
-            # "refresh" XBlock's values
-            # update values to global variables
-            self.enable_advanced_editor = True
-            self.question_template_string = updated_question_template
-            self.image_url = updated_url_image
-            self.variables = updated_variables
-            # setattr(self, '_answer_template', updated_answer_template)
-            self._answer_template_string = updated_answer_template
-            # self.resolver_selection = updated_resolver_selection
-
-            print("AFTER, self._answer_template_string = ")
-            print(self._answer_template_string)
-
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-
-            # update values to global fields
-            setattr(self, '_question_template', updated_question_template)
-            setattr(self, '_image_url', updated_url_image)
-            # setattr(self, '_answer_template', updated_answer_template)
-            setattr(self, '_answer_template_string', updated_answer_template)
-            setattr(self, '_variables', updated_variables)
-            # setattr(self, '_resolver_selection', updated_resolver_selection)
-
-            # update raw edit fields data
-            self.raw_editor_xml_data = updated_xml_string
-            setattr(self, '_raw_editor_xml_data', updated_xml_string)
-
-        print("AFTER SAVE, self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
-
-        # copy from StudioEditableXBlockMixin (can not call parent method)
-        values = {}  # dict of new field values we are updating
-        to_reset = []  # list of field names to delete from this XBlock
-        for field_name in self.editable_fields:
-            field = self.fields[field_name]
-            if field_name in data['values']:
-                if isinstance(field, JSONField):
-                    values[field_name] = field.from_json(data['values'][field_name])
-                else:
-                    raise JsonHandlerError(400, "Unsupported field type: {}".format(field_name))
-            elif field_name in data['defaults'] and field.is_set_on(self):
-                to_reset.append(field_name)
-        q = data['question']
-        a = data['answer']
-        logging.error("Tammd wants to know q = %s, a = %s", q, a)
-        self.clean_studio_edits(values)
-        validation = Validation(self.scope_ids.usage_id)
-
-        # We cannot set the fields on self yet, because even if validation fails, studio is going to save any changes we
-        # make. So we create a "fake" object that has all the field values we are about to set.
-        preview_data = FutureFields(
-            new_fields_dict=values,
-            newly_removed_fields=to_reset,
-            fallback_obj=self
-        )
-
-        self.validate_field_data(validation, preview_data)
-        print("preview_data fields: {}".format(preview_data))
         print("## End DEBUG INFO ###")
 
         if validation:

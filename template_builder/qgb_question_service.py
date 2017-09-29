@@ -108,7 +108,7 @@ def append_string(template, string_variables):
     print("string_variables = {}".format(string_variables))
 
     for string in string_variables:
-        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['example']), template )
+        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['value']), template )
 
     print("## End FUNCTION append_string() ##")
     return template
@@ -125,8 +125,19 @@ def update_default(template, string_variables):
     print("## End FUNCTION update_default() ##")
     return template
 
+def get_random_item_from_list(list_data):
+    '''
+    Get a random item from the given list by randomly select an indice from the list
 
-if __name__ == "__main__":
+    :param list_data:
+    :return:
+    '''
+    max_index = len(list_data) - 1
+    random_index = randint(0, max_index)
+
+    return list_data[random_index]
+
+def main1():
     question_template1 = "What is the energy to raise <n> apples to <m> meters?"
     n_variable = {
         'name': 'n',
@@ -135,7 +146,7 @@ if __name__ == "__main__":
         'max_value': 10,
         'decimal_places': 2
     }
-    
+
     m_variable = {
         'name': 'm',
         'type': 'int',
@@ -143,22 +154,31 @@ if __name__ == "__main__":
         'max_value': 20,
         'decimal_places': 2
     }
-    
+
     variables = {
         'n': n_variable,
         'm': m_variable
     }
-    
+
     answer_template = "<n> apples and <m> meters is the answer"
-    
+
     generated_question, generated_variables = generate_question(question_template1, variables)
-    
+
     print('test_template1: ' + question_template1)
-    print('generated question: ' +  generated_question)
+    print('generated question: ' + generated_question)
     print 'Generated n: ' + generated_variables['n']
     print 'Generated m: ' + generated_variables['m']
-    
-    
+
     generated_answer = generate_answer(generated_variables, answer_template)
-    print('generated answer: ' +  generated_answer)
-    
+    print('generated answer: ' + generated_answer)
+
+def main2():
+    mylist = ['Apple', 'IBM', 'Google', 'GCS']
+    print mylist
+    item = get_random_item_from_list(mylist)
+    print item
+
+if __name__ == "__main__":
+    main2()
+
+
