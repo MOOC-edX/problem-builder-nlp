@@ -415,11 +415,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         var image_url = url_image_input.val();
         console.log('image_url: ' + image_url);
 
-//        var resolver_element = $(xblockElement).find('input[name=Resolver]:checked');
-//        var resolver_selection = resolver_element.val();
-//        console.log('resolver_selection: ' + resolver_selection);
-        
-
+        // Handle string variables
         var strings = []
         word_variables_table_element.find('tr').each(function(row_index)
         {
@@ -428,11 +424,12 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
                 var variable = {};
                 var columns = $(this).find('td');
                 var variable_name = columns.eq(1).children().eq(0).val();
-                variable['name'] = variable_name;
-                var library = columns.eq(2).children().eq(0).val();
-                variable['context'] = library;
+                var context = columns.eq(2).children().eq(0).val();
                 var value = columns.eq(3).children().eq(0).val();
+                variable['name'] = variable_name;
+                variable['context'] = context;
                 variable['value'] = value;
+                // add to string variable list
                 strings.push(variable);                                                            
             }        
         });
@@ -554,7 +551,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     // Handle parse button click, collect data
     $(xblockElement).find('a[name=parse_button]').bind('click', function(e) {
-    	console.log("Save button clicked");
+    	console.log("Parse button clicked");
 
     	error_message_element.empty();
 
@@ -676,6 +673,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         if (error_message_element.children().length > 0) {
         	return;
         }
+
+//        get question text fields
         var q = question_text_element.val();
         var a = answer_text_element.val();
 

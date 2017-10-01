@@ -107,9 +107,25 @@ def append_string(template, string_variables):
     print("template = {}".format(template))
     print("string_variables = {}".format(string_variables))
 
-    for string in string_variables:
-        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['value']), template )
+    # for string in string_variables:
+    #     template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['value']), template )
 
+    # Generate string variables use dict for variables
+    # first, for each string var, randomly select a value from list of its synonyms
+    # then, update value to this var in the given question template
+    for var_name, var in string_variables.iteritems():
+        value = var['value']
+        print("var_name = {}, value = {}".format(var_name, value))
+        for context_id, context in var['context_list'].iteritems():
+            if var['context'] == context_id: # get random value of selected context only
+                value = get_random_item_from_list(context['synonyms'])
+                print("context_id = {}, var_name = {}, value = {}".format(context_id, var_name, value))
+                # # update the global variable
+                # string_variables[var_name]['value'] = value
+        # update template
+        template = re.sub( "\[{}\]".format(var["name"]), "{}".format(value), template )
+
+    print("template = {}".format(template))
     print("## End FUNCTION append_string() ##")
     return template
 
@@ -119,9 +135,14 @@ def update_default(template, string_variables):
     print("template = {}".format(template))
     print("string_variables = {}".format(string_variables))
 
-    for string in string_variables:
-        template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['default']), template )
+    # for string in string_variables:
+    #     template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['default']), template )
 
+    for var_name, var in string_variables.iteritems():
+        # template = re.sub( "\[{}\]".format(var["name"]), "{}".format(var['default']), template )
+        template = re.sub("\[{}\]".format(var["name"]), "{}".format(var['value']), template)
+
+    print("template = {}".format(template))
     print("## End FUNCTION update_default() ##")
     return template
 
@@ -130,14 +151,16 @@ def get_random_item_from_list(list_data):
     Get a random item from the given list by randomly select an indice from the list
 
     :param list_data:
-    :return:
+    :return: value of item at randomized index of list
+
+    @author: Canh Duong <canhdq@hitachiconsulting.com>
     '''
     max_index = len(list_data) - 1
     random_index = randint(0, max_index)
 
     return list_data[random_index]
 
-def main1():
+def test1():
     question_template1 = "What is the energy to raise <n> apples to <m> meters?"
     n_variable = {
         'name': 'n',
@@ -172,13 +195,46 @@ def main1():
     generated_answer = generate_answer(generated_variables, answer_template)
     print('generated answer: ' + generated_answer)
 
-def main2():
+def test2():
     mylist = ['Apple', 'IBM', 'Google', 'GCS']
     print mylist
     item = get_random_item_from_list(mylist)
     print item
 
+def test3():
+    template = '''Given 167 [string1] and 3.47 [string2]. One [string1] cost [x] cents, one [string2] cost [y] cents.
+[string0] the total price of them?
+'''
+    string_variables = {
+        'string0': {'original_text': 'Calculate', 'name': 'string0', 'default': 'Find', 'value': 'Figure out',
+                    'context': 'context0', 'context_list': {
+                'context1': {'synonyms': ['Find', 'Figure out', 'Estimate'], 'name': 'Context 2 of Calculate (Default)',
+                             'select': 'false', 'help': 'Synonym set 2'},
+                'context0': {'synonyms': ['Calculate', 'Compute'], 'name': 'Context 1 of Calculate', 'select': 'true',
+                             'help': 'Synonym set 1'}}},
+        'string1': {'original_text': 'apple', 'name': 'string1', 'default': 'apple', 'value': 'apple',
+                    'context': 'context0',
+                    'context_list': {
+                            'context1': {'synonyms': ['Apple', 'IBM', 'Google', 'GCS'], 'name': 'Context 2 - Computer',
+                                         'select': 'false', 'help': 'Synonym set 2'},
+                            'context0': {'synonyms': ['apple', 'mango', 'kool'], 'name': 'Context 1 - Fruits', 'select': 'true',
+                                         'help': 'Synonym set 1'}
+                        }
+                    },
+        'string2': {'original_text': 'pearl', 'name': 'string2', 'default': 'pearl', 'value': 'pearl',
+                    'context': 'context1',
+                    'context_list': {
+                        'context1': {'synonyms': ['IBM', 'Google', 'GCS'], 'name': 'Context 2 - Computer',
+                                     'select': 'false', 'help': 'Synonym set 2'},
+                    }
+                    }
+    }
+
+    result = append_string(template, string_variables)
+    print "generated question = {}".format(result)
+
+
 if __name__ == "__main__":
-    main2()
+    test3()
 
 

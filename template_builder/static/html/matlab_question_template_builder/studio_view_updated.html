@@ -114,27 +114,32 @@
                             <tr class="formula_edit_table_header_color">
                                 <th width="15%" class="table_cell_alignment">String Variables</th>
                                 <th width="18%" class="table_cell_alignment">Name</th>
-                                <th width="13%" class="table_cell_alignment">Library</th>
+                                <th width="25%" class="table_cell_alignment">Library</th>
+								<!--<th width="13%" class="table_cell_alignment">Cur Context</th>-->
 								<th width="13%" class="table_cell_alignment">Value</th>
                                 <th width="10%"></th>
                             </tr>
-                            {% for key, var in string_variables.iteritems() %}
-								{% current_context = var.context %}
+                            {% for key, var in string_variables.iteritems %}
                                 <tr class="formula_edit_table_row">
                                     <td></td>
                                     <td class="table_cell_alignment"><input type="text" name="string-{{var.name}}" class="formula_input_text" value= {{ var.name }}></td>
                                     <td class="table_cell_aligment">
                                         <select name="variable-library-{{ var.name }}" class="formula_input_text">
-                                            {% for index, context in var.context_list.iteritems() %}
-                                                <option value="{{index}}" {% if var.context == index %} selected="true" {% endif %}> {{context.name}} </option>
+                                            {% for context_id, context in var.context_list.iteritems %}
+                                                <option value="{{context_id}}" {% if var.context == context_id %} selected="true" {% endif %}> {{context.name}} </option>
                                             {% endfor %}
                                         </select>
                                     </td>
+									<!--<td class="table_cell_alignment"><input type="text" name="variable-context-{{var.name}}" class="formula_input_text" value= {{ var.context }}></td>-->
 									<td class="table_cell_aligment">
                                         <select name="variable-value-{{ var.name }}" class="formula_input_text">
-                                            {% for word in var.context_list.current_context.synonyms %}
-                                                <option value="{{word}}" {% if word == var.value %} selected="true" {% endif %}> {{word}} </option>
-                                            {% endfor %}
+											{% for context_id, context in var.context_list.iteritems %}
+												{% if context_id == var.context %}
+													{% for word in context.synonyms %}
+													<option value="{{word}}" {% if word == var.value %} selected="true" {% endif %}> {{word}} </option>
+													{% endfor %}
+												{% endif %}
+											{% endfor %}
                                         </select>
                                     </td>
                                     <td class="table_cell_alignment"><input type="button" class="remove_word_variable_button" value="Remove"></td>

@@ -50,7 +50,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         display_name="Display Name",
         help="This name appears in the horizontal navigation at the top of the page.",
         scope=Scope.settings,
-        default="Matlab Question from Natural Language"
+        default="Question from Natural Language"
     )
 
     max_attempts = Integer(
@@ -111,7 +111,8 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     _question_template = String (
         display_name = "Question Template",
         help = "",
-        default = "Given [a] apples and [b] pearls. One apple cost [x] cents, one pearl cost [y] cents. \nCalculate the total price of them?",
+        default = """Given [a] apple and [b] pearl. One apple cost [x] cents, one pearl cost [y] cents.
+                  \nCalculate the total price of them?""",
         scope = Scope.settings
     )
 
@@ -158,7 +159,8 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     # Default XML string passed to Advanced Editor's value when create an xBlock
     raw_editor_xml_data = '''
     <problem>
-        <description>Given [a] apples and [b] pearls. One apple cost [x] cents, one pearl cost [y] cents. \nCalculate the total price of them? </description>
+        <description>Given [a] apples and [b] pearls. One apple cost [x] cents, one pearl cost [y] cents.
+        \nCalculate the total price of them? </description>
         <images>
             <image_url link="http://example.com/image1">Image</image_url>
         </images>
@@ -219,7 +221,8 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
     _question_text = String (
         scope = Scope.content,
-        default="Given 7 apples and 5 pearls. One apple cost 4 cents, one pearl cost 3 cents. \nCalculate the total price of them?"
+        default="""Given 7 apple and 5 pearl. One apple cost 4 cents, one pearl cost 3 cents.
+                    \nCalculate the total price of them?"""
     )
 
     _answer_text = String (
@@ -234,9 +237,9 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             'string0': {
                 'name': 'string0',
                 'original_text': 'Calculate',
-                'default': 'Calculate',
-                'value': 'Calculate',
-                'context': 'context1',
+                'default': 'Find',
+                'value': 'Find',
+                'context': 'context0',
                 'context_list':
                     {
                         'context0': {
@@ -246,7 +249,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                             'select': 'true',
                         },
                         'context1': {
-                            'name': "Context 2 of Calculate",
+                            'name': "Context 2 of Calculate (Default)",
                             'help': "Synonym set 2",
                             'synonyms': ['Find', 'Figure out', 'Estimate'],
                             'select': 'false',
@@ -257,14 +260,14 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                 'name': 'string1',
                 'original_text': 'apple',
                 'default': 'apple',
-                'value': 'apple',
+                'value': 'mango',
                 'context': 'context0',
                 'context_list':
                     {
                         'context0': {
                             'name': "Context 1 - Fruits",
                             'help': "Synonym set 1",
-                            'synonyms': ['apple', 'mango', 'pearl'],
+                            'synonyms': ['apple', 'mango', 'lemon'],
                             'select': 'true',
                         },
                         'context1': {
@@ -275,7 +278,39 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                         }
 
                     }
-            }
+            },
+            'string2': {
+                'name': 'string2',
+                'original_text': 'pearl',
+                'default': 'pearl',
+                'value': 'pearl',
+                'context': 'context0',
+                'context_list':
+                    {
+                        'context0': {
+                            'name': "Context 1 - Fruits",
+                            'help': "Synonym set 1",
+                            'synonyms': ['water melon', 'orange', 'pearl'],
+                            'select': 'true',
+                        },
+                    }
+            },
+            'string4': {
+                'name': 'string4',
+                'original_text': 'price',
+                'default': 'price',
+                'value': 'price',
+                'context': 'context0',
+                'context_list':
+                    {
+                        'context0': {
+                            'name': "Context 1 of Calculate",
+                            'help': "Synonym set 1",
+                            'synonyms': ['price', 'cost', 'energy'],
+                            'select': 'true',
+                        }
+                    }
+            },
         }
     )
 
@@ -348,8 +383,22 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         self._generated_question, self._generated_variables = matlab_question_service.generate_question(
             self._question_template, self._variables)
 
+        # # first, for each string var, randomly select a value from list of its synonyms
+        # # then, update value to this var in the given question template
+        # string_variables = self._string_vars
+        # for var_name, var in string_variables.iteritems():
+        #     value = var['value']
+        #     for context_id, context in var['context_list'].iteritems():
+        #         if var['context'] == context_id:  # get random value of selected context only
+        #             value = qgb_question_service.get_random_item_from_list(context['synonyms'])
+        #             # update value for the variable
+        #             string_variables[var_name]['value'] = value
+        # # update the global variable
+        # # setattr(self, '_string_vars', string_variables)
+
         # append string variables
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        # self._generated_question = qgb_question_service.append_string(self._generated_question, string_variables)
         print("self._generated_question = {}".format(self._generated_question))
         print("self._generated_variables = {}".format(self._generated_variables))
 
@@ -370,6 +419,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             # self.generated_answer = answer['generated_answer']  # teacher's generated answer
             # self.student_answer = answer['student_answer'] # student's submitted answer
 
+            # TODO: check what is this block for?
             if ('variable_values' in answer): # backward compatibility
                 saved_generated_variables = json.loads(answer['variable_values'])
                 for var_name, var_value in saved_generated_variables.iteritems():
@@ -687,7 +737,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
             print("updated_string_variables = {}".format(updated_string_variables))
             print("TYPE of updated_string_variables = {}".format(type(updated_string_variables)))
-            print("BEFORE, self._string_vars = {}".format(self._string_vars))
+            # print("BEFORE, self._string_vars = {}".format(self._string_vars))
 
             # use list
             # updated_strings = []
@@ -697,22 +747,29 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             #             string_variables[i]['value'] = string['value']
             #             updated_strings.append(string_variables[i])
 
-            # get updated value of string variables
+            # get values of updated string variables
+            #
             # use dictionary instead of list
             updated_strings = {}
-            for string in updated_string_variables:
+            for updated_string in updated_string_variables:
                 for var_name, string_var in string_variables.iteritems():
-                    if string_var['name'] == string['name']:
-                        string_var['value'] = string['value']
+                    if string_var['name'] == updated_string['name']:
+                        string_var['context'] = updated_string['context']
+                        string_var['value'] = updated_string['value']
                         updated_strings[var_name] = string_var
 
-            print("Data type of updated_strings = {}".format(type(updated_strings)))
+            # print("Data type of updated_strings = {}".format(type(updated_strings)))
             print("updated_strings = {}".format(updated_strings))
 
-            # update default value
+            # update string variables
+            #
             # new_list = [ string for string in string_variables if string not in updated_strings ]
             # use dictionary
-            new_list = [string_var for var_name, string_var in string_variables.iteritems() if string_var not in updated_strings]
+            new_list = {}
+            for var_name, string_var in string_variables.iteritems():
+                for key, updated_string_var in updated_strings.iteritems():
+                    if string_var != updated_string_var:
+                        new_list[var_name] = string_var
 
             updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
             logging.debug("Tammd wants to know: %s", updated_string_variables)
