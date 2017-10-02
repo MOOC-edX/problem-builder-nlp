@@ -147,14 +147,14 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                     },
                 'b':{
                         'name': 'b',
-                        'min_value': 1.00,
-                        'max_value': 20.99,
-                        'type': 'float',
-                        'decimal_places': 2
+                        'min_value': 1,
+                        'max_value': 20,
+                        'type': 'int',
+                        'decimal_places': 0
                     },
                 'x':{
                         'name': 'x',
-                        'min_value': 1.5,
+                        'min_value': 4.5,
                         'max_value': 10.99,
                         'type': 'float',
                         'decimal_places': 2
@@ -162,7 +162,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                 'y':{
                         'name': 'y',
                         'min_value': 1.5,
-                        'max_value': 10.99,
+                        'max_value': 6.99,
                         'type': 'float',
                         'decimal_places': 2
                     }
@@ -382,7 +382,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         """
         print("## Calling FUNCTION student_view() ##")
         print("## START DEBUG INFO ##")
-        print("context = {}".format(context))
+        # print("context = {}".format(context))
 
         context = context
 
@@ -397,35 +397,21 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         self._generated_question, self._generated_variables = matlab_question_service.generate_question(
             self._question_template, self._variables)
 
-        # # first, for each string var, randomly select a value from list of its synonyms
-        # # then, update value to this var in the given question template
-        # string_variables = self._string_vars
-        # for var_name, var in string_variables.iteritems():
-        #     value = var['value']
-        #     for context_id, context in var['context_list'].iteritems():
-        #         if var['context'] == context_id:  # get random value of selected context only
-        #             value = qgb_question_service.get_random_item_from_list(context['synonyms'])
-        #             # update value for the variable
-        #             string_variables[var_name]['value'] = value
-        # # update the global variable
-        # # setattr(self, '_string_vars', string_variables)
-
         # append string variables
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-        # self._generated_question = qgb_question_service.append_string(self._generated_question, string_variables)
         print("self._generated_question = {}".format(self._generated_question))
         print("self._generated_variables = {}".format(self._generated_variables))
 
         # load submission data to display the previously submitted result
         submissions = sub_api.get_submissions(self.student_item_key, 1)
-        print("previously submitted result = {}".format(submissions))
+        # print("previously submitted result = {}".format(submissions))
 
         if submissions:
             latest_submission = submissions[0]
 
             # parse the answer
             answer = latest_submission['answer'] # saved "answer information"
-            print("previously submitted answer = {}".format(submissions))
+            # print("previously submitted answer = {}".format(submissions))
 
             # INCORRECT ???
             # TODO: remove these
@@ -462,7 +448,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         frag.add_javascript(self.resource_string("static/js/matlab_question_template_builder/student_view.js"))
         frag.initialize_js('MatlabQuestionTemplateBuilderXBlock')
 
-        print("context = {}".format(context))
+        # print("context = {}".format(context))
         print("## End FUNCTION student_view() ##")
 
         return frag
@@ -545,16 +531,14 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         Save data to context to re-use later to avoid re-accessing the DBMS
         """
         print("## CALLING FUNCTION serialize_data_to_context() ##")
-
-        print("## BEFORE ADDING FIELDS ##")
-        print("context = {}".format(context))
-        print("## START DEBUG INFO ##")
-        print("self._question_template = {}".format(self._question_template))
-        print("self._image_url = {}".format(self._image_url))
-        print("self._variables= {}".format(self._variables))
-        print("self._generated_variables= {}".format(self._generated_variables))
-        # print("self._answer_template= {}".format(self._answer_template))
-        print "self._answer_template_string = ", self._answer_template_string
+        # print("## BEFORE ADDING FIELDS ##")
+        # print("context = {}".format(context))
+        # print("## START DEBUG INFO ##")
+        # print("self._question_template = {}".format(self._question_template))
+        # print("self._image_url = {}".format(self._image_url))
+        # print("self._variables= {}".format(self._variables))
+        # print("self._generated_variables= {}".format(self._generated_variables))
+        # print "self._answer_template_string = ", self._answer_template_string
 
 
         # Add following fields to context variable
@@ -562,15 +546,12 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         context['saved_url_image'] = self._image_url
         context['serialized_variables'] = json.dumps(self._variables)
         context['serialized_generated_variables'] = json.dumps(self._generated_variables)
-        # context['saved_answer_template'] = self._answer_template  # dict
         context['saved_answer_template'] = self._answer_template_string # string
-
-        # context['saved_resolver_selection'] = self._resolver_selection # Old
         context['saved_resolver_selection'] = self._problem_solver  # use _problem_solver from editable_fields
 
-        print("## AFTER, ADDED FIELDS ##")
-        print("context = {}".format(context))
-        print("## END DEBUG INFO ##")
+        # print("## AFTER, ADDED FIELDS ##")
+        # print("context = {}".format(context))
+        # print("## END DEBUG INFO ##")
         print("## End FUNCTION serialize_data_to_context() ##")
 
 
@@ -580,16 +561,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         """
         print("## CALLING FUNCTION deserialize_data_from_context() ##")
         print("## START DEBUG INFO ##")
-
-        print("self._question_template = {}".format(self._question_template))
-        print("self._image_url = {}".format(self._image_url))
-        print("self._variables= {}".format(self._variables))
-        print("self._generated_variables= {}".format(self._generated_variables))
-        # print("self._answer_template= {}".format(self._answer_template))
-        print "self._answer_template_string = ", self._answer_template_string
-
-        print("## BEFORE ##")
-        print("context = {}".format(context))
+        # print("self._question_template = {}".format(self._question_template))
+        # print("self._image_url = {}".format(self._image_url))
+        # print("self._variables= {}".format(self._variables))
+        # print("self._generated_variables= {}".format(self._generated_variables))
+        # print "self._answer_template_string = ", self._answer_template_string
+        # print("## BEFORE ##")
+        # print("context = {}".format(context))
 
         self.question_template_string = context['saved_question_template']
         self.image_url = context['saved_url_image']
@@ -600,15 +578,14 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         self._generated_variables = json.loads(context['serialized_generated_variables'])
         self.resolver_selection = context['saved_resolver_selection']   # TODO: update this to new field in Settings tab
 
-        print("## GLOBAL VARIABLES, AFTER: ##")
-        print("self._question_template = {}".format(self.question_template_string))
-        print("self.image_url = {}".format(self.image_url))
-        # print("self._answer_template= {}".format(self._answer_template))
-        print "self._answer_template_string = ", self._answer_template_string
-        print("self.variables = {}".format(self.variables))
-        print("self._variables= {}".format(self._variables))
-        print("self._generated_variables = {}".format(self._generated_variables))
-        print("self.resolver_selection = {}".format(self.resolver_selection))
+        # print("## GLOBAL VARIABLES, AFTER: ##")
+        # print("self._question_template = {}".format(self.question_template_string))
+        # print("self.image_url = {}".format(self.image_url))
+        # print "self._answer_template_string = ", self._answer_template_string
+        # print("self.variables = {}".format(self.variables))
+        # print("self._variables= {}".format(self._variables))
+        # print("self._generated_variables = {}".format(self._generated_variables))
+        # print("self.resolver_selection = {}".format(self.resolver_selection))
         print("## End DEBUG INFO ##")
         print("## End FUNCTION deserialize_data_from_context() ##")
 
@@ -727,14 +704,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
         print("## Calling FUNCTION fe_submit_studio_edits() ###")
         print("## DEBUG INFO ###")
-        print("data fields: {}".format(data))
-        print("### editor updated xml_data: ###")
-        print(data['raw_editor_xml_data'])
+        # print("data fields: {}".format(data))
+        # print("### editor updated xml_data: ###")
+        # print(data['raw_editor_xml_data'])
 
-        print("BEFORE SAVE, self.enable_advanced_editor = {}".format(self.enable_advanced_editor))
-        print("targeted mode, data['enable_advanced_editor'] = {}".format(data['enable_advanced_editor']))
-
-        print("self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
+        # print("BEFORE SAVE, self.enable_advanced_editor = {}".format(self.enable_advanced_editor))
+        # print("targeted mode, data['enable_advanced_editor'] = {}".format(data['enable_advanced_editor']))
+        # print("self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
 
         if self.xblock_id is None:
             self.xblock_id = unicode(self.location.replace(branch=None, version=None))
@@ -746,85 +722,17 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             updated_url_image = data['image_url']
             updated_variables = data['variables']
             updated_answer_template = data['answer_template']
-            expected_string_vars_list = data['strings']
+            updated_string_vars_list = data['strings']
             string_variables = self._string_vars
 
-            print("expected_string_vars_list = {}".format(expected_string_vars_list))
-            print("TYPE of expected_string_vars_list = {}".format(type(expected_string_vars_list)))
-            # print("BEFORE, self._string_vars = {}".format(self._string_vars))
+            print("updated_string_vars_list = {}".format(updated_string_vars_list))
+            print("BEFORE, self._string_vars = {}".format(self._string_vars))
 
-            # use list
-            # updated_string_vars = []
-            # for string in expected_string_vars_list:
-            #     for i in range(len(string_variables)):
-            #         if string_variables[i]['name'] == string['name']:
-            #             string_variables[i]['value'] = string['value']
-            #             updated_string_vars.append(string_variables[i])
-
-            # get values of updated string variables
-            #
-            # use dictionary instead of list
-
-            # for string in expected_string_vars_list:
-            #     for var_name, string_var in string_variables.iteritems():
-            #         if string_var['name'] == string['name']:
-            #             # Collect data for updated_string_vars
-            #             # get updated fields
-            #             string_var['context'] = string['context']
-            #             string_var['value'] = string['value']
-            #             # then, add this string var into the dict of string variables to be updated
-            #             updated_string_vars[var_name] = string_var
-
-            # canhdq's new method
-            updated_string_vars = {}
-            added_string_vars = {}
-            removed_string_vars = {}
-            list_of_current_string_var_name = string_variables.keys()
-
-            # get name list of newly string variables
-            list_of_expected_string_var_name = []
-            for string in expected_string_vars_list:
-                list_of_expected_string_var_name.append(string['name'])
-            set_of_expected_string_var_name = set(list_of_expected_string_var_name)
-            set_of_current_string_var_name = set(list_of_current_string_var_name)
-
-            # handle updated existing string vars
-            for string in expected_string_vars_list:
-                var_name = string['name']
-                if var_name in list_of_current_string_var_name:
-                    # Existing string variable
-                    string_var = string_variables[var_name]
-                    # Update data for its editable fields
-                    string_var['context'] = string['context']
-                    string_var['value'] = string['value']
-                    string_var['default'] = string['value']
-                    # then, add this string var into the dict of updated string variables
-                    updated_string_vars[var_name] = string_var
-
-            # handle removed/added string vars
-            list_of_removed_string_var_name = []
-            list_of_updated_string_var_name = []
-            for string in list_of_current_string_var_name:
-                if string not in set_of_expected_string_var_name:
-                    list_of_removed_string_var_name.append(string)
-                else:
-                    list_of_updated_string_var_name.append(string)
-            # remove string vars
-            for var_name in list_of_removed_string_var_name:
-                removed_string_vars[var_name] = string_variables[var_name]
-                string_variables.pop(var_name)
-            # # add string vars
-            # list_of_added_string_var_name = [string for string in list_of_expected_string_var_name if
-            #                                    string not in set_of_current_string_var_name]
-            # for var_name in list_of_added_string_var_name:
-            #     added_string_vars[var_name] = {}
-            #     string_variables[var_name] = added_string_vars[var_name]
-
-            # print("Data type of updated_string_vars = {}".format(type(updated_string_vars)))
+            final_string_variables, updated_string_vars, removed_string_vars, added_string_vars = qgb_question_service.update_string_variables(string_variables, updated_string_vars_list)
             print("updated_string_vars = {}".format(updated_string_vars))
             print("removed_string_vars = {}".format(removed_string_vars))
             print("added_string_vars = {}".format(added_string_vars))
-            print("string_variables = {}".format(string_variables))
+            print("final_string_variables = {}".format(final_string_variables))
 
             # update question template
             #
@@ -840,15 +748,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             self.variables = updated_variables
             self._answer_template_string = updated_answer_template
 
-            setattr(self,'_string_vars', updated_string_vars)
+            # setattr(self,'_string_vars', updated_string_vars)
+            setattr(self, '_string_vars', final_string_variables)
             setattr(self, '_image_url', updated_url_image)
             setattr(self, '_question_template', updated_question_template)
             # setattr(self, '_answer_template', updated_answer_template)
             setattr(self, '_answer_template_string', updated_answer_template)
             setattr(self, '_variables', updated_variables)
-
-            print("Data type of self._variables = {}".format(type(self._variables)))
-            print("AFTER, self._variables = {}".format(self._variables))
 
             # build xml string for problem raw edit fields,
             # then update value to field '_raw_editor_xml_data' for editor
@@ -856,7 +762,8 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                 'question_template': self.question_template_string,
                 'image_url': self.image_url,
                 'variables': self.variables,
-                'answer_template': self._answer_template_string
+                'answer_template': self._answer_template_string,
+                'string_variables': self._string_vars,
             }
 
             # Convert dict data to xml
@@ -886,7 +793,6 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             # convert answer dict to string
             updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
 
-
             print("BEFORE, self._answer_template_string = ")
             print(self._answer_template_string)
 
@@ -903,11 +809,6 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             self._answer_template_string = updated_answer_template
             # self.resolver_selection = updated_resolver_selection
 
-            print("AFTER, self._answer_template_string = ")
-            print(self._answer_template_string)
-
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-
             # update values to global fields
             setattr(self, '_question_template', updated_question_template)
             setattr(self, '_image_url', updated_url_image)
@@ -920,7 +821,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             self.raw_editor_xml_data = updated_xml_string
             setattr(self, '_raw_editor_xml_data', updated_xml_string)
 
-        print("AFTER SAVE, self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
+        # print("AFTER SAVE, self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
 
         # copy from StudioEditableXBlockMixin (can not call parent method)
         values = {}  # dict of new field values we are updating
@@ -947,7 +848,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         )
 
         self.validate_field_data(validation, preview_data)
-        print("preview_data fields: {}".format(preview_data))
+        # print("preview_data fields: {}".format(preview_data))
 
         self._generated_question, self._generated_variables = matlab_question_service.generate_question(
             self._question_template, self._variables)
@@ -961,6 +862,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         print("self._generated_question = {}".format(self._generated_question))
         print("self._generated_variables = {}".format(self._generated_variables))
 
+        # update original text
         setattr(self, '_question_text', self._generated_question)
         setattr(self, '_answer_text', generated_answer)
 
