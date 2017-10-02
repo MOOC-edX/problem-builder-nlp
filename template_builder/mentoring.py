@@ -253,6 +253,7 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
     def author_edit_view(self, context = None):
         frag = super(TemplateBlock, self).author_edit_view(context)
         return frag
+
     def student_view(self, context):
         children_contents = []
         fragment = Fragment()

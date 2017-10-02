@@ -151,6 +151,20 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                         'max_value': 20.99,
                         'type': 'float',
                         'decimal_places': 2
+                    },
+                'x':{
+                        'name': 'x',
+                        'min_value': 1.5,
+                        'max_value': 10.99,
+                        'type': 'float',
+                        'decimal_places': 2
+                    },
+                'y':{
+                        'name': 'y',
+                        'min_value': 1.5,
+                        'max_value': 10.99,
+                        'type': 'float',
+                        'decimal_places': 2
                     }
             },
         scope = Scope.settings
@@ -732,47 +746,92 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             updated_url_image = data['image_url']
             updated_variables = data['variables']
             updated_answer_template = data['answer_template']
-            updated_string_variables = data['strings']
+            expected_string_vars_list = data['strings']
             string_variables = self._string_vars
 
-            print("updated_string_variables = {}".format(updated_string_variables))
-            print("TYPE of updated_string_variables = {}".format(type(updated_string_variables)))
+            print("expected_string_vars_list = {}".format(expected_string_vars_list))
+            print("TYPE of expected_string_vars_list = {}".format(type(expected_string_vars_list)))
             # print("BEFORE, self._string_vars = {}".format(self._string_vars))
 
             # use list
-            # updated_strings = []
-            # for string in updated_string_variables:
+            # updated_string_vars = []
+            # for string in expected_string_vars_list:
             #     for i in range(len(string_variables)):
             #         if string_variables[i]['name'] == string['name']:
             #             string_variables[i]['value'] = string['value']
-            #             updated_strings.append(string_variables[i])
+            #             updated_string_vars.append(string_variables[i])
 
             # get values of updated string variables
             #
             # use dictionary instead of list
-            updated_strings = {}
-            for updated_string in updated_string_variables:
-                for var_name, string_var in string_variables.iteritems():
-                    if string_var['name'] == updated_string['name']:
-                        string_var['context'] = updated_string['context']
-                        string_var['value'] = updated_string['value']
-                        updated_strings[var_name] = string_var
 
-            # print("Data type of updated_strings = {}".format(type(updated_strings)))
-            print("updated_strings = {}".format(updated_strings))
+            # for string in expected_string_vars_list:
+            #     for var_name, string_var in string_variables.iteritems():
+            #         if string_var['name'] == string['name']:
+            #             # Collect data for updated_string_vars
+            #             # get updated fields
+            #             string_var['context'] = string['context']
+            #             string_var['value'] = string['value']
+            #             # then, add this string var into the dict of string variables to be updated
+            #             updated_string_vars[var_name] = string_var
 
-            # update string variables
+            # canhdq's new method
+            updated_string_vars = {}
+            added_string_vars = {}
+            removed_string_vars = {}
+            list_of_current_string_var_name = string_variables.keys()
+
+            # get name list of newly string variables
+            list_of_expected_string_var_name = []
+            for string in expected_string_vars_list:
+                list_of_expected_string_var_name.append(string['name'])
+            set_of_expected_string_var_name = set(list_of_expected_string_var_name)
+            set_of_current_string_var_name = set(list_of_current_string_var_name)
+
+            # handle updated existing string vars
+            for string in expected_string_vars_list:
+                var_name = string['name']
+                if var_name in list_of_current_string_var_name:
+                    # Existing string variable
+                    string_var = string_variables[var_name]
+                    # Update data for its editable fields
+                    string_var['context'] = string['context']
+                    string_var['value'] = string['value']
+                    string_var['default'] = string['value']
+                    # then, add this string var into the dict of updated string variables
+                    updated_string_vars[var_name] = string_var
+
+            # handle removed/added string vars
+            list_of_removed_string_var_name = []
+            list_of_updated_string_var_name = []
+            for string in list_of_current_string_var_name:
+                if string not in set_of_expected_string_var_name:
+                    list_of_removed_string_var_name.append(string)
+                else:
+                    list_of_updated_string_var_name.append(string)
+            # remove string vars
+            for var_name in list_of_removed_string_var_name:
+                removed_string_vars[var_name] = string_variables[var_name]
+                string_variables.pop(var_name)
+            # # add string vars
+            # list_of_added_string_var_name = [string for string in list_of_expected_string_var_name if
+            #                                    string not in set_of_current_string_var_name]
+            # for var_name in list_of_added_string_var_name:
+            #     added_string_vars[var_name] = {}
+            #     string_variables[var_name] = added_string_vars[var_name]
+
+            # print("Data type of updated_string_vars = {}".format(type(updated_string_vars)))
+            print("updated_string_vars = {}".format(updated_string_vars))
+            print("removed_string_vars = {}".format(removed_string_vars))
+            print("added_string_vars = {}".format(added_string_vars))
+            print("string_variables = {}".format(string_variables))
+
+            # update question template
             #
-            # new_list = [ string for string in string_variables if string not in updated_strings ]
-            # use dictionary
-            new_list = {}
-            for var_name, string_var in string_variables.iteritems():
-                for key, updated_string_var in updated_strings.iteritems():
-                    if string_var != updated_string_var:
-                        new_list[var_name] = string_var
-
-            updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
-            logging.debug("Tammd wants to know: %s", updated_string_variables)
+            # new_list = [ string for string in string_variables if string not in updated_string_vars ]
+            # updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
+            updated_question_template = qgb_question_service.update_question_template(updated_question_template,
+                                                                            updated_string_vars, removed_string_vars, added_string_vars)
 
             # Update XBlock's values
             self.enable_advanced_editor = False
@@ -781,7 +840,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             self.variables = updated_variables
             self._answer_template_string = updated_answer_template
 
-            setattr(self,'_string_vars', updated_strings)
+            setattr(self,'_string_vars', updated_string_vars)
             setattr(self, '_image_url', updated_url_image)
             setattr(self, '_question_template', updated_question_template)
             # setattr(self, '_answer_template', updated_answer_template)

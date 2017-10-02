@@ -146,6 +146,84 @@ def update_default(template, string_variables):
     print("## End FUNCTION update_default() ##")
     return template
 
+def update_question_template(template, updated_string_vars={}, removed_string_vars={}, added_string_vars={}):
+    print("## Calling FUNCTION update_question_template() ##")
+    print("## START DEBUG INFO ##")
+    print("template = {}".format(template))
+    print("added_string_vars = {}".format(updated_string_vars))
+    print("added_string_vars = {}".format(removed_string_vars))
+
+    # for string in added_string_vars:
+    #     template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['default']), template )
+
+    # replace text in the question template by variable name of added string variables
+    for var_name, added_string in added_string_vars.iteritems():
+        # template = re.sub("\[{}\]".format(added_string["name"]), "{}".format(added_string['value']), template)
+        template = re.sub("{}".format(added_string["value"]), "\[{}\]".format(added_string['name']), template)
+
+    # replace variable name the question template by text of removed string variables
+    for var_name, removed_string in removed_string_vars.iteritems():
+        template = re.sub("{}".format(removed_string["name"]), "\[{}\]".format(removed_string['value']), template)
+
+    print("template = {}".format(template))
+    print("## End FUNCTION update_question_template() ##")
+
+    return template
+
+def update_string_variables(string_variables, expected_string_vars_list):
+    # canhdq's new method
+    updated_string_vars = {}
+    added_string_vars = {}
+    removed_string_vars = {}
+    list_of_current_string_var_name = string_variables.keys()
+
+    # get name list of newly string variables
+    list_of_expected_string_var_name = []
+    for string in expected_string_vars_list:
+        list_of_expected_string_var_name.append(string['name'])
+    set_of_expected_string_var_name = set(list_of_expected_string_var_name)
+    set_of_current_string_var_name = set(list_of_current_string_var_name)
+
+    # handle updated existing string vars
+    for string in expected_string_vars_list:
+        var_name = string['name']
+        if var_name in list_of_current_string_var_name:
+            # Existing string variable
+            string_var = string_variables[var_name]
+            # Update data for its editable fields
+            string_var['context'] = string['context']
+            string_var['value'] = string['value']
+            string_var['default'] = string['value']
+            string_var['original_text'] = string['original_text']
+            # then, add this string var into the dict of updated string variables
+            updated_string_vars[var_name] = string_var
+
+    # print("Data type of updated_string_vars = {}".format(type(updated_string_vars)))
+    print("updated_string_vars = {}".format(updated_string_vars))
+    print("removed_string_vars = {}".format(removed_string_vars))
+    print("added_string_vars = {}".format(added_string_vars))
+
+    # handle removed/added string vars
+    list_of_removed_string_var_name = []
+    list_of_updated_string_var_name = []
+    for string in list_of_current_string_var_name:
+        if string not in set_of_expected_string_var_name:
+            list_of_removed_string_var_name.append(string)
+        else:
+            list_of_updated_string_var_name.append(string)
+    # remove string vars
+    for var_name in list_of_removed_string_var_name:
+        removed_string_vars[var_name] = string_variables[var_name]
+        string_variables.pop(var_name)
+        # # add string vars
+        # list_of_added_string_var_name = [string for string in list_of_expected_string_var_name if
+        #                                    string not in set_of_current_string_var_name]
+        # for var_name in list_of_added_string_var_name:
+        #     added_string_vars[var_name] = {}
+        #     string_variables[var_name] = added_string_vars[var_name]
+
+    return string_variables, updated_string_vars, removed_string_vars, added_string_vars
+
 def get_random_item_from_list(list_data):
     '''
     Get a random item from the given list by randomly select an indice from the list
@@ -232,6 +310,13 @@ def test3():
 
     result = append_string(template, string_variables)
     print "generated question = {}".format(result)
+
+def test_update_string_vars():
+    data = []
+    data['strings'] = [{u'value': u'cost', u'name': u'string2', u'context': u'context0'},
+                 {u'value': u'apple', u'name': u'string3', u'context': u'context0'},
+                 {u'value': u'pearl', u'name': u'string0', u'context': u'context0'},
+                 {u'value': u'price', u'name': u'string1', u'context': u'context0'}]
 
 
 if __name__ == "__main__":
