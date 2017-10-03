@@ -261,12 +261,10 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
             child = self.runtime.get_block(child_id)
             for sub_child_id in child.children:
                 sub_child = self.runtime.get_block(sub_child_id)
-                for super_sub_child_id in sub_child.children:
-                    super_sub_child = self.runtime.get_block(super_sub_child_id)
-                    child_fragment = self._render_child_fragment(super_sub_child, context, 'student_view')
-                    fragment.add_frag_resources(child_fragment)
-                    children_contents.append(child_fragment.content)
-        
+                child_fragment = self._render_child_fragment(sub_child, context, 'student_view')
+                fragment.add_frag_resources(child_fragment)
+                children_contents.append(child_fragment.content)
+
         render_context = {
             'block': self,
             'children_contents': children_contents
@@ -274,5 +272,26 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
         render_context.update(context)
         fragment.add_content(self.loader.render_template(self.CHILD_PREVIEW_TEMPLATE, render_context))
         return fragment
+
+    # def student_view(self, context):
+    #     children_contents = []
+    #     fragment = Fragment()
+    #     for child_id in self.children:
+    #         child = self.runtime.get_block(child_id)
+    #         for sub_child_id in child.children:
+    #             sub_child = self.runtime.get_block(sub_child_id)
+    #             for super_sub_child_id in sub_child.children:
+    #                 super_sub_child = self.runtime.get_block(super_sub_child_id)
+    #                 child_fragment = self._render_child_fragment(super_sub_child, context, 'student_view')
+    #                 fragment.add_frag_resources(child_fragment)
+    #                 children_contents.append(child_fragment.content)
+    #
+    #     render_context = {
+    #         'block': self,
+    #         'children_contents': children_contents
+    #     }
+    #     render_context.update(context)
+    #     fragment.add_content(self.loader.render_template(self.CHILD_PREVIEW_TEMPLATE, render_context))
+    #     return fragment
 
        

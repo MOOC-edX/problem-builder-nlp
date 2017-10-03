@@ -788,7 +788,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             updated_variables = raw_edit_data['variables']
             # get only one firt answer for now. TODO: update to support multi-answers attributes for multiple solutions
             updated_answer_template_dict = raw_edit_data['answer_template'][1]
-            # updated_resolver_selection = data['problem_solver']
+            updated_string_variables = raw_edit_data['string_variables']
 
             # convert answer dict to string
             updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
@@ -815,7 +815,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
             # setattr(self, '_answer_template', updated_answer_template)
             setattr(self, '_answer_template_string', updated_answer_template)
             setattr(self, '_variables', updated_variables)
-            # setattr(self, '_resolver_selection', updated_resolver_selection)
+            setattr(self, '_string_vars', updated_string_variables)
 
             # update raw edit fields data
             self.raw_editor_xml_data = updated_xml_string
