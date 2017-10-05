@@ -572,8 +572,7 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         self.question_template_string = context['saved_question_template']
         self.image_url = context['saved_url_image']
         # self._answer_template = context['saved_answer_template']
-        self._answer_template_string = context['saved_answer_template']
-        #
+        # self._answer_template_string = context['saved_answer_template']
         self.variables = json.loads(context['serialized_variables'])
         self._generated_variables = json.loads(context['serialized_generated_variables'])
         self.resolver_selection = context['saved_resolver_selection']   # TODO: update this to new field in Settings tab
