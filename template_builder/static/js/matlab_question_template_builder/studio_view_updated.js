@@ -423,7 +423,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             {
                 var variable = {};
                 var columns = $(this).find('td');
-                var variable_name = columns.eq(1).children().eq(0).val();
+//                var variable_name = columns.eq(1).children().eq(0).val();
+                var variable_name = columns.eq(0).children().eq(0).val();
                 var context = columns.eq(2).children().eq(0).val();
                 var value = columns.eq(3).children().eq(0).val();
                 variable['name'] = variable_name;
@@ -444,12 +445,15 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     			var columns = $(this).find('td');
     			
     			// 2nd column: "variable name"
-    			var variable_name = columns.eq(1).children().eq(0).val();
+//    			var variable_name = columns.eq(1).children().eq(0).val();
+                var variable_name = columns.eq(0).children().eq(0).val();
 
     			if (variable_name.length == 0) { // empty variable name
     				fillErrorMessage('Variable name can not be empty');
     				return false;
     			}
+    			console.log('variable_name = ' + variable_name);
+    			console.log('variables dict = ' + JSON.stringify(variables));
     			
     			if (variables.hasOwnProperty(variable_name)) { // duplicate verification
     				fillErrorMessage('Variable names can not be duplicated');
@@ -460,7 +464,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     			
     			// 3rd column: "min_value"
-    			var min_value = columns.eq(2).children().eq(0).val();
+//    			var min_value = columns.eq(2).children().eq(0).val();
+    			var min_value = columns.eq(1).children().eq(0).val();
     			
     			if (min_value.length == 0) { // empty min_value
     				fillErrorMessage('min_value can not be empty');
@@ -471,7 +476,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     			
     			// 4th column: "max_value"
-    			var max_value = columns.eq(3).children().eq(0).val();
+//    			var max_value = columns.eq(3).children().eq(0).val();
+    			var max_value = columns.eq(2).children().eq(0).val();
 
     			if (max_value.length == 0) { // empty max_value
     				fillErrorMessage('max_value can not be empty');
@@ -489,12 +495,14 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     			
 
     			// 5th column: "type"
-    			var type = columns.eq(4).children().eq(0).val();
+//    			var type = columns.eq(4).children().eq(0).val();
+    			var type = columns.eq(3).children().eq(0).val();
     			variable['type'] = type;
 
     			
     			// 6th column: "decimal_places"
-    			var decimal_places = columns.eq(5).children().eq(0).val();
+//    			var decimal_places = columns.eq(5).children().eq(0).val();
+    			var decimal_places = columns.eq(4).children().eq(0).val();
     			variable['decimal_places'] = decimal_places;
     			
     			variables[variable_name] = variable;
@@ -555,134 +563,28 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	error_message_element.empty();
 
-    	// "General information" tab
-        e.preventDefault();
-        var fieldValues = {};
-        var fieldValuesNotSet = []; // List of field names that should be set to default values
-        for (var i in fields) {
-            var field = fields[i];
-            if (field.isSet()) {
-                fieldValues[field.name] = field.val();
-            } else {
-                fieldValuesNotSet.push(field.name);
-            }
-            // Remove TinyMCE instances to make sure jQuery does not try to access stale instances
-            // when loading editor for another block:
-            if (field.hasEditor()) {
-                field.removeEditor();
-            }
+//        get question text fields
+        var q = question_text_element.val();
+        var a = answer_text_element.val();
+
+        if (q.length == 0) { // empty variable name
+                fillErrorMessage('Question can not be empty!');
+                return false;
         }
 
-        // 1. xml_editor_element
-        var raw_editor_xml_data = xml_editor.getValue();
-        console.log('raw_editor_xml_data: ' + raw_editor_xml_data);
-
-
-        // "Template" tab
-        /*
-			1. question_template
-			2. variables (name, min_valua, max_value, type, decimal_places)
-			3. answer_template
-        */
-        // 1. question_template_textarea_element
-        var question_template = question_template_textarea_element.val();
-        console.log('question_template: ' + question_template);
-
-        // image
-        var image_url = url_image_input.val();
-        console.log('image_url: ' + image_url);
-
-//        var resolver_element = $(xblockElement).find('input[name=Resolver]:checked');
-//        var resolver_selection = resolver_element.val();
-//        console.log('resolver_selection: ' + resolver_selection);
-
-        // 2. variables_table_element
-        var variables = {};
-    	variables_table_element.find('tr').each(function(row_index) {
-    		if (row_index > 0) { // first row is the header
-    			var variable = {}
-
-    			var columns = $(this).find('td');
-
-    			// 2nd column: "variable name"
-    			var variable_name = columns.eq(1).children().eq(0).val();
-
-    			if (variable_name.length == 0) { // empty variable name
-    				fillErrorMessage('Variable name can not be empty');
-    				return false;
-    			}
-
-    			if (variables.hasOwnProperty(variable_name)) { // duplicate verification
-    				fillErrorMessage('Variable names can not be duplicated');
-    				return false;
-    			}
-
-    			variable['name'] = variable_name;
-
-
-    			// 3rd column: "min_value"
-    			var min_value = columns.eq(2).children().eq(0).val();
-
-    			if (min_value.length == 0) { // empty min_value
-    				fillErrorMessage('min_value can not be empty');
-    				return false;
-    			}
-
-    			variable['min_value'] = min_value;
-
-
-    			// 4th column: "max_value"
-    			var max_value = columns.eq(3).children().eq(0).val();
-
-    			if (max_value.length == 0) { // empty max_value
-    				fillErrorMessage('max_value can not be empty');
-    				return false;
-    			}
-
-    			var min_value_numer = Number(min_value);
-    			var max_value_number = Number(max_value);
-    			if (min_value_numer > max_value_number) {
-    				fillErrorMessage('min_value can not be bigger than max_value');
-    				return false;
-    			}
-
-    			variable['max_value'] = max_value;
-
-
-    			// 5th column: "type"
-    			var type = columns.eq(4).children().eq(0).val();
-    			variable['type'] = type;
-
-
-    			// 6th column: "decimal_places"
-    			var decimal_places = columns.eq(5).children().eq(0).val();
-    			variable['decimal_places'] = decimal_places;
-
-    			variables[variable_name] = variable;
-    			console.log('Row ' + row_index + ': variable_name: ' + variable_name + ', min: ' + min_value + ', max: ' + max_value + ', type: ' + type + ', decimal_places: ' + decimal_places);
-    		}
-    	});
-
-
-    	// 3. answer_template
-        var answer_template = answer_template_textarea_element.val();
-        console.log('answer_template: ' + answer_template);
-
+        if (a.length == 0) { // empty variable name
+                fillErrorMessage('Answer can not be empty!');
+                return false;
+        }
 
         // client-side validation error
         if (error_message_element.children().length > 0) {
         	return;
         }
 
-//        get question text fields
-        var q = question_text_element.val();
-        var a = answer_text_element.val();
-
 //        debugger;
         // server side validation
-        // perform studio submit and update default editor mode
-        var data = {enable_advanced_editor: enable_advanced_editor, values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, raw_editor_xml_data: raw_editor_xml_data, question: q, answer: a};
-	    studioPasreQuestion(data);
+	    studioPasreQuestion({question: q, answer: a});
     });
 
 

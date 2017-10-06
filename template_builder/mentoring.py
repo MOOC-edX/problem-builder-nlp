@@ -35,6 +35,7 @@ except ImportError:
 
 from .matlab_question_template_builder import MatlabQuestionTemplateBuilderXBlock
 from .matlab_question import MatlabQuestionXBlock
+import random
 
 log =logging.getLogger(__name__)
 loader = ResourceLoader(__name__)
@@ -223,22 +224,23 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
         display_name = _("Title"),
         help =_("This block is a group question block developed by GCS"),
         scope = Scope.settings,
-        default = _("GCS Question Generator")
+        default = _("Advanced Problem Builder")
         )
-    question = Integer (
-        display_name = _("Maximun Displayed Question"),
+
+    number_problem_displayed = Integer (
+        display_name = _("Maximum Problems Shown"),
         default = 1,
-        help=_("Please choose the maximum question will be showed to student"),
+        help=_("Enter the number of problems to display to each student."),
         scope = Scope.settings,
         )
-    editable_fields = ('display_name', 'question')
+    editable_fields = ('display_name', 'number_problem_displayed')
 
     @property
     def allowed_nested_blocks(self):
         '''
         Define nested XBlock list
         '''
-        return [FancyXBlock, MatlabQuestionTemplateBuilderXBlock, MatlabQuestionXBlock]
+        return [MatlabQuestionTemplateBuilderXBlock]
 
     def validate_field_data(self, validation, data):
         """""
@@ -257,7 +259,11 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
     def student_view(self, context):
         children_contents = []
         fragment = Fragment()
-        for child_id in self.children:
+        # for child_id in self.children:
+        #
+        # Randomly select a number of components to be displayed on student view
+        # refer: https://stackoverflow.com/questions/15511349/select-50-items-from-list-at-random-to-write-to-file
+        for child_id in random.sample(self.children, self.number_problem_displayed):
             child = self.runtime.get_block(child_id)
             child_fragment = self._render_child_fragment(child, context, 'student_view')
             fragment.add_frag_resources(child_fragment)

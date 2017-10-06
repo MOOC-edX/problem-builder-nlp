@@ -15,10 +15,11 @@ def evaluate_matlab_answer(matlab_server_url, matlab_solver_url, teacherAns, stu
     
     response = conn.getresponse()
     if response.status == 200:
-       result = json.loads(response.read())
-       # print 'RESULT: ' + str(result)
-       return result
+        result = json.loads(response.read())
+        # print 'RESULT: ' + str(result)
+        return result
     else:
+        print "CONNECTION ERROR in function conn.response()"
         return False # error
     
     
@@ -31,7 +32,7 @@ if __name__ == "__main__":
     # studentAns = "A =[ 21, 1, 1 ; -1, 1, -1 ; 1, 2, 3] \n B = [ 2 ; 3 ; -10] \n  InvA = inv(A) \n  X=InvA * B" # Wrong answer
 
     teacherAns = "sum= 9 + 10\nprod = 10 * 9"
-    studentAns = "sum= 9 +10 \n prod = 10 * 9"
+    studentAns = "sum= 9 + 10\nprod = 10 * 9"
     
     result = evaluate_matlab_answer(matlab_server_url, matlab_solver_url, teacherAns, studentAns)
     print 'result = ' + str(result)

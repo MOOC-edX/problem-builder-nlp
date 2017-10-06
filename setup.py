@@ -15,12 +15,12 @@ def package_data(pkg, root_list):
 
 BLOCKS = [
     'template_builder = template_builder.mentoring:TemplateBlock',
-    'tb-fancy = template_builder.mentoring:FancyXBlock',
-    'tb-question-answer = template_builder.mentoring:QuestionAnswerXBlock',
-    'tb-question-generator = template_builder.question_generator_block:QuestionGeneratorXBlock',
-    'tb-matlab-question = template_builder.matlab_question_generator:MatlabExerciseGeneratorXBlock',
+    # 'tb-fancy = template_builder.mentoring:FancyXBlock',
+    # 'tb-question-answer = template_builder.mentoring:QuestionAnswerXBlock',
+    # 'tb-question-generator = template_builder.question_generator_block:QuestionGeneratorXBlock',
+    # 'tb-matlab-question = template_builder.matlab_question_generator:MatlabExerciseGeneratorXBlock',
     'tb-matlab-question-template-builder = template_builder.matlab_question_template_builder:MatlabQuestionTemplateBuilderXBlock',
-    'tb-matlab-question-generator = template_builder.matlab_question:MatlabQuestionXBlock',
+    # 'tb-matlab-question-generator = template_builder.matlab_question:MatlabQuestionXBlock',
     ]
 
 

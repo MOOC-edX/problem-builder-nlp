@@ -1,5 +1,6 @@
 import re
-from random import randint, uniform
+# from random import randint, uniform
+import random
 
 from decimal import *
 
@@ -71,9 +72,9 @@ def generate_question(question_template, variables):
         
         var_value = ""
         if var_type == 'int':
-            var_value = str(randint(int(variable['min_value']), int(variable['max_value'])))
+            var_value = str(random.randint(int(variable['min_value']), int(variable['max_value'])))
         else: # float
-            var_value = str(uniform(float(variable['min_value']), float(variable['max_value'])))
+            var_value = str(random.uniform(float(variable['min_value']), float(variable['max_value'])))
             var_decimal_places = get_decimal_places(var_decimal_places_int)
             var_value = str(Decimal(var_value).quantize(var_decimal_places))
 
@@ -227,52 +228,22 @@ def get_random_item_from_list(list_data):
     @author: Canh Duong <canhdq@hitachiconsulting.com>
     '''
     max_index = len(list_data) - 1
-    random_index = randint(0, max_index)
+    random_index = random.randint(0, max_index)
 
     return list_data[random_index]
 
-def test1():
-    question_template1 = "What is the energy to raise <n> apples to <m> meters?"
-    n_variable = {
-        'name': 'n',
-        'type': 'int',
-        'min_value': 1,
-        'max_value': 10,
-        'decimal_places': 2
-    }
-
-    m_variable = {
-        'name': 'm',
-        'type': 'int',
-        'min_value': 5,
-        'max_value': 20,
-        'decimal_places': 2
-    }
-
-    variables = {
-        'n': n_variable,
-        'm': m_variable
-    }
-
-    answer_template = "<n> apples and <m> meters is the answer"
-
-    generated_question, generated_variables = generate_question(question_template1, variables)
-
-    print('test_template1: ' + question_template1)
-    print('generated question: ' + generated_question)
-    print 'Generated n: ' + generated_variables['n']
-    print 'Generated m: ' + generated_variables['m']
-
-    generated_answer = generate_answer(generated_variables, answer_template)
-    print('generated answer: ' + generated_answer)
-
-def test2():
+def test_select_random_items():
     mylist = ['Apple', 'IBM', 'Google', 'GCS']
     print mylist
-    item = get_random_item_from_list(mylist)
-    print item
+    # item = get_random_item_from_list(mylist)
+    # print item
+    # best_preserve(mylist)
+    # use random.sample
+    items = random.sample(mylist, 2)
+    print items
 
-def test3():
+
+def test_append_string_vars_to_template():
     template = '''Given 167 [string1] and 3.47 [string2]. One [string1] cost [x] cents, one [string2] cost [y] cents.
 [string0] the total price of them?
 '''
@@ -386,6 +357,6 @@ def test_update_question_template():
     update_question_template(template, updated_string_vars, removed_string_vars, added_string_vars)
 
 if __name__ == "__main__":
-    test_update_question_template()
-
+    # test_update_question_template()
+    test_select_random_items()
 
