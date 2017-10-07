@@ -23,7 +23,7 @@ import json
 from resolver_machine import resolver_machine
 import logging
 # import xblock_deletion_handler
-from question_parser import parse_question_v2, parse_answer_v2
+from question_parser import parse_question_v2, parse_answer_v2, parse_question_improved, parse_answer_improved
 import qgb_question_service
 import xml_helper
 
@@ -111,8 +111,8 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     _question_template = String (
         display_name = "Question Template",
         help = "",
-        default = """Given [a] apple and [b] pearl. One apple cost [x] cents, one pearl cost [y] cents.
-                  \nCalculate the total price of them?""",
+        default = """Given [a] [string0]s and [b] [string1]s. One [string0] cost [x] USD, one [string1] cost [y] USD.
+Calculate the total price of them?""",
         scope = Scope.settings
     )
 
@@ -154,15 +154,15 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
                     },
                 'x':{
                         'name': 'x',
-                        'min_value': 4.5,
-                        'max_value': 10.99,
+                        'min_value': 4500.5,
+                        'max_value': 109900,
                         'type': 'float',
                         'decimal_places': 2
                     },
                 'y':{
                         'name': 'y',
-                        'min_value': 1.5,
-                        'max_value': 6.99,
+                        'min_value': 50.5,
+                        'max_value': 5000.99,
                         'type': 'float',
                         'decimal_places': 2
                     }
@@ -173,56 +173,43 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
     # Default XML string passed to Advanced Editor's value when create an xBlock
     raw_editor_xml_data = '''
     <problem>
-        <description>Given [a] apples and [b] pearls. One apple cost [x] cents, one pearl cost [y] cents.
-        \nCalculate the total price of them? </description>
+        <description>Given [a] [string0]s and [b] [string1]s. One [string0] cost [x] USD, one [string1] cost [y] USD.
+Calculate the total price of them? </description>
         <images>
-            <image_url link="http://example.com/image1">Image</image_url>
+            <image_url link="">Image</image_url>
         </images>
         <variables>
-            <variable name="a" min_value="1" max_value="200" type="integer"/>
-            <variable name="b" min_value="1.00" max_value="20.99" type="float" decimal_places="2"/>
+            <variable name="a" min_value="1" max_value="200" type="int"/>
+            <variable name="b" min_value="1" max_value="20" type="int"/>
+            <variable name="x" min_value="4500.5" max_value="109900" type="float" decimal_places="2"/>
+            <variable name="x" min_value="50.5" max_value="5000.99" type="float" decimal_places="2"/>
         </variables>
-        <string_variables>
-            <string_variable name="string0" value="str0">
-                <value_set name="library1" default="none">Synonym set 1
-                    <option>str0</option>
-                    <option>str1</option>
-                    <option>str2</option>
-                    <option>str3</option>
-                    <option>str4</option>
-                    <option>str5</option>
-                </value_set>
-                <value_set name="library2">Synonym set 2
-                    <option>str0</option>
-                    <option>str1</option>
-                    <option>str2</option>
-                    <option>str3</option>
-                    <option>str4</option>
-                    <option>str5</option>
-                </value_set>
-            </string_variable>
-            <string_variable name="string1" value="str1">
-                <value_set name="library3" default="none">Synonym set 3
-                    <option>str0</option>
-                    <option>str1</option>
-                    <option>str2</option>
-                    <option>str3</option>
-                    <option>str4</option>
-                    <option>str5</option>
-                </value_set>
-                <value_set name="library4">Synonym set 4
-                    <option>str0</option>
-                    <option>str1</option>
-                    <option>str2</option>
-                    <option>str3</option>
-                    <option>str4</option>
-                    <option>str5</option>
-                </value_set>
-            </string_variable>
-        </string_variables>
         <answer_templates>
             <answer price = "[a] * [x] + [b] * [y]">Teacher's answer</answer>
         </answer_templates>
+        <string_variables>
+            <string_variable default="car" name="string0" original_text="car" value="car">
+                <context_list>
+                    <context name="Synonyms of text 'car' (Default)" select="true">
+                        <option>car</option>
+                        <option>machine</option>
+                        <option>truck</option>
+                        <option>auto</option>
+                        <option>automobile</option>
+
+                    </context>
+                </context_list>
+            </string_variable>
+            <string_variable default="ring" name="string1" original_text="ring" value="ring">
+                <context_list>
+                    <context name="Synonyms of text 'ring' (Default)" select="true">
+                        <option>ring</option>
+                        <option>necklet</option>
+                        <option>watch</option>
+                    </context>
+                </context_list>
+            </string_variable>
+        </string_variables>
     </problem>'''
 
     # This field is to store editor's value to keep for future initilization of xBlock after edit (student_view, studio_view).
@@ -235,13 +222,13 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
 
     _question_text = String (
         scope = Scope.content,
-        default="""Given 7 apple and 5 pearl. One apple cost 4 cents, one pearl cost 3 cents.
-                    \nCalculate the total price of them?"""
+        default="""Given 7 cars and 5 rings. One car cost 20000 USD, one ring cost 3500 USD.
+Calculate the total price of them?"""
     )
 
     _answer_text = String (
         scope = Scope.content,
-        default = "price = (7 * 4) + (5 * 3)"
+        default = "price = 7 * 20000 + 5 * 3500"
     )
 
     _string_vars = Dict(
@@ -250,79 +237,34 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         {
             'string0': {
                 'name': 'string0',
-                'original_text': 'Calculate',
-                'default': 'Find',
-                'value': 'Find',
+                'original_text': 'car',
+                'default': 'car',
+                'value': 'car',
                 'context': 'context0',
                 'context_list':
                     {
                         'context0': {
-                            'name': "Context 1 of Calculate",
-                            'help': "Synonym set 1",
-                            'synonyms': ['Calculate', 'Compute'],
+                            'name': "Synonyms of text 'car' (Default)",
+                            'help': "Default context generated from text 'car'",
+                            'synonyms': ['car', 'machine', 'truck', 'auto', 'automobile'],
                             'select': 'true',
                         },
-                        'context1': {
-                            'name': "Context 2 of Calculate (Default)",
-                            'help': "Synonym set 2",
-                            'synonyms': ['Find', 'Figure out', 'Estimate'],
-                            'select': 'false',
-                        }
                     }
             },
             'string1': {
                 'name': 'string1',
-                'original_text': 'apple',
-                'default': 'apple',
-                'value': 'mango',
+                'original_text': 'ring',
+                'default': 'ring',
+                'value': 'ring',
                 'context': 'context0',
                 'context_list':
                     {
                         'context0': {
-                            'name': "Context 1 - Fruits",
-                            'help': "Synonym set 1",
-                            'synonyms': ['apple', 'mango', 'lemon'],
+                            'name': "Synonyms of text 'ring' (Default)",
+                            'help': "Default context generated from text 'ring'",
+                            'synonyms': ['ring', 'necklet', 'watch'],
                             'select': 'true',
                         },
-                        'context1': {
-                            'name': "Context 2 - Computer",
-                            'help': "Synonym set 2",
-                            'synonyms': ['Apple', 'IBM', 'Google', 'GCS'],
-                            'select': 'false',
-                        }
-
-                    }
-            },
-            'string2': {
-                'name': 'string2',
-                'original_text': 'pearl',
-                'default': 'pearl',
-                'value': 'pearl',
-                'context': 'context0',
-                'context_list':
-                    {
-                        'context0': {
-                            'name': "Context 1 - Fruits",
-                            'help': "Synonym set 1",
-                            'synonyms': ['water melon', 'orange', 'pearl'],
-                            'select': 'true',
-                        },
-                    }
-            },
-            'string4': {
-                'name': 'string4',
-                'original_text': 'price',
-                'default': 'price',
-                'value': 'price',
-                'context': 'context0',
-                'context_list':
-                    {
-                        'context0': {
-                            'name': "Context 1 of Calculate",
-                            'help': "Synonym set 1",
-                            'synonyms': ['price', 'cost', 'energy'],
-                            'select': 'true',
-                        }
                     }
             },
         }
@@ -669,22 +611,24 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         logging.debug("Tammd wants to know q = %s, a = %s", q, a)
 
         # parse question text
-        template, variables, strings = parse_question_v2(q)
+        # template, variables, strings = parse_question_v2(q)
+        template, variables, strings = parse_question_improved(q)
         logging.debug("Tammd wants to know template = {}", template)
         logging.debug("Tammd wants to know variables = {}", variables)
         logging.debug("Tammd wants to know strings = {}", strings)
 
         # parse answer text
-        answer = parse_answer_v2(a, variables)
+        # answer = parse_answer_v2(a, variables)
+        answer = parse_answer_improved(a, variables)
         logging.debug("Tammd wants to know answer = %s", answer)
 
-        # TODO: use dict for numeric variables so we can remove this conversion for var
-        var = {}
-        for i in range(len(variables)):
-            var['var{}'.format(i)] = variables[i][1]['var{}'.format(i)]
+        # # TODO: use dict for numeric variables so we can remove this conversion for var
+        # var = {}
+        # for i in range(len(variables)):
+        #     var['var{}'.format(i)] = variables[i][1]['var{}'.format(i)]
 
         # update fields
-        setattr(self,'_variables', var)
+        setattr(self,'_variables', variables)
         setattr(self,'_question_template', template)
         setattr(self,'_answer_template_string', answer)
         setattr(self,'_string_vars', strings)
