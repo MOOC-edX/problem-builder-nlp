@@ -182,7 +182,7 @@ Calculate the total price of them? </description>
             <variable name="a" min_value="1" max_value="200" type="int"/>
             <variable name="b" min_value="1" max_value="20" type="int"/>
             <variable name="x" min_value="4500.5" max_value="109900" type="float" decimal_places="2"/>
-            <variable name="x" min_value="50.5" max_value="5000.99" type="float" decimal_places="2"/>
+            <variable name="y" min_value="50.5" max_value="5000.99" type="float" decimal_places="2"/>
         </variables>
         <answer_templates>
             <answer price = "[a] * [x] + [b] * [y]">Teacher's answer</answer>
