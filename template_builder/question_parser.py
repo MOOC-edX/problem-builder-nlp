@@ -207,7 +207,7 @@ def parse_answer_improved(answer, variables):
     for var_name, num_variable in variables.iteritems():
         # Only replace original numeric text which has at least one space before and after (i.e. a separated number).
         # TODO: Canh to update re pattern to correct bug about missing variables' values here
-        answer_template = re.sub(r" {}".format(num_variable["original_text"]), " [{}] ".format(num_variable["name"]),
+        answer_template = re.sub(r" {}".format(num_variable["original_text"]), " [{}]".format(num_variable["name"]),
                                    answer_template)
 
     print "answer_template= {}".format(answer_template)
