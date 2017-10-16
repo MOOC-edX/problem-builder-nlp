@@ -196,7 +196,6 @@ Calculate the total price of them? </description>
                         <option>truck</option>
                         <option>auto</option>
                         <option>automobile</option>
-
                     </context>
                 </context_list>
             </string_variable>
@@ -270,7 +269,6 @@ Calculate the total price of them?"""
         }
     )
 
-
     xblock_id = None
     attempt_number = 0
     newly_created_block = True
@@ -307,9 +305,35 @@ Calculate the total price of them?"""
     # Define if original text question parsed yet
     is_question_text_parsed = False
 
-    # Default value of original Q & A
-    # question_text_origin = "Given a = 5 and b = 10. Calculate the sum, difference of a and b."
-    # answer_text_origin = "sum = 15\ndiff = -5"
+    reset_question = Boolean(
+        default=True,
+        help="Whether to generate random variables' values of the current xBlock usage for specific One user",
+        scope = Scope.user_state
+    )
+
+    runtime_generated_question = String(
+        default=_question_text,
+        help="To store the last runtime generated question of the current xBlock usage for specific One user",
+        scope=Scope.user_state
+    )
+
+    runtime_generated_answer = String(
+        default="",
+        help="To store the last runtime generated answer of the current xBlock usage for specific One user",
+        scope=Scope.user_state
+    )
+
+    runtime_generated_variables = Dict(
+        default=_generated_variables,
+        help="To store the last runtime generated variables of the current xBlock usage for specific One user",
+        scope=Scope.user_state
+    )
+
+    runtime_generated_string_variables = Dict(
+        default=_string_vars,
+        help="To store the last runtime generated variables of the current xBlock usage for specific One user",
+        scope=Scope.user_state
+    )
 
 
     def resource_string(self, path):
@@ -324,7 +348,7 @@ Calculate the total price of them?"""
         """
         print("## Calling FUNCTION student_view() ##")
         print("## START DEBUG INFO ##")
-        # print("context = {}".format(context))
+        print("student_view context = {}".format(context))
 
         context = context
 
@@ -332,17 +356,31 @@ Calculate the total price of them?"""
             self.xblock_id = unicode(self.location.replace(branch=None, version=None))
 
         should_disbled = ''
+        show_reset_button = True
+        print("self.reset_question = {}".format(self.reset_question))
+
 
         # generate question from template if necessary
 
         # self._generated_question, self._generated_variables = matlab_question_service.generate_question_old(self._question_template, self._variables)
-        self._generated_question, self._generated_variables = matlab_question_service.generate_question(
-            self._question_template, self._variables)
-
-        # append string variables
-        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-        print("self._generated_question = {}".format(self._generated_question))
-        print("self._generated_variables = {}".format(self._generated_variables))
+        # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
+        #     self._question_template, self._variables)
+        if self.reset_question == True:
+            self._generated_question, self._generated_variables = matlab_question_service.new_question(
+                self._question_template, self._variables, self.reset_question)
+            # append string variables
+            self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+            # update user_state fields
+            setattr(self, 'reset_question', False)
+            setattr(self, 'runtime_generated_question', self._generated_question)
+            setattr(self, 'runtime_generated_variables', self._generated_variables)
+            setattr(self, 'runtime_generated_string_variables', self._string_vars)
+        else:
+            self._generated_question = self.runtime_generated_question
+            self._generated_variables = self.runtime_generated_variables
+        print("self.reset_question = {}".format(self.reset_question))
+        # print("self._generated_question = {}".format(self._generated_question))
+        # print("self._generated_variables = {}".format(self._generated_variables))
 
         # load submission data to display the previously submitted result
         submissions = sub_api.get_submissions(self.student_item_key, 1)
@@ -383,6 +421,7 @@ Calculate the total price of them?"""
         context['question'] = self._generated_question
         context['xblock_id'] = self.xblock_id
         context['show_answer'] = self.show_answer
+        context['show_reset_button'] = show_reset_button
 
         frag = Fragment()
         frag.content = loader.render_template('static/html/matlab_question_template_builder/student_view.html', context)
@@ -390,7 +429,7 @@ Calculate the total price of them?"""
         frag.add_javascript(self.resource_string("static/js/matlab_question_template_builder/student_view.js"))
         frag.initialize_js('MatlabQuestionTemplateBuilderXBlock')
 
-        # print("context = {}".format(context))
+        print("student_view context = {}".format(context))
         print("## End FUNCTION student_view() ##")
 
         return frag
@@ -492,7 +531,7 @@ Calculate the total price of them?"""
         context['saved_resolver_selection'] = self._problem_solver  # use _problem_solver from editable_fields
 
         # print("## AFTER, ADDED FIELDS ##")
-        # print("context = {}".format(context))
+        print("context = {}".format(context))
         # print("## END DEBUG INFO ##")
         print("## End FUNCTION serialize_data_to_context() ##")
 
@@ -509,7 +548,7 @@ Calculate the total price of them?"""
         # print("self._generated_variables= {}".format(self._generated_variables))
         # print "self._answer_template_string = ", self._answer_template_string
         # print("## BEFORE ##")
-        # print("context = {}".format(context))
+        print("context = {}".format(context))
 
         self.question_template_string = context['saved_question_template']
         self.image_url = context['saved_url_image']
@@ -863,6 +902,64 @@ Calculate the total price of them?"""
             'generated_answer': generated_answer
         }
 
+    @XBlock.json_handler
+    def reset_problem_handler(self, data, suffix=''):
+        """
+        AJAX handler for reseting problem data, when invoked 'Reset' button
+        """
+        print("## CALLING FUNCTION reset_problem_handler() ##")
+        print("## START DEBUG INFO ##")
+        print("data = {}".format(data))
+
+        problem = {}
+        should_disbled = ''
+        should_reset_question = self.reset_question
+        print("self.reset_question = {}".format(self.reset_question))
+        print("should_reset_question = {}".format(should_reset_question))
+
+        # Generate question from template if necessary
+
+        # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
+        #     self._question_template, self._variables)
+        self._generated_question, self._generated_variables = matlab_question_service.new_question(
+            self._question_template, self._variables, self.reset_question)
+        # append string variables
+        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+
+        # Update user_state fields
+        setattr(self, 'runtime_generated_question', self._generated_question)
+        setattr(self, 'runtime_generated_variables', self._generated_variables)
+        setattr(self, 'runtime_generated_string_variables', self._string_vars)
+        setattr(self, 'reset_question', False)
+        # Generate answer
+        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+                                                                          self._answer_template_string)
+        setattr(self, 'runtime_generated_answer', generated_answer)
+
+        print("self.reset_question = {}".format(self.reset_question))
+
+        # print("self._generated_question = {}".format(self._generated_question))
+        # print("self._generated_variables = {}".format(self._generated_variables))
+        print("generated_answer = {}".format(generated_answer))
+
+        # Add following fields to problem variable
+        problem['generated_question'] = self.runtime_generated_question
+        problem['generated_answer'] = self.runtime_generated_answer
+        problem['student_answer'] = self.student_answer
+
+        problem['attempt_number'] = self.attempt_number_string
+        problem['point_string'] = self.point_string
+        # problem['xblock_id'] = self.xblock_id
+
+        problem['show_answer'] = self.show_answer
+        problem['reset_question'] = self.reset_question
+        problem['disabled'] = should_disbled
+
+
+        print("## START DEBUG INFO ##")
+        print("## END FUNCTION reset_problem_handler() ##")
+
+        return problem
 
     # TO-DO: change this to create the scenarios you'd like to see in the
     # workbench while developing your XBlock.

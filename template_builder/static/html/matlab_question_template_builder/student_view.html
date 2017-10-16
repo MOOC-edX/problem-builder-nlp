@@ -38,4 +38,10 @@
     {% if show_answer %}
     	<input type="button" class="input-main" name='show_answer-button' value="Show Answer" />
     {% endif %}
+
+	{% if show_reset_button%}
+    <span class="problem-action-button-wrapper">
+        <button type="button" name="reset_problem" class="reset problem-action-btn btn-default btn-small" data-value="Reset"><span class="icon fa fa-refresh" aria-hidden="true"></span><span aria-hidden="true">Reset</span><span class="sr">${_("Reset your answer")}</span></button>
+    </span>
+    {% endif%}
 </div>

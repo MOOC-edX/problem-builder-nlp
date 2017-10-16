@@ -129,6 +129,52 @@ def generate_question(question_template, variables):
     return generated_question, generated_variables
 
 
+def new_question(question_template, variables, randomization):
+    compiled_variable_patterns = {}
+    generated_variables = {}
+
+    print("## CALLING FUNCTION new_question() ##")
+    print("## START DEBUG INFO ##")
+    print("question_template = {}".format(question_template))
+    print("variables= {}".format(variables))
+
+    if randomization:
+
+        # generate variables' value
+        for var_name, variable in variables.iteritems():
+            #
+            compiled_variable_patterns[var_name] = re.compile('\[' + var_name + '\]')
+            var_type = variable['type']
+
+            var_value = ""
+            if var_type == 'int' or var_type == 'integer':
+                var_value = str(randint(int(variable['min_value']), int(variable['max_value'])))
+            elif var_type == 'float' or var_type == 'double' or var_type == 'real':  # number is not integer
+                var_decimal_places_int = int(variable['decimal_places'])
+                var_value = str(uniform(float(variable['min_value']), float(variable['max_value'])))
+                var_decimal_places = get_decimal_places(var_decimal_places_int)
+                var_value = str(Decimal(var_value).quantize(var_decimal_places))
+            else:  # string?
+                pass
+
+            generated_variables[var_name] = var_value
+
+        print("generated_variables= {}".format(generated_variables))
+
+        # generate the question and answer
+        generated_question = question_template
+        # replace values into varibales
+        for var_name, var_value in generated_variables.iteritems():
+            generated_question = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]),
+                                                                      generated_question)
+
+    print("generated_question= {}".format(generated_question))
+    print("## END DEBUG INFO ##")
+    print("## End FUNCTION new_question() ##")
+
+    return generated_question, generated_variables
+
+
 # TODO: remove this function
 def generate_answer_string(generated_variables, answer_template_string):
 

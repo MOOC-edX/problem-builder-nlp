@@ -15,6 +15,7 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
 	var student_answer_textarea_element = $(xblockElement).find('textarea[name=student_answer]');
     var teacher_answer_div_element = $(xblockElement).find('div[name=teacher_answer_div]');
     var show_answer_button = $(xblockElement).find('input[name=show_answer-button]');
+    var reset_button = $(xblockElement).find('button[name=reset_problem-button]');
 
 
 	function handleSubmissionResult(results) {
@@ -32,7 +33,6 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
   	}
   	
     // Old version,
-    // TODO: remove this
   	function handleShowAnswerResultString(result) {
   		console.log('handleShowAnswerResult INVOKED');
 
@@ -75,6 +75,21 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
   		show_answer_button.attr('disabled', 'disabled');
   	}
 
+    // Update HTML for reset button
+  	function handleResetProblemHtml(results) {
+		console.log('handleSubmissionResult INVOKED');
+    	$(xblockElement).find('div[name=attempt-number]').text(results['attempt_number']);
+    	$(xblockElement).find('div[name=problem-progress]').text(results['point_string']);
+    	$(xblockElement).find('input[name=submit-button]').val("Submit")
+    	if (results['submit_disabled'] == 'disabled') {
+    		$(xblockElement).find('input[name=submit-button]').attr('disabled','disabled');
+    	}
+    	else
+    	{
+    		$(xblockElement).find('input[name=submit-button]').removeAttr('disabled');
+    	}
+  	}
+
 
   	$(xblockElement).find('input[name=submit-button]').bind('click', function() {
   		// accumulate student's answer for submission
@@ -109,6 +124,7 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
   	
     $(function($) {
     	console.log("question_generator_block initialized");
+//    	Handle show answer
     	if (show_answer_button != null) {
     		show_answer_button.bind('click', function() {
     			console.log("show_answer_button CLICKED");
@@ -126,6 +142,26 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
     			var handlerUrl = runtime.handlerUrl(xblockElement, 'show_answer_handler');
 //    			$.post(handlerUrl, JSON.stringify(data)).success(handleShowAnswerResult);
     			$.post(handlerUrl, JSON.stringify(data)).success(handleShowAnswerResultString);
+    		});
+    	}
+
+//    	Handle reset button
+    	if (show_reset_button != null) {
+    		reset_button.bind('click', function() {
+    			console.log("reset_button CLICKED");
+
+    			// prepare data
+    			var data = {
+      				'saved_question_template': hidden_question_template_element.val(),
+      				'saved_url_image' : hidden_url_image.val(),
+      				'saved_resolver_selection': hidden_resolver_selection.val(),
+      				'saved_answer_template': hidden_answer_template_element. val(),
+		      		'serialized_variables': hidden_variables_element.val(),
+		      		'serialized_generated_variables': hidden_generated_variables_element.val()
+    			}
+
+    			var handlerUrl = runtime.handlerUrl(xblockElement, 'reset_problem_handler');
+    			$.post(handlerUrl, JSON.stringify(data)).success(handleResetProblemHtml);
     		});
     	}
     });
