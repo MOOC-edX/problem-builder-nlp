@@ -359,10 +359,8 @@ Calculate the total price of them?"""
         show_reset_button = True
         print("self.reset_question = {}".format(self.reset_question))
 
-
         # generate question from template if necessary
 
-        # self._generated_question, self._generated_variables = matlab_question_service.generate_question_old(self._question_template, self._variables)
         # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
         #     self._question_template, self._variables)
         if self.reset_question == True:
@@ -382,24 +380,23 @@ Calculate the total price of them?"""
         # print("self._generated_question = {}".format(self._generated_question))
         # print("self._generated_variables = {}".format(self._generated_variables))
 
-        # load submission data to display the previously submitted result
+        # Get previous submissions made by student
         submissions = sub_api.get_submissions(self.student_item_key, 1)
         # print("previously submitted result = {}".format(submissions))
 
+        # Only show student's last submission
+        # TODO: to figure out how to handle student's previous submissions
         if submissions:
             latest_submission = submissions[0]
 
             # parse the answer
             answer = latest_submission['answer'] # saved "answer information"
-            # print("previously submitted answer = {}".format(submissions))
-
-            # INCORRECT ???
-            # TODO: remove these
             # self._generated_question = answer['generated_question']
             # self.generated_answer = answer['generated_answer']  # teacher's generated answer
-            # self.student_answer = answer['student_answer'] # student's submitted answer
+            self.student_answer = answer['student_answer'] # student's submitted answer
 
             # TODO: check what is this block for?
+            # Retrived the generated variables of the last submission
             if ('variable_values' in answer): # backward compatibility
                 saved_generated_variables = json.loads(answer['variable_values'])
                 for var_name, var_value in saved_generated_variables.iteritems():
@@ -409,7 +406,7 @@ Calculate the total price of them?"""
             if (self.attempt_number >= self.max_attempts):
                 should_disbled = 'disabled'
 
-
+        # Serialize some fields in context dictionary before passing to student_view template
         self.serialize_data_to_context(context)
 
         # Add following fields to context variable
@@ -903,26 +900,26 @@ Calculate the total price of them?"""
         }
 
     @XBlock.json_handler
-    def reset_problem_handler(self, data, suffix=''):
+    def reset_problem_handler(self, data={}, suffix=''):
         """
-        AJAX handler for reseting problem data, when invoked 'Reset' button
+        AJAX handler for problem reset when invoked 'Reset' button
         """
         print("## CALLING FUNCTION reset_problem_handler() ##")
         print("## START DEBUG INFO ##")
         print("data = {}".format(data))
 
         problem = {}
-        should_disbled = ''
-        should_reset_question = self.reset_question
+        submit_disabled = ''
+        reset_disabled = ''
+        show_reset_button = True
         print("self.reset_question = {}".format(self.reset_question))
-        print("should_reset_question = {}".format(should_reset_question))
+        print("show_reset_button = {}".format(show_reset_button))
 
         # Generate question from template if necessary
-
         # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
         #     self._question_template, self._variables)
         self._generated_question, self._generated_variables = matlab_question_service.new_question(
-            self._question_template, self._variables, self.reset_question)
+            self._question_template, self._variables, randomization=True)
         # append string variables
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
 
@@ -936,25 +933,22 @@ Calculate the total price of them?"""
                                                                           self._answer_template_string)
         setattr(self, 'runtime_generated_answer', generated_answer)
 
+        print("self._generated_question = {}".format(self._generated_question))
+        print("self._generated_variables = {}".format(self._generated_variables))
+        print("generated_answer = {}".format(generated_answer))
         print("self.reset_question = {}".format(self.reset_question))
 
-        # print("self._generated_question = {}".format(self._generated_question))
-        # print("self._generated_variables = {}".format(self._generated_variables))
-        print("generated_answer = {}".format(generated_answer))
-
         # Add following fields to problem variable
-        problem['generated_question'] = self.runtime_generated_question
+        problem['question'] = self.runtime_generated_question
+        problem['answer_template'] = self._answer_template_string
+        problem['generated_variables'] = json.dumps(self.runtime_generated_variables)
         problem['generated_answer'] = self.runtime_generated_answer
         problem['student_answer'] = self.student_answer
-
         problem['attempt_number'] = self.attempt_number_string
         problem['point_string'] = self.point_string
-        # problem['xblock_id'] = self.xblock_id
-
-        problem['show_answer'] = self.show_answer
-        problem['reset_question'] = self.reset_question
-        problem['disabled'] = should_disbled
-
+        problem['show_reset_button'] = show_reset_button
+        problem['reset_disabled'] = reset_disabled
+        problem['submit_disabled'] = submit_disabled
 
         print("## START DEBUG INFO ##")
         print("## END FUNCTION reset_problem_handler() ##")

@@ -138,6 +138,9 @@ def new_question(question_template, variables, randomization):
     print("question_template = {}".format(question_template))
     print("variables= {}".format(variables))
 
+    # generate the question and answer
+    generated_question = question_template
+
     if randomization:
 
         # generate variables' value
@@ -161,8 +164,6 @@ def new_question(question_template, variables, randomization):
 
         print("generated_variables= {}".format(generated_variables))
 
-        # generate the question and answer
-        generated_question = question_template
         # replace values into varibales
         for var_name, var_value in generated_variables.iteritems():
             generated_question = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]),
