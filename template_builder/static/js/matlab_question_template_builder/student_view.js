@@ -51,6 +51,11 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
   		show_answer_button.attr('disabled', 'disabled');
   	}
 
+  	function clearAnswerView() {
+  	    // remove displayed answer
+  	    teacher_answer_div_element.find('pre').remove();
+  	}
+
     // new version, NOT USED ATM
     // TODO: support multi answers
     function handleShowAnswerResult(result) {
@@ -89,13 +94,19 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
 		hidden_answer_template_element.val(result['answer_template']);
 
 		// reset student's answer
-		student_answer_textarea_element.text();
+		student_answer_textarea_element.val('');
 
 		// update progress
     	$(xblockElement).find('div[name=attempt-number]').text(result['attempt_number']);
     	$(xblockElement).find('div[name=problem-progress]').text(result['point_string']);
 
-        // Enable Submit button after reset problem
+    	// clear shown answer if any
+    	clearAnswerView();
+
+    	// Enable Show Answer button if disabled
+    	show_answer_button.removeAttr('disabled');
+
+    	// Enable Submit button if disabled
     	$(xblockElement).find('input[name=submit-button]').val("Submit")
     	if (result['submit_disabled'] == 'disabled') {
     		$(xblockElement).find('input[name=submit-button]').attr('disabled','disabled');

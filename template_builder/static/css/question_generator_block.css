@@ -38,3 +38,15 @@ pre {
 .formula_exercise_block_block p {
     cursor: pointer;
 }
+
+.problem {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.action {
+    margin-top: 20px;
+    min-height: 20px;
+    width: 100%;
+    display: inline-block;
+}

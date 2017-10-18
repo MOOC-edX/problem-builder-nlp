@@ -83,6 +83,12 @@ class MatlabQuestionTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioE
         default=True,
         scope=Scope.settings)
 
+    allow_reset = Boolean(
+        display_name="Show Reset Button",
+        help="Determines whether a 'Reset' button is shown so the user may reset their answer. A default value can be set in Advanced Settings.",
+        default=True,
+        scope=Scope.settings)
+
     #TODO: add comments about scope of these new variables. Why these variables?
     #
     _image_url = String (
@@ -282,6 +288,7 @@ Calculate the total price of them?"""
                        'show_points_earned',
                        'show_submission_times',
                        'show_answer',
+                       'allow_reset',
                        '_raw_editor_xml_data'
                        )
 
@@ -356,7 +363,7 @@ Calculate the total price of them?"""
             self.xblock_id = unicode(self.location.replace(branch=None, version=None))
 
         should_disbled = ''
-        show_reset_button = True
+        show_reset_button = self.allow_reset
         print("self.reset_question = {}".format(self.reset_question))
 
         # generate question from template if necessary
@@ -382,7 +389,8 @@ Calculate the total price of them?"""
 
         # Get previous submissions made by student
         submissions = sub_api.get_submissions(self.student_item_key, 1)
-        # print("previously submitted result = {}".format(submissions))
+        print("self.student_item_key = {}".format(self.student_item_key))
+        print("previous submissions = {}".format(submissions))
 
         # Only show student's last submission
         # TODO: to figure out how to handle student's previous submissions
@@ -911,9 +919,11 @@ Calculate the total price of them?"""
         problem = {}
         submit_disabled = ''
         reset_disabled = ''
-        show_reset_button = True
-        print("self.reset_question = {}".format(self.reset_question))
+        show_reset_button = self.allow_reset
         print("show_reset_button = {}".format(show_reset_button))
+
+        # Reset score and previous submissions made by student
+        sub_api.reset_score(self.student_item_key['student_id'], self.student_item_key['course_id'], self.student_item_key['item_id'], clear_state=True)
 
         # Generate question from template if necessary
         # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
@@ -927,7 +937,6 @@ Calculate the total price of them?"""
         setattr(self, 'runtime_generated_question', self._generated_question)
         setattr(self, 'runtime_generated_variables', self._generated_variables)
         setattr(self, 'runtime_generated_string_variables', self._string_vars)
-        setattr(self, 'reset_question', False)
         # Generate answer
         generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
                                                                           self._answer_template_string)
@@ -936,7 +945,6 @@ Calculate the total price of them?"""
         print("self._generated_question = {}".format(self._generated_question))
         print("self._generated_variables = {}".format(self._generated_variables))
         print("generated_answer = {}".format(generated_answer))
-        print("self.reset_question = {}".format(self.reset_question))
 
         # Add following fields to problem variable
         problem['question'] = self.runtime_generated_question

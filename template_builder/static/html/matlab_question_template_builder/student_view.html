@@ -1,4 +1,3 @@
-<div name="attempt-number" class=".attempt-number">{{ attempt_number }}</div>
 <div name="problem-progress" class=".problem-progress">{{ point_string }}</div>
 
 <input type="hidden" name="question_template" value="{{saved_question_template}}">
@@ -11,13 +10,13 @@
 <input type="hidden" name="xblock_id" value="{{xblock_id}}">
 
 
-<div class="formula_exercise_block_block">
+<div class="problem formula_exercise_block_block">
 
 	<div class="question_part">
         <li name="question"> {{ question }} </li> <br>
     </div>
 
-	
+
 	<image src="{{ image_url }}" width="50%"/>
 	
 	<!-- Student answer -->
@@ -32,17 +31,24 @@
 	<div name="teacher_answer_div">
 	</div>
 
-	<br/>
-    <input type="button" class="input-main" name='submit-button' {{disabled}} value="Submit" />
+	<div class="action">
+    	<input type="button" class="input-main" name='submit-button' {{disabled}} value="Submit" />
+		<span name="attempt-number" class=".attempt-number">{{ attempt_number }}</span>
 
-    {% if show_answer %}
-    	<input type="button" class="input-main" name='show_answer-button' value="Show Answer" />
-    {% endif %}
+		<!--<div class="problem-action-buttons-wrapper">-->
+		<span class="pull-right">
+		{% if show_reset_button%}
+		<!--<span class="problem-action-button-wrapper">-->
+			<!--<button type="button" name="reset_problem-button" class="reset problem-action-btn btn-default btn-small" data-value="Reset"><span class="icon fa fa-refresh" aria-hidden="true"></span><span aria-hidden="true">Reset</span><span class="sr">${_("Reset your answer")}</span></button>-->
+		<!--</span>-->
+			<input type="button" class="input-main" name='reset_problem-button' value="Reset" />
+		{% endif%}
 
-	{% if show_reset_button%}
-    <!--<span class="problem-action-button-wrapper">-->
-        <!--<button type="button" name="reset_problem" class="reset problem-action-btn btn-default btn-small" data-value="Reset"><span class="icon fa fa-refresh" aria-hidden="true"></span><span aria-hidden="true">Reset</span><span class="sr">${_("Reset your answer")}</span></button>-->
-    <!--</span>-->
-		<input type="button" class="input-main" name='reset_problem-button' value="Reset" />
-    {% endif%}
+		{% if show_answer %}
+			<input type="button" class="input-main" name='show_answer-button' value="Show Answer" />
+		{% endif %}
+
+		</span>
+		<!--</div>-->
+	</div>
 </div>

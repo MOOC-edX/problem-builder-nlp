@@ -263,7 +263,8 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
         #
         # Randomly select a number of components to be displayed on student view
         # refer: https://stackoverflow.com/questions/15511349/select-50-items-from-list-at-random-to-write-to-file
-        for child_id in random.sample(self.children, self.number_problem_displayed):
+        # for child_id in random.sample(self.children, self.number_problem_displayed):
+        for child_id in self.children:
             child = self.runtime.get_block(child_id)
             child_fragment = self._render_child_fragment(child, context, 'student_view')
             fragment.add_frag_resources(child_fragment)
