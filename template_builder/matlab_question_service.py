@@ -129,12 +129,11 @@ def generate_question(question_template, variables):
     return generated_question, generated_variables
 
 
-def new_question(question_template, variables, randomization):
+def new_problem(question_template, variables, randomization):
     compiled_variable_patterns = {}
     generated_variables = {}
 
-    print("## CALLING FUNCTION new_question() ##")
-    print("## START DEBUG INFO ##")
+    print("## Start FUNCTION new_problem() ##")
     print("question_template = {}".format(question_template))
     print("variables= {}".format(variables))
 
@@ -162,16 +161,14 @@ def new_question(question_template, variables, randomization):
 
             generated_variables[var_name] = var_value
 
-        print("generated_variables= {}".format(generated_variables))
-
         # replace values into varibales
         for var_name, var_value in generated_variables.iteritems():
             generated_question = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]),
                                                                       generated_question)
 
     print("generated_question= {}".format(generated_question))
-    print("## END DEBUG INFO ##")
-    print("## End FUNCTION new_question() ##")
+    print("generated_variables= {}".format(generated_variables))
+    print("## End FUNCTION new_problem() ##")
 
     return generated_question, generated_variables
 
@@ -179,10 +176,9 @@ def new_question(question_template, variables, randomization):
 # TODO: remove this function
 def generate_answer_string(generated_variables, answer_template_string):
 
-    print("## CALLING FUNCTION generate_answer_string() ##")
-    print("## START DEBUG INFO ##")
-    print("BEFORE, generated_variables = {}".format(generated_variables))
-    print "BEFORE, _answer_template_string = ", answer_template_string
+    print("## Start FUNCTION generate_answer_string() ##")
+    print("generated_variables = {}".format(generated_variables))
+    print "answer_template_string = ", answer_template_string
 
     compiled_variable_patterns = {}
     for var_name, var_value in generated_variables.iteritems():
@@ -194,8 +190,7 @@ def generate_answer_string(generated_variables, answer_template_string):
         generated_answer = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]),
                                                                     generated_answer)
 
-    print "AFTER, generated_answer = ", generated_answer
-    print("## END DEBUG INFO ##")
+    print "generated_answer = ", generated_answer
     print("## End FUNCTION generate_answer_string() ##")
 
     return generated_answer

@@ -318,8 +318,14 @@ Calculate the total price of them?"""
         scope = Scope.user_state
     )
 
+    reset_question_preview = Boolean(
+        default=True,
+        help="Whether to generate random variables' values of the current xBlock usage for specific One user in Studio preview",
+        scope=Scope.user_state
+    )
+
     runtime_generated_question = String(
-        default=_question_text,
+        default= _question_text,
         help="To store the last runtime generated question of the current xBlock usage for specific One user",
         scope=Scope.user_state
     )
@@ -338,9 +344,112 @@ Calculate the total price of them?"""
 
     runtime_generated_string_variables = Dict(
         default=_string_vars,
-        help="To store the last runtime generated variables of the current xBlock usage for specific One user",
+        help="To store the last runtime generated string variables of the current xBlock usage for specific One user",
         scope=Scope.user_state
     )
+
+    # Without this flag, studio will use student_view on newly-added blocks :/
+    has_author_view = True
+
+    preview_mode = Boolean(
+        default=True,
+        scope=Scope.user_state
+    )
+
+    # @property
+    # def generated_question_preview(self):
+    #     print "## Start generated_quesiton_preview() ##"
+    #
+    #     # generated_question, self._generated_variables = matlab_question_service.new_problem(
+    #     #     self._question_template, self._variables, randomization=True)
+    #     # # append string variables
+    #     # generated_question = qgb_question_service.append_string(generated_question, self._string_vars)
+    #     # print("generated_question = {}".format(generated_question))
+    #     # print "## End generated_quesiton_preview() ##"
+    #
+    #     if self.reset_question == False and self.preview_mode == True:
+    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+    #             self._question_template, self._variables, self.reset_question)
+    #         # append string variables
+    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+    #         # update user_state fields
+    #         setattr(self, 'reset_question', True)
+    #         setattr(self, 'runtime_generated_question', self._generated_question)
+    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
+    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
+    #     elif self.reset_question == True:
+    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+    #             self._question_template, self._variables, self.reset_question)
+    #         # append string variables
+    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+    #         # update user_state fields
+    #         setattr(self, 'reset_question', False)
+    #         setattr(self, 'runtime_generated_question', self._generated_question)
+    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
+    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
+    #     else:
+    #         self._generated_question = self.runtime_generated_question
+    #         self._generated_variables = self.runtime_generated_variables
+    #
+    #     print "## End generated_quesiton_preview() ##"
+    #
+    #     return self._generated_question
+    #
+    # @property
+    # def generated_variables_preview(self):
+    #     print "## Start generated_variables_preview() ##"
+    #
+    #     # generated_question, self._generated_variables = matlab_question_service.new_problem(
+    #     #     self._question_template, self._variables, randomization=True)
+    #     # # append string variables
+    #     # generated_question = qgb_question_service.append_string(generated_question, self._string_vars)
+    #     # print("generated_question = {}".format(generated_question))
+    #
+    #
+    #     if self.reset_question == False and self.preview_mode == True:
+    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+    #             self._question_template, self._variables, self.reset_question)
+    #         # append string variables
+    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+    #         # update user_state fields
+    #         setattr(self, 'reset_question', True)
+    #         setattr(self, 'runtime_generated_question', self._generated_question)
+    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
+    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
+    #     elif self.reset_question == True:
+    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+    #             self._question_template, self._variables, self.reset_question)
+    #         # append string variables
+    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+    #         # update user_state fields
+    #         setattr(self, 'reset_question', False)
+    #         setattr(self, 'runtime_generated_question', self._generated_question)
+    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
+    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
+    #     else:
+    #         self._generated_question = self.runtime_generated_question
+    #         self._generated_variables = self.runtime_generated_variables
+    #
+    #     print "## End generated_variables_preview() ##"
+    #
+    #     return self._generated_variables
+
+
+    @property
+    def point_string(self):
+        if self.show_points_earned:
+            score = sub_api.get_score(self.student_item_key)
+            if score != None:
+                return str(score['points_earned']) + ' / ' + str(score['points_possible']) + ' point(s)'
+
+        return str(self.max_points) + ' point(s) possible'
+
+    @property
+    def attempt_number_string(self):
+        if (self.show_submission_times):
+            return "You have submitted " + str(self.attempt_number) + "/" + str(self.max_attempts) + " time(s)"
+
+        return ""
 
 
     def resource_string(self, path):
@@ -353,8 +462,8 @@ Calculate the total price of them?"""
         """
         The primary view of the MatlabQuestionTemplateBuilderXBlock, shown to students when viewing courses.
         """
-        print("## Calling FUNCTION student_view() ##")
-        print("## START DEBUG INFO ##")
+        print("## Start FUNCTION student_view() ##")
+        print("self.reset_question = {}".format(self.reset_question))
         print("student_view context = {}".format(context))
 
         context = context
@@ -364,15 +473,11 @@ Calculate the total price of them?"""
 
         should_disbled = ''
         show_reset_button = self.allow_reset
-        print("self.reset_question = {}".format(self.reset_question))
 
         # generate question from template if necessary
-
-        # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
-        #     self._question_template, self._variables)
         if self.reset_question == True:
-            self._generated_question, self._generated_variables = matlab_question_service.new_question(
-                self._question_template, self._variables, self.reset_question)
+            self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+                self._question_template, self._variables, randomization=True)
             # append string variables
             self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
             # update user_state fields
@@ -384,13 +489,14 @@ Calculate the total price of them?"""
             self._generated_question = self.runtime_generated_question
             self._generated_variables = self.runtime_generated_variables
         print("self.reset_question = {}".format(self.reset_question))
-        # print("self._generated_question = {}".format(self._generated_question))
-        # print("self._generated_variables = {}".format(self._generated_variables))
+        print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
+        print("self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables))
+
 
         # Get previous submissions made by student
         submissions = sub_api.get_submissions(self.student_item_key, 1)
-        print("self.student_item_key = {}".format(self.student_item_key))
-        print("previous submissions = {}".format(submissions))
+        # print("self.student_item_key = {}".format(self.student_item_key))
+        # print("previous submissions = {}".format(submissions))
 
         # Only show student's last submission
         # TODO: to figure out how to handle student's previous submissions
@@ -439,21 +545,107 @@ Calculate the total price of them?"""
 
         return frag
 
+    def author_view(self, context):
+        """
+        The primary view of the MatlabQuestionTemplateBuilderXBlock, shown to teacher when previewing courses in Studio (preview mode).
+        """
+        print("## Start FUNCTION author_view() ##")
+        print("self.reset_question_preview = {}".format(self.reset_question_preview))
+        print("author_view context = {}".format(context))
+
+        context = context
+
+        if self.xblock_id is None:
+            self.xblock_id = unicode(self.location.replace(branch=None, version=None))
+
+        should_disbled = ''
+        show_reset_button = self.allow_reset
+
+        # generate question from template if necessary
+        if self.reset_question_preview == True:
+            self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+                self._question_template, self._variables, randomization=True)
+            # append string variables
+            self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+            # update user_state fields
+            # setattr(self, 'reset_question_preview', False)    # always generate randomized content in Studio's preview
+            setattr(self, 'runtime_generated_question', self._generated_question)
+            setattr(self, 'runtime_generated_variables', self._generated_variables)
+            setattr(self, 'runtime_generated_string_variables', self._string_vars)
+        else:
+            self._generated_question = self.runtime_generated_question
+            self._generated_variables = self.runtime_generated_variables
+
+        # print("self._generated_text = {}".format(self._question_text))
+        # print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
+        # print("self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables))
+
+        # Get previous submissions made by student
+        submissions = sub_api.get_submissions(self.student_item_key, 1)
+        # print("self.student_item_key = {}".format(self.student_item_key))
+        # print("previous submissions = {}".format(submissions))
+
+        # Only show student's last submission
+        # TODO: to figure out how to handle student's previous submissions
+        if submissions:
+            latest_submission = submissions[0]
+
+            # parse the answer
+            answer = latest_submission['answer'] # saved "answer information"
+            # self._generated_question = answer['generated_question']
+            # self.generated_answer = answer['generated_answer']  # teacher's generated answer
+            self.student_answer = answer['student_answer'] # student's submitted answer
+
+            # TODO: check what is this block for?
+            # Retrived the generated variables of the last submission
+            if ('variable_values' in answer): # backward compatibility
+                saved_generated_variables = json.loads(answer['variable_values'])
+                for var_name, var_value in saved_generated_variables.iteritems():
+                    self._generated_variables[var_name] = var_value
+
+            self.attempt_number = latest_submission['attempt_number']
+            if (self.attempt_number >= self.max_attempts):
+                should_disbled = 'disabled'
+
+        # Serialize some fields in context dictionary before passing to student_view template
+        self.serialize_data_to_context(context)
+
+        # Add following fields to context variable
+        context['disabled'] = should_disbled
+        context['student_answer'] = self.student_answer
+        context['image_url'] = self._image_url
+        context['attempt_number'] = self.attempt_number_string
+        context['point_string'] = self.point_string
+        context['question'] = self._generated_question
+        context['xblock_id'] = self.xblock_id
+        context['show_answer'] = self.show_answer
+        context['show_reset_button'] = show_reset_button
+
+        frag = Fragment()
+        frag.content = loader.render_template('static/html/matlab_question_template_builder/student_view.html', context)
+        frag.add_css(self.resource_string("static/css/question_generator_block.css"))
+        frag.add_javascript(self.resource_string("static/js/matlab_question_template_builder/student_view.js"))
+        frag.initialize_js('MatlabQuestionTemplateBuilderXBlock')
+
+        print("author_view context = {}".format(context))
+        print("## End FUNCTION author_view() ##")
+
+        return frag
+
 
     def studio_view(self, context):
         """
         Render a form for editing this XBlock (override the StudioEditableXBlockMixin's method)
         """
-        print("## Calling FUNCTION studio_view() ##")
-        print("## START DEBUG INFO ##")
+        print("## Start FUNCTION studio_view() ##")
         print("context = {}".format(context))
 
         # if the XBlock has been submitted already then disable the studio_edit screen
         location = self.location.replace(branch=None, version=None)  # Standardize the key in case it isn't already
         item_id=unicode(location)
 
-        print("self._variables = {}".format(self._variables))
-        print "self._string_vars = {}".format(self._string_vars)
+        # print("self._variables = {}".format(self._variables))
+        # print "self._string_vars = {}".format(self._string_vars)
 
         # Student not yet submit then we can edit the XBlock
         context = {'fields': []}
@@ -469,7 +661,7 @@ Calculate the total price of them?"""
             if field_info is not None:
                 context["fields"].append(field_info)
 
-        print("self.is_question_text_parsed = {}".format(self.is_question_text_parsed))
+        # print("self.is_question_text_parsed = {}".format(self.is_question_text_parsed))
 
         # self.serialize_data_to_context(context) ??? REMOVE not necessary, remove ???
         context['is_question_text_parsed'] = self.is_question_text_parsed
@@ -496,7 +688,6 @@ Calculate the total price of them?"""
         context['raw_editor_xml_data'] = self._raw_editor_xml_data
 
         print("context = {}".format(context))
-        print("## End DEBUG INFO ##")
 
         fragment = Fragment()
         # fragment.content = loader.render_template('static/html/matlab_question_template_builder/problem_edit.html', context)
@@ -646,7 +837,7 @@ Calculate the total price of them?"""
 
     @XBlock.json_handler
     def fe_parse_question_studio_edits(self, data, suffix=''):
-        
+        print("## Start FUNCTION fe_parse_question_studio_edits() ##")
         q = data['question']
         a = data['answer']
         # update fields
@@ -657,25 +848,39 @@ Calculate the total price of them?"""
         # parse question text
         # template, variables, strings = parse_question_v2(q)
         template, variables, strings = parse_question_improved(q)
-        logging.debug("Tammd wants to know template = {}", template)
-        logging.debug("Tammd wants to know variables = {}", variables)
-        logging.debug("Tammd wants to know strings = {}", strings)
+        # logging.debug("Tammd wants to know template = {}", template)
+        # logging.debug("Tammd wants to know variables = {}", variables)
+        # logging.debug("Tammd wants to know strings = {}", strings)
 
         # parse answer text
         # answer = parse_answer_v2(a, variables)
         answer = parse_answer_improved(a, variables)
-        logging.debug("Tammd wants to know answer = %s", answer)
-
-        # # TODO: use dict for numeric variables so we can remove this conversion for var
-        # var = {}
-        # for i in range(len(variables)):
-        #     var['var{}'.format(i)] = variables[i][1]['var{}'.format(i)]
+        # logging.debug("Tammd wants to know answer = %s", answer)
 
         # update fields
         setattr(self,'_variables', variables)
         setattr(self,'_question_template', template)
         setattr(self,'_answer_template_string', answer)
         setattr(self,'_string_vars', strings)
+
+        # Handle default problem for Studio's preview
+        #
+        # # Generate new problem
+        # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+        #     self._question_template, self._variables, randomization=True)
+        # # append string variables
+        # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        # # generated answer string
+        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+        #                                                                   self._answer_template_string)
+        # print("self._question_text = {}".format(self._question_text))
+        # print("self._generated_question = {}".format(self._generated_question))
+        # print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
+        # print "self.runtime_generated_question = {}".format(getattr(self, 'runtime_generated_question'))
+        # print("self._generated_variables = {}".format(self._generated_variables))
+        # print "generated_answer = ", generated_answer
+
+        print("## End FUNCTION fe_parse_question_studio_edits() ##")
 
         return {'result': 'success'}
 
@@ -689,8 +894,7 @@ Calculate the total price of them?"""
 
         """
 
-        print("## Calling FUNCTION fe_submit_studio_edits() ###")
-        print("## DEBUG INFO ###")
+        print("## Start FUNCTION fe_submit_studio_edits() ###")
         # print("data fields: {}".format(data))
         # print("### editor updated xml_data: ###")
         # print(data['raw_editor_xml_data'])
@@ -712,19 +916,16 @@ Calculate the total price of them?"""
             updated_string_vars_list = data['strings']
             string_variables = self._string_vars
 
-            print("updated_string_vars_list = {}".format(updated_string_vars_list))
-            print("BEFORE, self._string_vars = {}".format(self._string_vars))
+            # print("updated_string_vars_list = {}".format(updated_string_vars_list))
+            # print("BEFORE, self._string_vars = {}".format(self._string_vars))
 
             final_string_variables, updated_string_vars, removed_string_vars, added_string_vars = qgb_question_service.update_string_variables(string_variables, updated_string_vars_list)
-            print("updated_string_vars = {}".format(updated_string_vars))
-            print("removed_string_vars = {}".format(removed_string_vars))
-            print("added_string_vars = {}".format(added_string_vars))
-            print("final_string_variables = {}".format(final_string_variables))
+            # print("updated_string_vars = {}".format(updated_string_vars))
+            # print("removed_string_vars = {}".format(removed_string_vars))
+            # print("added_string_vars = {}".format(added_string_vars))
+            # print("final_string_variables = {}".format(final_string_variables))
 
             # update question template
-            #
-            # new_list = [ string for string in string_variables if string not in updated_string_vars ]
-            # updated_question_template  = qgb_question_service.update_default(updated_question_template, new_list)
             updated_question_template = qgb_question_service.update_question_template(updated_question_template,
                                                                             updated_string_vars, removed_string_vars, added_string_vars)
 
@@ -773,18 +974,13 @@ Calculate the total price of them?"""
             updated_question_template = raw_edit_data['question_template']
             updated_url_image = raw_edit_data['image_url']
             updated_variables = raw_edit_data['variables']
-            # get only one firt answer for now. TODO: update to support multi-answers attributes for multiple solutions
+            # get only one firt answer for now.
+            # TODO: update to support multi-answers attributes for multiple solutions
             updated_answer_template_dict = raw_edit_data['answer_template'][1]
             updated_string_variables = raw_edit_data['string_variables']
 
             # convert answer dict to string
             updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
-
-            print("BEFORE, self._answer_template_string = ")
-            print(self._answer_template_string)
-
-            print("Data type of self._answer_template_string = {}".format(type(self._answer_template_string)))
-            print("Data type of updated_answer_template = {}".format(type(updated_answer_template)))
 
             # "refresh" XBlock's values
             # update values to global variables
@@ -807,8 +1003,6 @@ Calculate the total price of them?"""
             # update raw edit fields data
             self.raw_editor_xml_data = updated_xml_string
             setattr(self, '_raw_editor_xml_data', updated_xml_string)
-
-        # print("AFTER SAVE, self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
 
         # copy from StudioEditableXBlockMixin (can not call parent method)
         values = {}  # dict of new field values we are updating
@@ -837,25 +1031,25 @@ Calculate the total price of them?"""
         self.validate_field_data(validation, preview_data)
         # print("preview_data fields: {}".format(preview_data))
 
-        self._generated_question, self._generated_variables = matlab_question_service.generate_question(
-            self._question_template, self._variables)
+        # Generate new problem
+        # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
+        #     self._question_template, self._variables)
+        self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+            self._question_template, self._variables, randomization=True)
 
         # Now, append string_vars into the generated question
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
         # generated answer string
         generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
                                                                           self._answer_template_string)
-        print "generated_answer = ", generated_answer
-        print("self._generated_question = {}".format(self._generated_question))
-        print("self._generated_variables = {}".format(self._generated_variables))
-
+        # update fields
         # update original text
         setattr(self, '_question_text', self._generated_question)
         setattr(self, '_answer_text', generated_answer)
 
-
-
-        print("## End DEBUG INFO ###")
+        print("self._generated_text = {}".format(self._question_text))
+        print("self._answer_text = {}".format(self._answer_text))
+        print("## End FUNCTION fe_submit_studio_edits() ###")
 
         if validation:
             for field_name, value in values.iteritems():
@@ -867,31 +1061,12 @@ Calculate the total price of them?"""
             raise JsonHandlerError(400, validation.to_json())
     
 
-    @property
-    def point_string(self):
-        if self.show_points_earned:
-            score = sub_api.get_score(self.student_item_key)
-            if score != None:
-                return str(score['points_earned']) + ' / ' + str(score['points_possible']) + ' point(s)'
-
-        return str(self.max_points) + ' point(s) possible'
-
-
-    @property
-    def attempt_number_string(self):
-        if (self.show_submission_times):
-            return "You have submitted " + str(self.attempt_number) + "/" + str(self.max_attempts) + " time(s)"
-
-        return ""
-
-
     @XBlock.json_handler
     def show_answer_handler(self, data, suffix=''):
         """
         AJAX handler for "Show/Hide Answer" button
         """
-        print("## CALLING FUNCTION show_answer_handler() ##")
-        print("## START DEBUG INFO ##")
+        print("## Start FUNCTION show_answer_handler() ##")
         print("data = {}".format(data))
 
         self.deserialize_data_from_context(data)
@@ -900,7 +1075,6 @@ Calculate the total price of them?"""
         generated_answer = matlab_question_service.generate_answer_string(self._generated_variables, self._answer_template_string)
 
         print("generated_answer = {}".format(generated_answer))
-        print("## START DEBUG INFO ##")
         print("## END FUNCTION show_answer_handler() ##")
 
         return {
@@ -912,15 +1086,12 @@ Calculate the total price of them?"""
         """
         AJAX handler for problem reset when invoked 'Reset' button
         """
-        print("## CALLING FUNCTION reset_problem_handler() ##")
-        print("## START DEBUG INFO ##")
-        print("data = {}".format(data))
+        print("## Start FUNCTION reset_problem_handler() ##")
 
         problem = {}
         submit_disabled = ''
         reset_disabled = ''
         show_reset_button = self.allow_reset
-        print("show_reset_button = {}".format(show_reset_button))
 
         # Reset score and previous submissions made by student
         sub_api.reset_score(self.student_item_key['student_id'], self.student_item_key['course_id'], self.student_item_key['item_id'], clear_state=True)
@@ -928,7 +1099,7 @@ Calculate the total price of them?"""
         # Generate question from template if necessary
         # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
         #     self._question_template, self._variables)
-        self._generated_question, self._generated_variables = matlab_question_service.new_question(
+        self._generated_question, self._generated_variables = matlab_question_service.new_problem(
             self._question_template, self._variables, randomization=True)
         # append string variables
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
@@ -942,10 +1113,6 @@ Calculate the total price of them?"""
                                                                           self._answer_template_string)
         setattr(self, 'runtime_generated_answer', generated_answer)
 
-        print("self._generated_question = {}".format(self._generated_question))
-        print("self._generated_variables = {}".format(self._generated_variables))
-        print("generated_answer = {}".format(generated_answer))
-
         # Add following fields to problem variable
         problem['question'] = self.runtime_generated_question
         problem['answer_template'] = self._answer_template_string
@@ -958,8 +1125,13 @@ Calculate the total price of them?"""
         problem['reset_disabled'] = reset_disabled
         problem['submit_disabled'] = submit_disabled
 
-        print("## START DEBUG INFO ##")
-        print("## END FUNCTION reset_problem_handler() ##")
+        print "self._generated_question = {}".format(self._generated_question)
+        print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
+        print "self.runtime_generated_question = {}".format(getattr(self, 'runtime_generated_question'))
+        print "self._generated_variables = {}".format(self._generated_variables)
+        print "generated_answer = {}".format(generated_answer)
+        # print "problem = {}".format(problem)
+        print "## END FUNCTION reset_problem_handler() ##"
 
         return problem
 

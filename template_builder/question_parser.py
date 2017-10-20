@@ -115,7 +115,7 @@ def parse_noun(sentences):
 
 def create_string_variables(list_pos):
     print "### START FUNCTION create_string_variables()###"
-    print "list_pos= {}".format(list_pos)
+    # print "list_pos= {}".format(list_pos)
 
     # Get list of all nouns and pronouns from lis_pos
     import string
@@ -159,7 +159,7 @@ def create_string_variables(list_pos):
 
         #print string_vars_dict[i]
 
-    print "string_variables= {}".format(string_vars_dict)
+    # print "string_variables= {}".format(string_vars_dict)
     print "### END FUNCTION create_string_variables()###"
 
     return string_vars_dict
@@ -199,7 +199,7 @@ def parse_answer_improved(answer, variables):
     print "### START FUNCTION parse_answer_improved()###"
     # words = tokenization(answer)
     # print "tokenized words= {}".format(words)
-    print "variables= {}".format(variables)
+    # print "variables= {}".format(variables)
 
     # New method:
     # Replace original text by variable help to improve performance
@@ -210,7 +210,7 @@ def parse_answer_improved(answer, variables):
         answer_template = re.sub(r" {}".format(num_variable["original_text"]), " [{}]".format(num_variable["name"]),
                                    answer_template)
 
-    print "answer_template= {}".format(answer_template)
+    # print "answer_template= {}".format(answer_template)
     print "### END FUNCTION parse_answer_improved()###"
 
     return answer_template
@@ -315,17 +315,17 @@ def parse_question_improved(question_text):
                     variables.append( (word[0],'float') )
             except ValueError:
                 print "oops: the last call this is the word '" + str(word) + "'"
-        print "at word = {}, variables= {}".format(word, variables)
+        # print "at word = {}, variables= {}".format(word, variables)
 
     variables = list(set(variables))
-    print "variables = {}".format(variables)
+    # print "variables = {}".format(variables)
 
     # New method: use dictionary indexed by var name
     # Replace original text by variable help to improve performance
     numeric_variables = {}
     for i in range(len(variables)):
         var_index = 'var{}'.format(i)
-        print 'i = {}, variables[i] = {}'.format(str(i), variables[i])
+        # print 'i = {}, variables[i] = {}'.format(str(i), variables[i])
         numeric_variables[var_index] = {
                                             'name': var_index,
                                             'original_text': variables[i][0],
@@ -334,7 +334,7 @@ def parse_question_improved(question_text):
                                             'type': variables[i][1],
                                             'decimal_places': 2
         }
-    print "numeric_variables = {}".format(numeric_variables)
+    # print "numeric_variables = {}".format(numeric_variables)
 
     # Create string variables
     # string_variables = parse_noun(question_text)
@@ -436,10 +436,10 @@ if __name__ == '__main__':
     #         H = 2*x/g
     #         """
 
-    ex1 = """Given 7 apples and 5 rings. One apple cost 20000 USD, one ring cost 3500 USD.
+    ex1 = """Given 7 apples and 5 rings. One apple cost 200.8 USD, one ring cost 3,5 USD.
 Calculate the total price of them?"""
 
-    ans1 = """x = 7 * 20000 + 5 * 3500"""
+    ans1 = """x = 7 * 200.8 + 5 * 3,5"""
 
     print 'original question = ' + ex1
     print 'original anser = ' + ans1

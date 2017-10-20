@@ -103,8 +103,7 @@ def generate_answer(generated_variables, answer_template):
     return generated_answer
 
 def append_string(template, string_variables):
-    print("## Calling FUNCTION append_string() ##")
-    print("## START DEBUG INFO ##")
+    print("## Start FUNCTION append_string() ##")
     print("template = {}".format(template))
     print("string_variables = {}".format(string_variables))
 
@@ -116,13 +115,11 @@ def append_string(template, string_variables):
     # then, update value to this var in the given question template
     for var_name, var in string_variables.iteritems():
         value = var['value']
-        print("var_name = {}, value = {}".format(var_name, value))
+        # print("var_name = {}, value = {}".format(var_name, value))
         for context_id, context in var['context_list'].iteritems():
             if var['context'] == context_id: # get random value of selected context only
                 value = get_random_item_from_list(context['synonyms'])
-                print("context_id = {}, var_name = {}, value = {}".format(context_id, var_name, value))
-                # # update the global variable
-                # string_variables[var_name]['value'] = value
+                # print("context_id = {}, var_name = {}, value = {}".format(context_id, var_name, value))
         # update template
         template = re.sub( "\[{}\]".format(var["name"]), "{}".format(value), template )
 
@@ -131,8 +128,7 @@ def append_string(template, string_variables):
     return template
 
 def update_default(template, string_variables):
-    print("## Calling FUNCTION update_default() ##")
-    print("## START DEBUG INFO ##")
+    print("## Start FUNCTION update_default() ##")
     print("template = {}".format(template))
     print("string_variables = {}".format(string_variables))
 
@@ -148,8 +144,7 @@ def update_default(template, string_variables):
     return template
 
 def update_question_template(template, updated_string_vars={}, removed_string_vars={}, added_string_vars={}):
-    print("## Calling FUNCTION update_question_template() ##")
-    print("## START DEBUG INFO ##")
+    print("## Start FUNCTION update_question_template() ##")
     print("input template = {}".format(template))
     # print("added_string_vars = {}".format(updated_string_vars))
     # print("removed_string_vars = {}".format(removed_string_vars))
