@@ -9,7 +9,7 @@
 		<input type="hidden" class="hidden" name="is_question_text_parsed" value="{{ is_question_text_parsed }}" />
     </div>
 
-	<!--PARSER TAB-->
+	<!--QUESTION PARSER TAB-->
 	<div class="wrapper-comp-settings is-active editor-with-buttons" name="question_text-tab" id="question_text-tab">
         <ul class="list-input settings-list" name="question_text_list">
 			<li class="field comp-setting-entry metadata_entry">
@@ -28,7 +28,6 @@
 		</ul>
 	</div>
 
-	<!--TEMPLATE TAB-->
 	<div class="wrapper-comp-settings is-active editor-with-buttons question_template" name="question_template-tab" id="question_template-tab">
         <ul class="list-input settings-list" name="question_template_list">
 
@@ -144,7 +143,6 @@
 		</section>
 	</div>
 
-	<!--SETTINGS TAB-->
     <div class="wrapper-comp-settings is-active editor-with-buttons general_information" name="general_information-tab" id="settings-tab">
 		<ul class="list-input settings-list">
 			{% for field in fields %}

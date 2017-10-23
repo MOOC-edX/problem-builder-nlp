@@ -16,13 +16,16 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
     var teacher_answer_div_element = $(xblockElement).find('div[name=teacher_answer_div]');
     var show_answer_button = $(xblockElement).find('input[name=show_answer-button]');
     var reset_button = $(xblockElement).find('input[name=reset_problem-button]');
+    var action_div = $(xblockElement).find('div.action');
 
 
-	function handleSubmissionResult(results) {
+	function handleSubmissionResult(result) {
 		console.log('handleSubmissionResult INVOKED');
-    	$(xblockElement).find('div[name=attempt-number]').text(results['attempt_number']);
-    	$(xblockElement).find('div[name=problem-progress]').text(results['point_string']);
+//    	$(xblockElement).find('div[name=attempt-number]').text(result['attempt_number']);
+        action_div.find('span[name=attempt-number]').text(result['attempt_number']);
+    	$(xblockElement).find('div[name=problem-progress]').text(result['point_string']);
     	$(xblockElement).find('input[name=submit-button]').val("Submit")
+
     	if (results['submit_disabled'] == 'disabled') {
     		$(xblockElement).find('input[name=submit-button]').attr('disabled','disabled');
     	}
@@ -32,7 +35,7 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
     	}
   	}
   	
-    // Old version,
+    // Use this function ATM.
   	function handleShowAnswerResultString(result) {
   		console.log('handleShowAnswerResult INVOKED');
 
@@ -97,7 +100,7 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
 		student_answer_textarea_element.val('');
 
 		// update progress
-    	$(xblockElement).find('div[name=attempt-number]').text(result['attempt_number']);
+        action_div.find('span[name=attempt-number]').text(result['attempt_number']);
     	$(xblockElement).find('div[name=problem-progress]').text(result['point_string']);
 
     	// clear shown answer if any

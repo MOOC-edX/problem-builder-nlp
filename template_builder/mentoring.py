@@ -220,20 +220,33 @@ class FancyXBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableX
 
 
 class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditableXBlockMixin):
-    display_name = String (
+    display_name = String(
         display_name = _("Title"),
         help =_("This block is a group question block developed by GCS"),
         scope = Scope.settings,
         default = _("Advanced Problem Builder")
         )
 
-    number_problem_displayed = Integer (
-        display_name = _("Maximum Problems Shown"),
+    library_mode = Boolean(
+        display_name=_("Library Mode"),
+        default=False,
+        help=_("If True, use this container xBlock as a library, i.e. it will randomly pick the number of components set at field 'Count' and render to studnets."),
+        scope=Scope.settings,
+    )
+
+    count = Integer(
+        display_name = _("Count"),
         default = 1,
-        help=_("Enter the number of problems to display to each student."),
+        help=_("Enter the number of components to display to each student."),
         scope = Scope.settings,
         )
-    editable_fields = ('display_name', 'number_problem_displayed')
+
+    random_samples = List(
+        default=[],
+        scope= Scope.user_state
+    )
+
+    editable_fields = ('display_name', 'library_mode', 'count')
 
     @property
     def allowed_nested_blocks(self):
@@ -259,11 +272,28 @@ class TemplateBlock(StudioContainerWithNestedXBlocksMixin, XBlock, StudioEditabl
     def student_view(self, context):
         children_contents = []
         fragment = Fragment()
-        # for child_id in self.children:
+        # print "Type of self.children: {}".format(type(self.children))
+        # print "self.children = {}".format(self.children)
+
+        # # Process library mode
+        # if not self.library_mode:
+        #     # Get all child components
+        #     self.random_samples = self.children
+        # else:
+        #     # Randomly pick Count samples from the list of all child components to render to specific student on specific course.
+        #     #
+        #     # refer: https://stackoverflow.com/questions/15511349/select-50-items-from-list-at-random-to-write-to-file
         #
-        # Randomly select a number of components to be displayed on student view
-        # refer: https://stackoverflow.com/questions/15511349/select-50-items-from-list-at-random-to-write-to-file
-        # for child_id in random.sample(self.children, self.number_problem_displayed):
+        #     # Check Count vs Total child components
+        #     number_of_childs = len(self.children)
+        #     if self.count > number_of_childs:
+        #         self.count = number_of_childs
+        #     # Pick self.count samples from the childrent list
+        #     self.random_samples = random.sample(self.children, self.count)
+        # print "Type of self.random_samples = {}".format(type(self.random_samples))
+        # print "self.random_samples = {}".format(self.random_samples)
+
+        # for child_id in self.random_samples:
         for child_id in self.children:
             child = self.runtime.get_block(child_id)
             child_fragment = self._render_child_fragment(child, context, 'student_view')

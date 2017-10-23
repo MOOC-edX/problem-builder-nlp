@@ -12,15 +12,18 @@
 
 <div class="problem formula_exercise_block_block">
 
-	<div class="question_part">
-        <li name="question"> {{ question }} </li> <br>
+	<div name="question">
+        {{ question }}
     </div>
 
+	{% if image %}
+	<div name="image">
+		<image src="{{ image_url }}" width="50%"/>
+	</div>
+	{% endif %}
 
-	<image src="{{ image_url }}" width="50%"/>
-	
 	<!-- Student answer -->
-	<div class="student_answer_div">
+	<div class="student_answer_div" style="padding-top:20px">
 		<label for="student_answer">Answer:</label>
 		<br/>
 		<textarea name="student_answer" cols="50" rows="15" style="height: 250px; width: 100%; margin-bottom: 10px;">{{student_answer}}</textarea>
