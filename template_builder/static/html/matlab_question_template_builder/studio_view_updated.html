@@ -41,7 +41,7 @@
 
 	        <li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
-					<label class="label setting-label" for="image_url">Image</label>
+					<label class="label setting-label" for="image_url">Image URL</Image></label>
 					<input name="image_url" type="text" class="field-data-control" id="xb-field-edit-image" value="{{ image_url }}" />
 	        	</div>
 			</li>
@@ -55,30 +55,32 @@
 				<div class="wrapper-comp-setting">
 					<!-- NUMERIC VARIABLES SETTINGS-->
 					<table name="variables_table" class="variables_table">
-						<tr class="formula_edit_table_header_color">
-							<th width="15%" class="table_cell_alignment">Numeric variables</th>
-							<!--<th width="18%" class="table_cell_alignment">Name</th>-->
-							<th width="13%" class="table_cell_alignment">Min</th>
-							<th width="13%" class="table_cell_alignment">Max</th>
-							<th width="13%" class="table_cell_alignment">Type</th>
-							<th width="13%" class="table_cell_alignment">Decimal places</th>
-							<th width="10%"></th>
+						<tr class="formula_edit_table_header_color formula_edit_table_row">
+							<th width="10%" class="table_cell_alignment first_column">Numeric variables</th>
+                            <th width="20%" class="table_cell_alignment">Original text</th>
+                            <th width="15%" class="table_cell_alignment">Type</th>
+							<th width="15%" class="table_cell_alignment">Min</th>
+							<th width="15%" class="table_cell_alignment">Max</th>
+
+							<th width="10%" class="table_cell_alignment" title="Decimal places for Float number">Dec. places</th>
+							<th></th>
 						</tr>
 
 						{% for variable_name, variable in variables.iteritems %}
 							<tr class="formula_edit_table_row">
-								<!--<td></td>-->
-								<td class="table_cell_alignment"><input type="text" name="variable-{{ variable.name }}" class="formula_input_text" value="{{ variable.name }}"></td>
-								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_min_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.min_value }}"></td>
-								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_max_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.max_value }}"></td>
-								<td class="table_cell_alignment">
-									<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="formula_input_text">
-										<option value="int" {% if variable.type == "int" %} selected="true" {% endif %}>int</option>
-										<option value="float" {% if variable.type == "float" %} selected="true" {% endif %}>float</option>
+								<td class="table_cell_alignment first_column"><input type="text" name="variable-{{ variable.name }}" class="formula_input_text" value="{{ variable.name }}"></td>
+                                <td class="table_cell_alignment"><input type="text" name="original_text-{{variable.name}}" class="formula_input_text" value= {{ variable.original_text }} readonly></td>
+                                <td class="table_cell_alignment">
+									<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="variable_type">
+										<option value="int" {% if variable.type == "int" %} selected="true" {% endif %}>Int</option>
+										<option value="float" {% if variable.type == "float" %} selected="true" {% endif %}>Float</option>
+                                        <!--<option value="custom" {% if variable.type == "custom" %} selected="true" {% endif %}>Custom</option>-->
 									</select>
 								</td>
+								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_min_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.min_value }}"></td>
+								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_max_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.max_value }}"></td>
 								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="formula_input_text" min="0" max="7" value="{{ variable.decimal_places }}"></td>
-								<td class="table_cell_alignment"><input type="button" class="remove_variable_button" value="Remove"></td>
+								<td class="table_cell_alignment last_column"><input type="button" class="remove_variable_button" value="Remove"></td>
 							</tr>
 						{% endfor %}
 					</table>
@@ -86,28 +88,25 @@
 					<!-- STRING VARIABLES SETTINGS-->
 					<table name="word_variables_table" class="variables_table">
 						<tbody>
-                            <tr class="formula_edit_table_header_color">
-                                <th width="15%" class="table_cell_alignment">String variables</th>
-								<th width="18%" class="table_cell_alignment">Original text</th>
-                                <!--<th width="18%" class="table_cell_alignment">Variable</th>-->
+                            <tr class="formula_edit_table_header_color formula_edit_table_row">
+                                <th width="10%" class="table_cell_alignment first_column">String variables</th>
+								<th width="20%" class="table_cell_alignment">Original text</th>
                                 <th width="25%" class="table_cell_alignment">Context</th>
-								<th width="13%" class="table_cell_alignment">Options</th>
-                                <th width="10%"></th>
+								<th width="20%" class="table_cell_alignment">Options</th>
+                                <th></th>
                             </tr>
                             {% for key, var in string_variables.iteritems %}
                                 <tr class="formula_edit_table_row">
-                                    <!--<td></td>-->
-                                    <td class="table_cell_alignment"><input type="text" name="string_variable-{{var.name}}" class="formula_input_text" value= {{ var.name }} readonly></td>
+                                    <td class="table_cell_alignment first_column"><input type="text" name="string_variable-{{var.name}}" class="formula_input_text" value= {{ var.name }} readonly></td>
 									<td class="table_cell_alignment"><input type="text" name="original_text-{{var.name}}" class="formula_input_text" value= {{ var.original_text }} readonly></td>
-                                    <!--<td class="table_cell_alignment"><input type="text" name="string_variable-{{var.name}}" class="formula_input_text" value= {{ var.name }} readonly></td>-->
-                                    <td class="table_cell_aligment">
+                                    <td class="table_cell_alignment">
                                         <select name="variable-library-{{ var.name }}" class="formula_input_text">
                                             {% for context_id, context in var.context_list.iteritems %}
                                                 <option value="{{context_id}}" {% if var.context == context_id %} selected="true" {% endif %}> {{context.name}} </option>
                                             {% endfor %}
                                         </select>
                                     </td>
-									<td class="table_cell_aligment">
+									<td class="table_cell_alignment">
                                         <select name="variable-value-{{ var.name }}" class="formula_input_text">
 											{% for context_id, context in var.context_list.iteritems %}
 												{% if context_id == var.context %}
@@ -118,7 +117,7 @@
 											{% endfor %}
                                         </select>
                                     </td>
-                                    <td class="table_cell_alignment"><input type="button" class="remove_word_variable_button" value="Remove"></td>
+                                    <td class="table_cell_alignment last_column"><input type="button" class="remove_variable_button" value="Remove"></td>
                                 </tr>
                             {% endfor %}
 						</tbody>

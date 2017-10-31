@@ -81,11 +81,6 @@ def convert_data_from_dict_to_xml(data):
     # Parse and convert answer template string to dictionary first
     answer_template_dict = {}
     answer_template_list = field_answer_template.split('\n')
-    # print("data type of answer_template_list: {}".format(type(answer_template_list)))
-    # print "answer_template_list = "
-    # print(answer_template_list)
-    # print "field_answer_template = "
-    # print(field_answer_template)
 
     for answer in answer_template_list:
         # only process if not empty, ignore empty answer template
@@ -207,44 +202,26 @@ def string_variables_dict_to_xml_element(string_variables_dict):
     :return: string_variables_elem - xml element
 
         <string_variables>
-            <string_variable name="string0" original_text="Calculate" value="str0" default="Calculate" >
+            <string_variable default="car" name="string0" original_text="car" value="car">
                 <context_list>
-                    <context name="Context 1" select="true">Synonym set 1
-                        <option>1_str0</option>
-                        <option>1_str1</option>
-                        <option>1_str2</option>
-                        <option>1_str3</option>
-                        <option>1_str4</option>
-                        <option>1_str5</option>
-                    </context>
-                    <context name="Context 2" select="false">Synonym set 2
-                        <option>2_str0</option>
-                        <option>2_str1</option>
-                        <option>2_str2</option>
-                        <option>2_str3</option>
-                        <option>2_str4</option>
-                        <option>2_str5</option>
+                    <context name="Synonyms of text 'car' (Default)" select="true">
+                        <option>car</option>
+                        <option>machine</option>
+                        <option>truck</option>
+                        <option>auto</option>
+                        <option>automobile</option>
+                        <option>electric car</option>
                     </context>
                 </context_list>
             </string_variable>
-
-            <string_variable name="string1" original_text="apple" value="apple" default="apple" >
+            <string_variable default="house" name="string1" original_text="house" value="house">
                 <context_list>
-                    <context name="Context 3" select="true">Synonym set 3
-                        <option>3_str0</option>
-                        <option>3_str1</option>
-                        <option>3_str2</option>
-                        <option>3_str3</option>
-                        <option>3_str4</option>
-                        <option>3_str5</option>
-                    </context>
-                    <context name="Context 4" select="false">Synonym set 4
-                        <option>4_str0</option>
-                        <option>4_str1</option>
-                        <option>4_str2</option>
-                        <option>4_str3</option>
-                        <option>4_str4</option>
-                        <option>4_str5</option>
+                    <context name="Synonyms of text 'house' (Default)" select="true">
+                        <option>house</option>
+                        <option>palace</option>
+                        <option>building</option>
+                        <option>land</option>
+                        <option>island</option>
                     </context>
                 </context_list>
             </string_variable>
@@ -309,6 +286,31 @@ def extract_data_from_xmlstring_to_dict(xml_string):
             <answer_templates>
                 <answer sum = "[a] + [b]" difference = "[a] - [b]">Teacher's answer</answer>
             </answer_templates>
+            <string_variables>
+                <string_variable default="car" name="string0" original_text="car" value="car">
+                    <context_list>
+                        <context name="Synonyms of text 'car' (Default)" select="true">
+                            <option>car</option>
+                            <option>machine</option>
+                            <option>truck</option>
+                            <option>auto</option>
+                            <option>automobile</option>
+                            <option>electric car</option>
+                        </context>
+                    </context_list>
+                </string_variable>
+                <string_variable default="house" name="string1" original_text="house" value="house">
+                    <context_list>
+                        <context name="Synonyms of text 'house' (Default)" select="true">
+                            <option>house</option>
+                            <option>palace</option>
+                            <option>building</option>
+                            <option>land</option>
+                            <option>island</option>
+                        </context>
+                    </context_list>
+                </string_variable>
+            </string_variables>
         </problem>
 
     :return: raw_editor_data_fields -- a dictionary of raw edit supported fields
@@ -363,7 +365,7 @@ def extract_data_from_xmlstring_to_dict(xml_string):
                 # add each answer into the raw_editor_data_fields dict
                 raw_editor_data_fields["answer_template"][i] = answer_attributes
         elif field.tag == "string_variables":
-            # Extract variables info
+            # Extract string variables info
             raw_editor_data_fields["string_variables"] = {}  # initialize the variables dict
             # find all direct child elements named "string_variable" under 'string_variables' element
             string_variable_list = field.findall("string_variable")

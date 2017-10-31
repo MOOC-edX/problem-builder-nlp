@@ -146,13 +146,15 @@ Calculate the total price of them?""",
             {
                 'a':{
                         'name': 'a',
+                        'original_text': '7',
                         'min_value': 1,
-                        'max_value': 200,
+                        'max_value': 10,
                         'type': 'int',
                         'decimal_places': 0
                     },
                 'b':{
                         'name': 'b',
+                        'original_text': '5',
                         'min_value': 1,
                         'max_value': 20,
                         'type': 'int',
@@ -160,15 +162,17 @@ Calculate the total price of them?""",
                     },
                 'x':{
                         'name': 'x',
-                        'min_value': 4500.5,
-                        'max_value': 109900,
+                        'original_text': '20000',
+                        'min_value': 4500,
+                        'max_value': 100000,
                         'type': 'float',
                         'decimal_places': 2
                     },
                 'y':{
                         'name': 'y',
-                        'min_value': 50.5,
-                        'max_value': 5000.99,
+                        'original_text': '43500',
+                        'min_value': 100001,
+                        'max_value': 500000,
                         'type': 'float',
                         'decimal_places': 2
                     }
@@ -185,10 +189,10 @@ Calculate the total price of them? </description>
             <image_url link="">Image</image_url>
         </images>
         <variables>
-            <variable name="a" min_value="1" max_value="200" type="int"/>
+            <variable name="a" min_value="1" max_value="10" type="int"/>
             <variable name="b" min_value="1" max_value="20" type="int"/>
-            <variable name="x" min_value="4500.5" max_value="109900" type="float" decimal_places="2"/>
-            <variable name="y" min_value="50.5" max_value="5000.99" type="float" decimal_places="2"/>
+            <variable name="x" min_value="4500" max_value="100000" type="float" decimal_places="2"/>
+            <variable name="y" min_value="100001" max_value="500000" type="float" decimal_places="2"/>
         </variables>
         <answer_templates>
             <answer price = "[a] * [x] + [b] * [y]">Teacher's answer</answer>
@@ -202,15 +206,18 @@ Calculate the total price of them? </description>
                         <option>truck</option>
                         <option>auto</option>
                         <option>automobile</option>
+                        <option>electric car</option>
                     </context>
                 </context_list>
             </string_variable>
-            <string_variable default="ring" name="string1" original_text="ring" value="ring">
+            <string_variable default="house" name="string1" original_text="house" value="house">
                 <context_list>
-                    <context name="Synonyms of text 'ring' (Default)" select="true">
-                        <option>ring</option>
-                        <option>necklet</option>
-                        <option>watch</option>
+                    <context name="Synonyms of text 'house' (Default)" select="true">
+                        <option>house</option>
+                        <option>palace</option>
+                        <option>building</option>
+                        <option>land</option>
+                        <option>island</option>
                     </context>
                 </context_list>
             </string_variable>
@@ -227,13 +234,13 @@ Calculate the total price of them? </description>
 
     _question_text = String (
         scope = Scope.content,
-        default="""Given 7 cars and 5 rings. One car cost 20000 USD, one ring cost 3500 USD.
+        default="""Given 7 cars and 5 houses. One car costs 20000 USD, one house costs 43500 USD.
 Calculate the total price of them?"""
     )
 
     _answer_text = String (
         scope = Scope.content,
-        default = "price = 7 * 20000 + 5 * 3500"
+        default = "price = 7 * 20000 + 5 * 43500"
     )
 
     _string_vars = Dict(
@@ -251,23 +258,23 @@ Calculate the total price of them?"""
                         'context0': {
                             'name': "Synonyms of text 'car' (Default)",
                             'help': "Default context generated from text 'car'",
-                            'synonyms': ['car', 'machine', 'truck', 'auto', 'automobile'],
+                            'synonyms': ['car', 'machine', 'truck', 'auto', 'automobile', 'electric car'],
                             'select': 'true',
                         },
                     }
             },
             'string1': {
                 'name': 'string1',
-                'original_text': 'ring',
-                'default': 'ring',
-                'value': 'ring',
+                'original_text': 'house',
+                'default': 'house',
+                'value': 'house',
                 'context': 'context0',
                 'context_list':
                     {
                         'context0': {
-                            'name': "Synonyms of text 'ring' (Default)",
-                            'help': "Default context generated from text 'ring'",
-                            'synonyms': ['ring', 'necklet', 'watch'],
+                            'name': "Synonyms of text 'house' (Default)",
+                            'help': "Default context generated from text 'house'",
+                            'synonyms': ['house', 'palace', 'building', 'land', 'island'],
                             'select': 'true',
                         },
                     }
@@ -351,10 +358,10 @@ Calculate the total price of them?"""
     # Without this flag, studio will use student_view on newly-added blocks :/
     has_author_view = True
 
-    preview_mode = Boolean(
-        default=True,
-        scope=Scope.user_state
-    )
+    # preview_mode = Boolean(
+    #     default=True,
+    #     scope=Scope.user_state
+    # )
 
     # @property
     # def generated_question_preview(self):
@@ -480,23 +487,29 @@ Calculate the total price of them?"""
                 self._question_template, self._variables, randomization=True)
             # append string variables
             self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+            # Generate answer
+            generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+                                                                              self._answer_template_string)
             # update user_state fields
             setattr(self, 'reset_question', False)
             setattr(self, 'runtime_generated_question', self._generated_question)
             setattr(self, 'runtime_generated_variables', self._generated_variables)
             setattr(self, 'runtime_generated_string_variables', self._string_vars)
+            setattr(self, 'runtime_generated_answer', generated_answer)
         else:
             self._generated_question = self.runtime_generated_question
             self._generated_variables = self.runtime_generated_variables
         print("self.reset_question = {}".format(self.reset_question))
         print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
+        print "self.runtime_generated_answer = {}".format(self.runtime_generated_answer)
+        print("self.runtime_generated_variables = {}".format(self.runtime_generated_variables))
         print("self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables))
 
 
         # Get previous submissions made by student
         submissions = sub_api.get_submissions(self.student_item_key, 1)
         # print("self.student_item_key = {}".format(self.student_item_key))
-        # print("previous submissions = {}".format(submissions))
+        print("previous submissions = {}".format(submissions))
 
         # Only show student's last submission
         # TODO: to figure out how to handle student's previous submissions
@@ -505,8 +518,9 @@ Calculate the total price of them?"""
 
             # parse the answer
             answer = latest_submission['answer'] # saved "answer information"
-            # self._generated_question = answer['generated_question']
-            # self.generated_answer = answer['generated_answer']  # teacher's generated answer
+            print("answer = {}".format(answer))
+            self._generated_question = answer['generated_question']
+            self.generated_answer = answer['generated_answer']  # teacher's generated answer
             self.student_answer = answer['student_answer'] # student's submitted answer
 
             # TODO: check what is this block for?
@@ -524,6 +538,7 @@ Calculate the total price of them?"""
         self.serialize_data_to_context(context)
 
         # Add following fields to context variable
+        context['problem_name'] = self.display_name
         context['disabled'] = should_disbled
         context['student_answer'] = self.student_answer
         context['image_url'] = self._image_url
@@ -567,45 +582,48 @@ Calculate the total price of them?"""
                 self._question_template, self._variables, randomization=True)
             # append string variables
             self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+            # Generate answer
+            generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+                                                                              self._answer_template_string)
             # update user_state fields
-            # setattr(self, 'reset_question_preview', False)    # always generate randomized content in Studio's preview
             setattr(self, 'runtime_generated_question', self._generated_question)
+            setattr(self, 'runtime_generated_answer', generated_answer)
             setattr(self, 'runtime_generated_variables', self._generated_variables)
             setattr(self, 'runtime_generated_string_variables', self._string_vars)
         else:
             self._generated_question = self.runtime_generated_question
             self._generated_variables = self.runtime_generated_variables
 
-        # print("self._generated_text = {}".format(self._question_text))
-        # print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
-        # print("self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables))
+        # # Get previous submissions made by student
+        # submissions = sub_api.get_submissions(self.student_item_key, 1)
+        # # print("self.student_item_key = {}".format(self.student_item_key))
+        # # print("previous submissions = {}".format(submissions))
+        #
+        # # Only show student's last submission
+        # # TODO: to figure out how to handle student's previous submissions
+        # if submissions:
+        #     latest_submission = submissions[0]
+        #
+        #     # parse the answer
+        #     answer = latest_submission['answer'] # saved "answer information"
+        #     # self._generated_question = answer['generated_question']
+        #     # self.generated_answer = answer['generated_answer']  # teacher's generated answer
+        #     self.student_answer = answer['student_answer'] # student's submitted answer
+        #
+        #     # TODO: check what is this block for?
+        #     # Retrived the generated variables of the last submission
+        #     if ('variable_values' in answer): # backward compatibility
+        #         saved_generated_variables = json.loads(answer['variable_values'])
+        #         for var_name, var_value in saved_generated_variables.iteritems():
+        #             self._generated_variables[var_name] = var_value
+        #
+        #     self.attempt_number = latest_submission['attempt_number']
+        #     if (self.attempt_number >= self.max_attempts):
+        #         should_disbled = 'disabled'
 
-        # Get previous submissions made by student
-        submissions = sub_api.get_submissions(self.student_item_key, 1)
-        # print("self.student_item_key = {}".format(self.student_item_key))
-        # print("previous submissions = {}".format(submissions))
-
-        # Only show student's last submission
-        # TODO: to figure out how to handle student's previous submissions
-        if submissions:
-            latest_submission = submissions[0]
-
-            # parse the answer
-            answer = latest_submission['answer'] # saved "answer information"
-            # self._generated_question = answer['generated_question']
-            # self.generated_answer = answer['generated_answer']  # teacher's generated answer
-            self.student_answer = answer['student_answer'] # student's submitted answer
-
-            # TODO: check what is this block for?
-            # Retrived the generated variables of the last submission
-            if ('variable_values' in answer): # backward compatibility
-                saved_generated_variables = json.loads(answer['variable_values'])
-                for var_name, var_value in saved_generated_variables.iteritems():
-                    self._generated_variables[var_name] = var_value
-
-            self.attempt_number = latest_submission['attempt_number']
-            if (self.attempt_number >= self.max_attempts):
-                should_disbled = 'disabled'
+        # Reset score and previous submissions made by staff (author)
+        sub_api.reset_score(self.student_item_key['student_id'], self.student_item_key['course_id'],
+                            self.student_item_key['item_id'], clear_state=True)
 
         # Serialize some fields in context dictionary before passing to student_view template
         self.serialize_data_to_context(context)
@@ -707,14 +725,13 @@ Calculate the total price of them?"""
         """
         Save data to context to re-use later to avoid re-accessing the DBMS
         """
-        print("## CALLING FUNCTION serialize_data_to_context() ##")
-        # print("## BEFORE ADDING FIELDS ##")
-        # print("context = {}".format(context))
-        # print("## START DEBUG INFO ##")
+        print("## Start FUNCTION serialize_data_to_context() ##")
+        print("## BEFORE ADDING FIELDS ##")
+        print("context = {}".format(context))
         # print("self._question_template = {}".format(self._question_template))
         # print("self._image_url = {}".format(self._image_url))
-        # print("self._variables= {}".format(self._variables))
-        # print("self._generated_variables= {}".format(self._generated_variables))
+        print("self._variables= {}".format(self._variables))
+        print("self._generated_variables= {}".format(self._generated_variables))
         # print "self._answer_template_string = ", self._answer_template_string
 
 
@@ -728,7 +745,8 @@ Calculate the total price of them?"""
 
         # print("## AFTER, ADDED FIELDS ##")
         print("context = {}".format(context))
-        # print("## END DEBUG INFO ##")
+        print("self._variables= {}".format(self._variables))
+        print("self._generated_variables= {}".format(self._generated_variables))
         print("## End FUNCTION serialize_data_to_context() ##")
 
 
@@ -736,15 +754,16 @@ Calculate the total price of them?"""
         """
         De-serialize data previously saved to context
         """
-        print("## CALLING FUNCTION deserialize_data_from_context() ##")
-        print("## START DEBUG INFO ##")
-        # print("self._question_template = {}".format(self._question_template))
-        # print("self._image_url = {}".format(self._image_url))
-        # print("self._variables= {}".format(self._variables))
-        # print("self._generated_variables= {}".format(self._generated_variables))
-        # print "self._answer_template_string = ", self._answer_template_string
-        # print("## BEFORE ##")
+        print("## Start FUNCTION deserialize_data_from_context() ##")
+        print("## BEFORE ##")
         print("context = {}".format(context))
+        print("self._question_template = {}".format(self._question_template))
+        print("self._image_url = {}".format(self._image_url))
+        print("self.variables = {}".format(self.variables))
+        print("self._variables= {}".format(self._variables))
+        print("self._generated_variables= {}".format(self._generated_variables))
+        print "self.question_template_string = ", self.question_template_string
+        print "self._answer_template_string = ", self._answer_template_string
 
         self.question_template_string = context['saved_question_template']
         self.image_url = context['saved_url_image']
@@ -754,15 +773,14 @@ Calculate the total price of them?"""
         self._generated_variables = json.loads(context['serialized_generated_variables'])
         self.resolver_selection = context['saved_resolver_selection']   # TODO: update this to new field in Settings tab
 
-        # print("## GLOBAL VARIABLES, AFTER: ##")
-        # print("self._question_template = {}".format(self.question_template_string))
-        # print("self.image_url = {}".format(self.image_url))
-        # print "self._answer_template_string = ", self._answer_template_string
-        # print("self.variables = {}".format(self.variables))
-        # print("self._variables= {}".format(self._variables))
-        # print("self._generated_variables = {}".format(self._generated_variables))
-        # print("self.resolver_selection = {}".format(self.resolver_selection))
-        print("## End DEBUG INFO ##")
+        print("## AFTER: ##")
+        print("self._question_template = {}".format(self.question_template_string))
+        print("self.image_url = {}".format(self.image_url))
+        print("self.variables = {}".format(self.variables))
+        print("self._variables= {}".format(self._variables))
+        print("self._generated_variables= {}".format(self._generated_variables))
+        print "self.question_template_string = ", self.question_template_string
+        print "self._answer_template_string = ", self._answer_template_string
         print("## End FUNCTION deserialize_data_from_context() ##")
 
 
@@ -782,12 +800,11 @@ Calculate the total price of them?"""
         """
         AJAX handler for Submit button
         """
-
-        print("## CALLING FUNCTION student_submit() ##")
-        print("## START DEBUG INFO ##")
+        print("## Start FUNCTION student_submit() ##")
         print("data = {}".format(data))
 
         self.deserialize_data_from_context(data)
+        print("data = {}".format(data))
 
         points_earned = 0
 
@@ -836,10 +853,79 @@ Calculate the total price of them?"""
         return submit_result
 
     @XBlock.json_handler
+    def student_submit_handler(self, data, suffix=''):
+        """
+        AJAX handler for Submit button
+        """
+
+        print("## Start FUNCTION student_submit_handler() ##")
+        print("data = {}".format(data))
+
+        # self.deserialize_data_from_context(data)
+
+        points_earned = 0
+
+        # # TODO generate the teacher's answer
+        # # Generate answer for this submission
+        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+        #                                                                   self._answer_template_string)
+        # print "generated_answer = ", generated_answer
+
+        student_answer = data['student_answer']
+        generated_question = self.runtime_generated_question
+        generated_answer = self.runtime_generated_answer
+        generated_variables = json.dumps(self.runtime_generated_variables)
+        generated_string_variables = json.dumps(self.runtime_generated_string_variables)
+
+
+        # save the submission
+        # submission_data = {
+        #     'generated_question': data['saved_generated_question'],
+        #     'student_answer': student_answer,
+        #     'generated_answer': generated_answer,
+        #     'variable_values': data['serialized_generated_variables']
+        # }
+        submission_data = {
+            'generated_question': generated_question,
+            'student_answer': student_answer,
+            'generated_answer': generated_answer,
+            'variable_values': generated_variables
+        }
+
+        print "submission_data = {}".format(submission_data)
+        print "self.resolver_selection = " + self.resolver_selection
+        print "self._problem_solver = " + self._problem_solver
+
+        # call problem grader
+        # evaluation_result = self.resolver_handling.syncCall(self.resolver_selection, generated_answer, student_answer)
+        evaluation_result = self.resolver_handling.syncCall(self._problem_solver, generated_answer, student_answer)
+
+        if evaluation_result == True:
+            points_earned = self.max_points
+
+        submission = sub_api.create_submission(self.student_item_key, submission_data)
+        sub_api.set_score(submission['uuid'], points_earned, self.max_points)
+
+        submit_result = {}
+        submit_result['point_string'] = self.point_string
+        self.attempt_number = submission['attempt_number']
+        submit_result['attempt_number'] = self.attempt_number_string
+        # Disable the "Submit" button once the submission attempts reach max_attemps value
+        if (self.attempt_number >= self.max_attempts):
+            submit_result['submit_disabled'] = 'disabled'
+        else:
+            submit_result['submit_disabled'] = ''
+
+        print("## End FUNCTION student_submit() ##")
+
+        return submit_result
+
+    @XBlock.json_handler
     def fe_parse_question_studio_edits(self, data, suffix=''):
         print("## Start FUNCTION fe_parse_question_studio_edits() ##")
         q = data['question']
         a = data['answer']
+
         # update fields
         setattr(self, '_question_text', q)
         setattr(self, '_answer_text', a)
@@ -862,23 +948,6 @@ Calculate the total price of them?"""
         setattr(self,'_question_template', template)
         setattr(self,'_answer_template_string', answer)
         setattr(self,'_string_vars', strings)
-
-        # Handle default problem for Studio's preview
-        #
-        # # Generate new problem
-        # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-        #     self._question_template, self._variables, randomization=True)
-        # # append string variables
-        # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-        # # generated answer string
-        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-        #                                                                   self._answer_template_string)
-        # print("self._question_text = {}".format(self._question_text))
-        # print("self._generated_question = {}".format(self._generated_question))
-        # print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
-        # print "self.runtime_generated_question = {}".format(getattr(self, 'runtime_generated_question'))
-        # print("self._generated_variables = {}".format(self._generated_variables))
-        # print "generated_answer = ", generated_answer
 
         print("## End FUNCTION fe_parse_question_studio_edits() ##")
 
@@ -906,6 +975,8 @@ Calculate the total price of them?"""
         if self.xblock_id is None:
             self.xblock_id = unicode(self.location.replace(branch=None, version=None))
 
+        string_variables = self._string_vars
+
         if data['enable_advanced_editor'] == 'False':
             print("### IN CASE self.enable_advanced_editor == False: ###")
             # process problem edit via UI template
@@ -914,44 +985,50 @@ Calculate the total price of them?"""
             updated_variables = data['variables']
             updated_answer_template = data['answer_template']
             updated_string_vars_list = data['strings']
-            string_variables = self._string_vars
 
             # print("updated_string_vars_list = {}".format(updated_string_vars_list))
             # print("BEFORE, self._string_vars = {}".format(self._string_vars))
 
-            final_string_variables, updated_string_vars, removed_string_vars, added_string_vars = qgb_question_service.update_string_variables(string_variables, updated_string_vars_list)
+            string_variables, updated_string_vars, removed_string_vars, added_string_vars = qgb_question_service.update_string_variables(string_variables, updated_string_vars_list)
             # print("updated_string_vars = {}".format(updated_string_vars))
             # print("removed_string_vars = {}".format(removed_string_vars))
             # print("added_string_vars = {}".format(added_string_vars))
-            # print("final_string_variables = {}".format(final_string_variables))
+            # print("string_variables = {}".format(string_variables))
 
             # update question template
             updated_question_template = qgb_question_service.update_question_template(updated_question_template,
                                                                             updated_string_vars, removed_string_vars, added_string_vars)
 
-            # Update XBlock's values
-            self.enable_advanced_editor = False
-            self.question_template_string = updated_question_template
-            self.image_url = updated_url_image
-            self.variables = updated_variables
-            self._answer_template_string = updated_answer_template
-
-            # setattr(self,'_string_vars', updated_string_vars)
-            setattr(self, '_string_vars', final_string_variables)
-            setattr(self, '_image_url', updated_url_image)
-            setattr(self, '_question_template', updated_question_template)
-            # setattr(self, '_answer_template', updated_answer_template)
-            setattr(self, '_answer_template_string', updated_answer_template)
-            setattr(self, '_variables', updated_variables)
+            # # Update XBlock's values
+            # self.enable_advanced_editor = False
+            # self.question_template_string = updated_question_template
+            # self.image_url = updated_url_image
+            # self.variables = updated_variables
+            # self._answer_template_string = updated_answer_template
+            #
+            # # setattr(self,'_string_vars', updated_string_vars)
+            # setattr(self, '_string_vars', string_variables)
+            # setattr(self, '_image_url', updated_url_image)
+            # setattr(self, '_question_template', updated_question_template)
+            # # setattr(self, '_answer_template', updated_answer_template)
+            # setattr(self, '_answer_template_string', updated_answer_template)
+            # setattr(self, '_variables', updated_variables)
 
             # build xml string for problem raw edit fields,
             # then update value to field '_raw_editor_xml_data' for editor
+            # input_data = {
+            #     'question_template': self.question_template_string,
+            #     'image_url': self.image_url,
+            #     'variables': self.variables,
+            #     'answer_template': self._answer_template_string,
+            #     'string_variables': self._string_vars,
+            # }
             input_data = {
-                'question_template': self.question_template_string,
-                'image_url': self.image_url,
-                'variables': self.variables,
-                'answer_template': self._answer_template_string,
-                'string_variables': self._string_vars,
+                'question_template': updated_question_template,
+                'image_url': updated_url_image,
+                'variables': updated_variables,
+                'answer_template': updated_answer_template,
+                'string_variables': string_variables,
             }
 
             # Convert dict data to xml
@@ -977,32 +1054,49 @@ Calculate the total price of them?"""
             # get only one firt answer for now.
             # TODO: update to support multi-answers attributes for multiple solutions
             updated_answer_template_dict = raw_edit_data['answer_template'][1]
-            updated_string_variables = raw_edit_data['string_variables']
+            string_variables = raw_edit_data['string_variables']
 
             # convert answer dict to string
             updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
 
-            # "refresh" XBlock's values
-            # update values to global variables
-            self.enable_advanced_editor = True
-            self.question_template_string = updated_question_template
-            self.image_url = updated_url_image
-            self.variables = updated_variables
-            # setattr(self, '_answer_template', updated_answer_template)
-            self._answer_template_string = updated_answer_template
-            # self.resolver_selection = updated_resolver_selection
-
-            # update values to global fields
-            setattr(self, '_question_template', updated_question_template)
-            setattr(self, '_image_url', updated_url_image)
-            # setattr(self, '_answer_template', updated_answer_template)
-            setattr(self, '_answer_template_string', updated_answer_template)
-            setattr(self, '_variables', updated_variables)
-            setattr(self, '_string_vars', updated_string_variables)
+            # # "refresh" XBlock's values
+            # # update values to global variables
+            # self.enable_advanced_editor = True
+            # self.question_template_string = updated_question_template
+            # self.image_url = updated_url_image
+            # self.variables = updated_variables
+            # # setattr(self, '_answer_template', updated_answer_template)
+            # self._answer_template_string = updated_answer_template
+            # # self.resolver_selection = updated_resolver_selection
+            #
+            # # update values to global fields
+            # setattr(self, '_question_template', updated_question_template)
+            # setattr(self, '_image_url', updated_url_image)
+            # # setattr(self, '_answer_template', updated_answer_template)
+            # setattr(self, '_answer_template_string', updated_answer_template)
+            # setattr(self, '_variables', updated_variables)
+            # setattr(self, '_string_vars', string_variables)
 
             # update raw edit fields data
             self.raw_editor_xml_data = updated_xml_string
             setattr(self, '_raw_editor_xml_data', updated_xml_string)
+
+        # update fields
+        # Update XBlock's values
+        self.enable_advanced_editor = False
+        self.question_template_string = updated_question_template
+        self.image_url = updated_url_image
+        self.variables = updated_variables
+        self._answer_template_string = updated_answer_template
+        setattr(self, '_string_vars', string_variables)
+        setattr(self, '_image_url', updated_url_image)
+        setattr(self, '_question_template', updated_question_template)
+        # setattr(self, '_answer_template', updated_answer_template)
+        setattr(self, '_answer_template_string', updated_answer_template)
+        setattr(self, '_variables', updated_variables)
+        # # update original text
+        # setattr(self, '_question_text', self._generated_question)
+        # setattr(self, '_answer_text', generated_answer)
 
         # copy from StudioEditableXBlockMixin (can not call parent method)
         values = {}  # dict of new field values we are updating
@@ -1042,13 +1136,6 @@ Calculate the total price of them?"""
         # generated answer string
         generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
                                                                           self._answer_template_string)
-        # update fields
-        # update original text
-        setattr(self, '_question_text', self._generated_question)
-        setattr(self, '_answer_text', generated_answer)
-
-        print("self._generated_text = {}".format(self._question_text))
-        print("self._answer_text = {}".format(self._answer_text))
         print("## End FUNCTION fe_submit_studio_edits() ###")
 
         if validation:
@@ -1082,6 +1169,32 @@ Calculate the total price of them?"""
         }
 
     @XBlock.json_handler
+    def get_answer_handler(self, data={}, suffix=''):
+        """
+        AJAX handler for "Show/Hide Answer" button
+        """
+        print("## Start FUNCTION get_answer_handler() ##")
+        print("data = {}".format(data))
+
+        # self.deserialize_data_from_context(data)
+
+        # print("self._generated_variables = {}".format(self._generated_variables))
+        # print("self._answer_template_string = {}".format(self._answer_template_string))
+        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+        #                                                                   self._answer_template_string)
+        #
+        # print("generated_answer = {}".format(generated_answer))
+        print("self.runtime_generated_variables = {}".format(self.runtime_generated_variables))
+        print("self.runtime_generated_variables = {}".format(self.runtime_generated_variables))
+        print("self.runtime_generated_answer = {}".format(self.runtime_generated_answer))
+
+        print("## END FUNCTION get_answer_handler() ##")
+
+        return {
+            'generated_answer': self.runtime_generated_answer
+        }
+
+    @XBlock.json_handler
     def reset_problem_handler(self, data={}, suffix=''):
         """
         AJAX handler for problem reset when invoked 'Reset' button
@@ -1097,20 +1210,17 @@ Calculate the total price of them?"""
         sub_api.reset_score(self.student_item_key['student_id'], self.student_item_key['course_id'], self.student_item_key['item_id'], clear_state=True)
 
         # Generate question from template if necessary
-        # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
-        #     self._question_template, self._variables)
         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
             self._question_template, self._variables, randomization=True)
-        # append string variables
+        # Append string variables
         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-
+        # Generate answer
+        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+                                                                          self._answer_template_string)
         # Update user_state fields
         setattr(self, 'runtime_generated_question', self._generated_question)
         setattr(self, 'runtime_generated_variables', self._generated_variables)
         setattr(self, 'runtime_generated_string_variables', self._string_vars)
-        # Generate answer
-        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-                                                                          self._answer_template_string)
         setattr(self, 'runtime_generated_answer', generated_answer)
 
         # Add following fields to problem variable
@@ -1127,9 +1237,9 @@ Calculate the total price of them?"""
 
         print "self._generated_question = {}".format(self._generated_question)
         print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
-        print "self.runtime_generated_question = {}".format(getattr(self, 'runtime_generated_question'))
+        print "self.runtime_generated_answer = {}".format(getattr(self, 'runtime_generated_answer'))
         print "self._generated_variables = {}".format(self._generated_variables)
-        print "generated_answer = {}".format(generated_answer)
+        print "self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables)
         # print "problem = {}".format(problem)
         print "## END FUNCTION reset_problem_handler() ##"
 

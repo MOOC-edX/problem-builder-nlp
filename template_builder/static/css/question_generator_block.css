@@ -44,6 +44,10 @@ pre {
     padding-bottom: 20px;
 }
 
+.problem-header {
+    padding-bottom: 20px;
+}
+
 .action {
     margin-top: 20px;
     min-height: 20px;

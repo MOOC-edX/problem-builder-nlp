@@ -2,15 +2,14 @@
 function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
 	"use strict";
 
-  		
-	var hidden_question_template_element = $(xblockElement).find('input[name=question_template]');
-	var hidden_url_image = $(xblockElement).find('input[name=image_url]');
-	var hidden_resolver_selection =$(xblockElement).find('input[name=resolver_selection]');
-	var hidden_variables_element = $(xblockElement).find('input[name=variables]');
-	var hidden_generated_variables_element = $(xblockElement).find('input[name=generated_variables]');
-	var hidden_generated_question_element = $(xblockElement).find('input[name=generated_question]');
-	var hidden_answer_template_element = $(xblockElement).find('input[name=answer_template]');
-    var xblock_id = $(xblockElement).find('input[name=xblock_id]').val();
+//	var hidden_question_template_element = $(xblockElement).find('input[name=question_template]');
+//	var hidden_url_image = $(xblockElement).find('input[name=image_url]');
+//	var hidden_resolver_selection =$(xblockElement).find('input[name=resolver_selection]');
+//	var hidden_variables_element = $(xblockElement).find('input[name=variables]');
+//	var hidden_generated_variables_element = $(xblockElement).find('input[name=generated_variables]');
+//	var hidden_generated_question_element = $(xblockElement).find('input[name=generated_question]');
+//	var hidden_answer_template_element = $(xblockElement).find('input[name=answer_template]');
+//  var xblock_id = $(xblockElement).find('input[name=xblock_id]').val();
 
 	var student_answer_textarea_element = $(xblockElement).find('textarea[name=student_answer]');
     var teacher_answer_div_element = $(xblockElement).find('div[name=teacher_answer_div]');
@@ -21,12 +20,12 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
 
 	function handleSubmissionResult(result) {
 		console.log('handleSubmissionResult INVOKED');
-//    	$(xblockElement).find('div[name=attempt-number]').text(result['attempt_number']);
+//		console.log('result:' + JSON.stringify(result));
         action_div.find('span[name=attempt-number]').text(result['attempt_number']);
     	$(xblockElement).find('div[name=problem-progress]').text(result['point_string']);
     	$(xblockElement).find('input[name=submit-button]').val("Submit")
 
-    	if (results['submit_disabled'] == 'disabled') {
+    	if (result['submit_disabled'] == 'disabled') {
     		$(xblockElement).find('input[name=submit-button]').attr('disabled','disabled');
     	}
     	else
@@ -35,8 +34,8 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
     	}
   	}
   	
-    // Use this function ATM.
-  	function handleShowAnswerResultString(result) {
+    // Show teacher's answer
+  	function handleShowAnswer(result) {
   		console.log('handleShowAnswerResult INVOKED');
 
   		var teacher_answer = result['generated_answer'];
@@ -59,8 +58,8 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
   	    teacher_answer_div_element.find('pre').remove();
   	}
 
-    // new version, NOT USED ATM
-    // TODO: support multi answers
+    // This is intent for multiple answers, NOT USED ATM
+    // TODO: support multi answers later when required
     function handleShowAnswerResult(result) {
   		console.log('handleShowAnswerResult INVOKED');
 
@@ -84,23 +83,25 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
   	}
 
     // Update HTML elements when invoked Reset button
-  	function handleResetProblemView(result) {
-		console.log('handleResetProblemView INVOKED');
+  	function handleResetProblem(result) {
+		console.log('handleResetProblem INVOKED');
         // update new question
-		$(xblockElement).find('li[name=question]').text(result['question']);
-		hidden_generated_question_element.val(result['question'])
+		$(xblockElement).find('div[name=question]').text(result['question']);
+//		hidden_generated_question_element.val(result['question'])
 
-		// update variables
-		hidden_generated_variables_element.val(result['generated_variables']);
+//		// update variables
+//		hidden_generated_variables_element.val(result['generated_variables']);
 
-		// update teacher's answer template
-		hidden_answer_template_element.val(result['answer_template']);
+//		// update teacher's answer template
+//		hidden_answer_template_element.val(result['answer_template']);
 
 		// reset student's answer
 		student_answer_textarea_element.val('');
 
-		// update progress
+		// update problem progress
+		// attempt
         action_div.find('span[name=attempt-number]').text(result['attempt_number']);
+        // point
     	$(xblockElement).find('div[name=problem-progress]').text(result['point_string']);
 
     	// clear shown answer if any
@@ -124,30 +125,24 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
   	$(xblockElement).find('input[name=submit-button]').bind('click', function() {
   		// accumulate student's answer for submission
     	var data = {
-      		'saved_question_template': hidden_question_template_element.val(),
-      		'saved_url_image': hidden_url_image.val(),
-      		'saved_resolver_selection': hidden_resolver_selection.val(),
-      		'saved_answer_template': hidden_answer_template_element.val(),
-      		'serialized_variables': hidden_variables_element.val(),
-      		'serialized_generated_variables': hidden_generated_variables_element.val(),
-      		'saved_generated_question': hidden_generated_question_element.val(),
+//      		'saved_question_template': hidden_question_template_element.val(),
+//      		'saved_url_image': hidden_url_image.val(),
+//      		'saved_resolver_selection': hidden_resolver_selection.val(),
+//      		'saved_answer_template': hidden_answer_template_element.val(),
+//      		'serialized_variables': hidden_variables_element.val(),
+//      		'serialized_generated_variables': hidden_generated_variables_element.val(),
+//      		'saved_generated_question': hidden_generated_question_element.val(),
       		'student_answer': student_answer_textarea_element.val()
     	};
 
     	console.log('data: ' + data);
     	console.log('student_answer: ' + data['student_answer']);
-    	console.log('saved_question_template: ' + data['saved_question_template']);
-    	console.log('serialized_variables: ' + data['saved_variables']);
-    	console.log('serialized_generated_variables: ' + data['saved_generated_variables']);
-    	console.log('saved_generated_question: ' + data['saved_generated_question']);
-    	console.log('saved_answer_template: ' + data['saved_answer_template']);
-    	console.log('saved_url_image: ' + data['saved_url_image']);
-    	console.log('saved_resolver_selection: ' + data['saved_resolver_selection']);
 
         $(xblockElement).find('input[name=submit-button]').attr('disabled','disabled');
         $(xblockElement).find('input[name=submit-button]').val("Submitting...")
 
-    	var handlerUrl = runtime.handlerUrl(xblockElement, 'student_submit');
+//    	var handlerUrl = runtime.handlerUrl(xblockElement, 'student_submit');
+    	var handlerUrl = runtime.handlerUrl(xblockElement, 'student_submit_handler');
     	$.post(handlerUrl, JSON.stringify(data)).success(handleSubmissionResult);
   	});
 
@@ -160,18 +155,25 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
     			console.log("show_answer_button CLICKED");
     			
     			// prepare data
-    			var data = {
-      				'saved_question_template': hidden_question_template_element.val(),
-      				'saved_url_image' : hidden_url_image.val(),
-      				'saved_resolver_selection': hidden_resolver_selection.val(),
-      				'saved_answer_template': hidden_answer_template_element. val(),
-		      		'serialized_variables': hidden_variables_element.val(),
-		      		'serialized_generated_variables': hidden_generated_variables_element.val()
-    			}
-    			
-    			var handlerUrl = runtime.handlerUrl(xblockElement, 'show_answer_handler');
+//    			// TODO: retrieve data from backend instead to avoid cheating
+//    			var data = {
+//      				'saved_question_template': hidden_question_template_element.val(),
+//      				'saved_url_image' : hidden_url_image.val(),
+//      				'saved_resolver_selection': hidden_resolver_selection.val(),
+//      				'saved_answer_template': hidden_answer_template_element. val(),
+//		      		'serialized_variables': hidden_variables_element.val(),
+//		      		'serialized_generated_variables': hidden_generated_variables_element.val()
+//    			}
+                var data = {}
+
+                // Convert a JavaScript object into a string with JSON.stringify().
+                var data_json = JSON.stringify(data)
+    			console.log('JSON data = ' + data_json);
+
+//    			var handlerUrl = runtime.handlerUrl(xblockElement, 'show_answer_handler');
+    			var handlerUrl = runtime.handlerUrl(xblockElement, 'get_answer_handler');
 //    			$.post(handlerUrl, JSON.stringify(data)).success(handleShowAnswerResult);
-    			$.post(handlerUrl, JSON.stringify(data)).success(handleShowAnswerResultString);
+    			$.post(handlerUrl, data_json).success(handleShowAnswer);
     		});
     	}
 
@@ -181,15 +183,10 @@ function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
     			console.log("reset_button CLICKED");
 
     			// prepare data
-    			var data = {
-      				'saved_question_template': hidden_question_template_element.val(),
-      				'saved_answer_template': hidden_answer_template_element. val(),
-		      		'serialized_variables': hidden_variables_element.val(),
-		      		'serialized_generated_variables': hidden_generated_variables_element.val()
-    			}
+    			var data = {}
 
     			var handlerUrl = runtime.handlerUrl(xblockElement, 'reset_problem_handler');
-    			$.post(handlerUrl, JSON.stringify(data)).success(handleResetProblemView);
+    			$.post(handlerUrl, JSON.stringify(data)).success(handleResetProblem);
     		});
     	}
     });

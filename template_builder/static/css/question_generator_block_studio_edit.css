@@ -20,7 +20,20 @@
     vertical-align: middle;
 }
 
+.first_column {
+    padding-left: 10px;
+}
+
+.last_column {
+    padding-right: 10px;
+}
+
 .formula_input_text {
+	width: 90% !important;
+	padding: 5px !important;
+}
+
+.variable_type {
 	width: 90% !important;
 	padding: 5px !important;
 }
@@ -31,13 +44,13 @@
 
 .remove_button {
 	width: 100px !important;
-	height: 35px !important;
+	height: 30px !important;
 	padding: 2px !important;
 }
 
-.remove_variable_button .remove_word_variable_button {
+.remove_variable_button {
 	width: 100px !important;
-	height: 35px !important;
+	height: 30px !important;
 	padding: 2px !important;
 }
 
