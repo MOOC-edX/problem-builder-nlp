@@ -317,7 +317,11 @@ Calculate the total price of them?"""
     enable_advanced_editor = False  # True: Editor mode, False: Template mode.
 
     # Define if original text question parsed yet
-    is_question_text_parsed = False
+    show_parser = Boolean(
+        default=False,
+        help="Whether to show Parser tab in Studio view",
+        scope = Scope.user_state
+    )
 
     reset_question = Boolean(
         default=True,
@@ -357,89 +361,6 @@ Calculate the total price of them?"""
 
     # Without this flag, studio will use student_view on newly-added blocks :/
     has_author_view = True
-
-    # preview_mode = Boolean(
-    #     default=True,
-    #     scope=Scope.user_state
-    # )
-
-    # @property
-    # def generated_question_preview(self):
-    #     print "## Start generated_quesiton_preview() ##"
-    #
-    #     # generated_question, self._generated_variables = matlab_question_service.new_problem(
-    #     #     self._question_template, self._variables, randomization=True)
-    #     # # append string variables
-    #     # generated_question = qgb_question_service.append_string(generated_question, self._string_vars)
-    #     # print("generated_question = {}".format(generated_question))
-    #     # print "## End generated_quesiton_preview() ##"
-    #
-    #     if self.reset_question == False and self.preview_mode == True:
-    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-    #             self._question_template, self._variables, self.reset_question)
-    #         # append string variables
-    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-    #         # update user_state fields
-    #         setattr(self, 'reset_question', True)
-    #         setattr(self, 'runtime_generated_question', self._generated_question)
-    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
-    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
-    #     elif self.reset_question == True:
-    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-    #             self._question_template, self._variables, self.reset_question)
-    #         # append string variables
-    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-    #         # update user_state fields
-    #         setattr(self, 'reset_question', False)
-    #         setattr(self, 'runtime_generated_question', self._generated_question)
-    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
-    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
-    #     else:
-    #         self._generated_question = self.runtime_generated_question
-    #         self._generated_variables = self.runtime_generated_variables
-    #
-    #     print "## End generated_quesiton_preview() ##"
-    #
-    #     return self._generated_question
-    #
-    # @property
-    # def generated_variables_preview(self):
-    #     print "## Start generated_variables_preview() ##"
-    #
-    #     # generated_question, self._generated_variables = matlab_question_service.new_problem(
-    #     #     self._question_template, self._variables, randomization=True)
-    #     # # append string variables
-    #     # generated_question = qgb_question_service.append_string(generated_question, self._string_vars)
-    #     # print("generated_question = {}".format(generated_question))
-    #
-    #
-    #     if self.reset_question == False and self.preview_mode == True:
-    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-    #             self._question_template, self._variables, self.reset_question)
-    #         # append string variables
-    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-    #         # update user_state fields
-    #         setattr(self, 'reset_question', True)
-    #         setattr(self, 'runtime_generated_question', self._generated_question)
-    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
-    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
-    #     elif self.reset_question == True:
-    #         self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-    #             self._question_template, self._variables, self.reset_question)
-    #         # append string variables
-    #         self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-    #         # update user_state fields
-    #         setattr(self, 'reset_question', False)
-    #         setattr(self, 'runtime_generated_question', self._generated_question)
-    #         setattr(self, 'runtime_generated_variables', self._generated_variables)
-    #         setattr(self, 'runtime_generated_string_variables', self._string_vars)
-    #     else:
-    #         self._generated_question = self.runtime_generated_question
-    #         self._generated_variables = self.runtime_generated_variables
-    #
-    #     print "## End generated_variables_preview() ##"
-    #
-    #     return self._generated_variables
 
 
     @property
@@ -679,10 +600,9 @@ Calculate the total price of them?"""
             if field_info is not None:
                 context["fields"].append(field_info)
 
-        # print("self.is_question_text_parsed = {}".format(self.is_question_text_parsed))
+        # print("self.show_parser = {}".format(self.show_parser))
 
         # self.serialize_data_to_context(context) ??? REMOVE not necessary, remove ???
-        context['is_question_text_parsed'] = self.is_question_text_parsed
         context['question_text_origin'] = self._question_text
         context['answer_text_origin'] = self._answer_text
 
@@ -693,7 +613,7 @@ Calculate the total price of them?"""
         context['answer_template_string'] = self._answer_template_string
         context['is_submitted'] = 'False'
 
-        # Check default edit mode
+        # Handle Editor mode
         if self.enable_advanced_editor:
             context['current_editor_mode_name'] = ADVANCED_EDITOR_NAME
             context['next_editor_mode_name'] = SIMPLE_EDITOR_NAME
@@ -701,6 +621,13 @@ Calculate the total price of them?"""
             context['current_editor_mode_name'] = SIMPLE_EDITOR_NAME
             context['next_editor_mode_name'] = ADVANCED_EDITOR_NAME
         context['enable_advanced_editor'] = self.enable_advanced_editor
+
+        # Handle Parser tab
+        context['show_parser'] = self.show_parser
+        if self.show_parser == True:
+            context['btn_toggle_parser_text'] = 'Hide Parser'
+        else:
+            context['btn_toggle_parser_text'] = 'Show Parser'
 
         # append xml data for raw xml editor
         context['raw_editor_xml_data'] = self._raw_editor_xml_data
@@ -948,6 +875,7 @@ Calculate the total price of them?"""
         setattr(self,'_question_template', template)
         setattr(self,'_answer_template_string', answer)
         setattr(self,'_string_vars', strings)
+        setattr(self, 'show_parser', True)
 
         print("## End FUNCTION fe_parse_question_studio_edits() ##")
 

@@ -1,31 +1,30 @@
 /* Javascript for StudioEditableXBlockMixin. */
 function StudioEditableXBlockMixin(runtime, xblockElement) {
     "use strict";
-    console.log(xblockElement);
+    
     var fields = [];
     var tinyMceAvailable = (typeof $.fn.tinymce !== 'undefined'); // Studio includes a copy of tinyMCE and its jQuery plugin
     var datepickerAvailable = (typeof $.fn.datepicker !== 'undefined'); // Studio includes datepicker jQuery plugin
 
     var csxColor = ["#009FE6", "black"];
     var studio_buttons = {
-        "parser-tab": "PARSER",
-        "template-tab": "TEMPLATE",
+        "question_text-tab": "PARSER",
+        "question_template-tab": "TEMPLATE",
         "editor-tab": "EDITOR",
-        "settings-tab": "SETTINGS",
+        "general_information-tab": "SETTINGS",
     };
 
     // define tab id mapping of current tab to target tab
     var target_tabId_map = {
-        'template-tab' : "editor-tab",
-        'editor-tab' : "template-tab"
+        'question_template-tab' : "editor-tab",
+        'editor-tab' : "question_template-tab"
     }
 
-    // define tab name (heading) for Editor toggle
+    // define tab id mapping of current tab to target tab
     var target_tabName_map = {
-        'template-tab' : "Simple Template",
+        'question_template-tab' : "Simple Template",
         'editor-tab' : "Advanced Editor"
     }
-    var default_tab = 'template-tab';
 
     var error_message_element = $(xblockElement).find('div[name=error-message]');
     var question_template_textarea_element = $(xblockElement).find('textarea[name=question_template]');
@@ -37,29 +36,29 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     // for editor mode toggle
     var btn_switch_editor_mode_element = $(xblockElement).find('button[id=btn_switch_editor_mode]');
+//    var btn_switch_editor_mode_element = $(xblockElement).find('li[name=switch_editor_mode_button]');
     var enable_advanced_editor_element = $(xblockElement).find('input[name=enable_advanced_editor]');
     var enable_advanced_editor = enable_advanced_editor_element.val();
     var editor_mode_name_element = $(xblockElement).find('input[name=current_editor_mode_name]');
     var editor_mode_name = editor_mode_name_element.val();
 
-    // for Parser tab
-    var show_parser_input_element = $(xblockElement).find('input[name=show_parser]');
-    var show_parser_val = show_parser_input_element.val();
-    var btn_toggle_parser_text = $(xblockElement).find('input[name=btn_toggle_parser_text]');
-    var btn_toggle_parser_element = $(xblockElement).find('button[id=btn_toggle_parser_id]');
-    var question_text_element = $(xblockElement).find('textarea[name=question_text]');
-    var answer_text_element = $(xblockElement).find('textarea[name=answer_text]');
+    // for question parser tab
+    var is_question_text_parsed_element = $(xblockElement).find('input[name=is_question_text_parsed]');
+    var is_question_text_parsed = is_question_text_parsed_element.val();
 
     // DOM object for xml editor
     var xml_editor_element = $(xblockElement).find('textarea[name=raw_editor_xml_data]');
     var my_XML_Box = '.xml-box';
 
+    var question_text_element = $(xblockElement).find('textarea[name=question_text]');
+    var answer_text_element = $(xblockElement).find('textarea[name=answer_text]');
     // WORKING
     var xml_editor = CodeMirror.fromTextArea($(my_XML_Box)[0], {
         mode: 'xml',
         lineNumbers: true,
         lineWrapping: true
     });
+
 
     $(function($) {
         // append tab action bar
@@ -72,55 +71,53 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //                    )
 //                );
 //        }
-        console.log('show_parser_val =' + show_parser_val)
+        console.log('is_question_text_parsed =' + is_question_text_parsed)
 
-//        if (show_parser_val == 'False'){
+//        if (is_question_text_parsed == 'False'){
             // Show question parser tab
             $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
-                        $('<a />', {class: "action-primary", id: 'parser-tab', text: studio_buttons['parser-tab']})
+                        $('<a />', {class: "action-primary", id: 'question_text-tab', text: studio_buttons['question_text-tab']})
                     )
                 );
-//            btn_switch_editor_mode_element.hide();
+            btn_switch_editor_mode_element.hide();
 //        } else {
             // Show template tab
             $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
-                        $('<a />', {class: "action-primary", id: 'template-tab', text: studio_buttons['template-tab']})
+                        $('<a />', {class: "action-primary", id: 'question_template-tab', text: studio_buttons['question_template-tab']})
                     )
                 );
             // Show settings tab
             $('.editor-modes')
                 .append(
                     $('<li>', {class: "action-item"}).append(
-                        $('<a />', {class: "action-primary", id: 'settings-tab', text: studio_buttons['settings-tab']})
+                        $('<a />', {class: "action-primary", id: 'general_information-tab', text: studio_buttons['general_information-tab']})
                     )
                 );
 //        }
 
         // Set default tab
-        tab_switch(default_tab);
+        tab_switch("question_text-tab");
 
-        // Define tabs' click listeners
-        $('#parser-tab').click(function() {
-            tab_switch("parser-tab");
+        $('#question_text-tab').click(function() {
+            tab_switch("question_text-tab");
         });
 
-        $('#template-tab').click(function() {
-            tab_switch("template-tab");
+        $('#question_template-tab').click(function() {
+            tab_switch("question_template-tab");
         });
 
         $('#editor-tab').click(function() {
             tab_switch("editor-tab");
         });
 
-        $('#settings-tab').click(function() {
-            tab_switch("settings-tab");
+        $('#general_information-tab').click(function() {
+            tab_switch("general_information-tab");
         });
 
-        // Handle Advanced/Basic editor toggle
         $('#btn_switch_editor_mode').click(function() {
             // get current tab
             var current_tab = $(this).attr('tab-name');
@@ -152,13 +149,15 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             // update text
             $("#"+current_tab).text(studio_buttons[target_tabId_map[current_tab]]);
             // update attribute
-            $("#"+current_tab).attr('id', target_tabId_map[current_tab]);
+            $("#"+current_tab).attr('id',target_tabId_map[current_tab]);
 
-            // update attributes for Editor toggle button
+            // update attributes for the switching editor button
             // update text
+//            $('#btn_switch_editor_mode').text(target_tabName_map[current_tab]);
             btn_switch_editor_mode_element.text(target_tabName_map[current_tab]);
-            // update target tab attribute
-            btn_switch_editor_mode_element.attr('tab-name', target_tabId_map[current_tab]);
+            // update attribute
+//            $('#btn_switch_editor_mode').attr('tab-name',target_tabId_map[current_tab]);
+            btn_switch_editor_mode_element.attr('tab-name',target_tabId_map[current_tab]);
 
             // targeted editor_mode_name
 //            TODO: Check why this cause JS error ???
@@ -172,48 +171,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             // switch to the targeted tab
             tab_switch(target_tabId_map[current_tab]);
 
-        });
-
-        // Handle Parser toggle
-        btn_toggle_parser_element.click(function() {
-            // get target tab and action from element's attributes
-            var target_tab_id = $(this).attr('tab-name');
-            var action = $(this).attr('action');
-            var next_action = '';
-            var show_this_tab = 'template-tab';
-
-            console.log('action:' + action);
-            console.log('show_parser_val:' + show_parser_val);
-            console.log('target_tab id:' + target_tab_id);
-
-            if(action == 'show') {
-                // update hidden input elems for parser
-                show_parser_val = 'True'; // update JS global variable
-                show_parser_input_element.val(show_parser_val);
-                // Update button's text and action
-                btn_toggle_parser_text = 'Hide Parser';
-                next_action = 'hide';
-
-                // switch to the targeted tab
-                tab_switch(target_tab_id);
-                show_tab_heading(target_tab_id);
-
-            } else if(action == 'hide'){
-                // update hidden input elems for parser
-                show_parser_val = 'False'; // update global variable
-                show_parser_input_element.val(show_parser_val);
-                // Update button's text and action
-                btn_toggle_parser_text = 'Show Parser';
-                next_action = 'show';
-
-                // hide the Parser and switch to show_this_tab
-                hide_tab(target_tab_id);
-                tab_switch(show_this_tab);
-            }
-
-            // update text and action attributes for parser toggle button
-            btn_toggle_parser_element.text(btn_toggle_parser_text);
-            btn_toggle_parser_element.attr('action', next_action);
         });
 
         // listeners for "Remove" buttons of "Variables"
@@ -232,7 +189,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     });
 
-    // Update highlight
     function tab_highlight(toHighlight) {
         for (var b in studio_buttons) {
             if (b != toHighlight) $("a[id=" + b + "]").css({"color": csxColor[0]});
@@ -240,96 +196,41 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         $("a[id=" + toHighlight + "]").css({"color": csxColor[1]});
     }
 
-    // Update buttons based on target tab
+
     function update_buttons(toShow) {
-        if (toShow == 'parser-tab') { // tab PARSER
+        if (toShow == 'question_text-tab') {
             $("li[name=parse]").show();
-            // hide button Add Variable
+
             $("li[name=add_variable]").hide();
-            // hide button Save
             $("li[name=save]").hide();
-            // show buttons for Editor and Parser toggle
-            btn_switch_editor_mode_element.show();
-            // hide Parser toggle
-            btn_toggle_parser_element.show();
-    	} else if (toShow == 'template-tab') { // tab TEMPLATE
-    	    // show Save button
+            btn_switch_editor_mode_element.hide();
+    	} else if (toShow == 'question_template-tab') {
     	    $("li[name=save]").show();
+    	    btn_switch_editor_mode_element.show();
     	    // only show "Add variable" on TEMPLATE tab
     		$("li[name=add_variable]").show();
     		// hide button Parse
     		$("li[name=parse]").hide();
-    		// show Editor toggle button
-    	    btn_switch_editor_mode_element.show();
-    		// show button Show Parser
-    		btn_toggle_parser_element.show();
-    	} else { // tab SETTINGS
+    	} else {
     	    $("li[name=save]").show();
+    	    btn_switch_editor_mode_element.show();
     	    // hide "Add variable"
     		$("li[name=add_variable]").hide();
     		// hide button Parse
     		$("li[name=parse]").hide();
-    		// show buttons for Editor and Parser toggle
-            btn_switch_editor_mode_element.show();
-            btn_toggle_parser_element.show();
     	}
     }
 
 
-    // Switch to toShow tab, hide others
+    // Hide all panes except toShow
     function tab_switch(toShow) {
-        // Update highlight
         tab_highlight(toShow);
-
-        // Hide all tabs other than toShow
         for (var b in studio_buttons) $("div[name=" + b + "]").hide();
-
-        // Show toShow tab
         $("div[name=" + toShow + "]").show();
 
-        // Update buttons based on target tab
         update_buttons(toShow);
     }
 
-    // Hide toHide tab
-    function hide_tab(toHide) {
-        // Hide tab content
-        $("div[name="+toHide+"]").hide();
-
-        // Hide tab heading
-        hide_tab_heading(toHide);
-    }
-
-    // Show toShow tab
-    function show_tab(toShow) {
-        // Show tab content
-        $("div[name="+toShow+"]").show();
-
-        // Show tab heading
-        show_tab_heading(toShow);
-    }
-
-    function hide_tab_heading(toHide) {
-        console.log($(xblockElement).parent("div").parent("div"));
-        console.log($(xblockElement).parent("div").parent("div").parent("div").children(".modal-header"));
-        var atag = $(xblockElement).parent("div").parent("div").parent("div").children(".modal-header").find("a[id="+toHide+"]");
-        console.log(atag);
-
-        // Hide the <li> headding
-        atag.parent('li').css({ "display": 'none'}); // Use the CSS function from jQuery to set styles to <li> headding
-//        atag.closest('li').css({ "display": 'none'}); // Use the CSS function from jQuery to set styles to <li> headding
-//        atag.closest('li').hide();
-    }
-
-    function show_tab_heading(toShow) {
-        var atag = $(xblockElement).parent("div").parent("div").parent("div").children(".modal-header").find("a[id="+toShow+"]");
-        console.log(atag);
-
-        // Show the <li> headding
-        atag.parent('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
-//        atag.closest('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
-//        atag.closest('li').show();
-    }
 
     /*
      Have the user confirm the one-way conversion to XML.

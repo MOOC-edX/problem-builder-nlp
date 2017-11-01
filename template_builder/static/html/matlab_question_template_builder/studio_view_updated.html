@@ -4,13 +4,16 @@
 	<div name="error-message"></div>
 
     <div name="hidden_inputs">
+        <!-- For Editor mode-->
         <input type="hidden" class="hidden" name="enable_advanced_editor" value="{{ enable_advanced_editor }}" />
 		<input type="hidden" class="hidden" name="current_editor_mode_name" value="{{ current_editor_mode_name }}" />
-		<input type="hidden" class="hidden" name="is_question_text_parsed" value="{{ is_question_text_parsed }}" />
+        <!-- For Parser tab -->
+		<input type="hidden" class="hidden" name="show_parser" value="{{ show_parser }}" />
+        <input type="hidden" class="hidden" name="btn_toggle_parser_text" value="{{ btn_toggle_parser_text }}" />
     </div>
 
 	<!--PARSER TAB-->
-	<div class="wrapper-comp-settings is-active editor-with-buttons" name="question_text-tab" id="question_text-tab">
+	<div class="wrapper-comp-settings is-active editor-with-buttons" name="parser-tab" id="parser-tab">
         <ul class="list-input settings-list" name="question_text_list">
 			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
@@ -29,7 +32,7 @@
 	</div>
 
 	<!--TEMPLATE TAB-->
-	<div class="wrapper-comp-settings is-active editor-with-buttons question_template" name="question_template-tab" id="question_template-tab">
+	<div class="wrapper-comp-settings is-active editor-with-buttons question_template" name="template-tab" id="template-tab">
         <ul class="list-input settings-list" name="question_template_list">
 
 	        <li class="field comp-setting-entry metadata_entry">
@@ -144,7 +147,7 @@
 	</div>
 
 	<!--SETTINGS TAB-->
-    <div class="wrapper-comp-settings is-active editor-with-buttons general_information" name="general_information-tab" id="settings-tab">
+    <div class="wrapper-comp-settings is-active editor-with-buttons general_information" name="settings-tab" id="settings-tab">
 		<ul class="list-input settings-list">
 			{% for field in fields %}
 				{% if field.name != "_image_url" and field.name != "_question_template" and field.name != "_answer_template" and field.name != "_variables" and	field.name != "_raw_editor_xml_data" and field.name != "_answer_template_string"%}
@@ -271,8 +274,9 @@
 
 			<!-- SWITCH UI DISPLAY OF EDITOR -->
 			<li style="margin-right:50px;" class="pull-right" name="switch_editor_mode_button">
-				<button type="button" id="btn_switch_editor_mode" tab-name="question_template-tab" data-tab="xml" title="Switch editor interface">{{ next_editor_mode_name }}</button>
-				<!--<a href="#" class="button cancel-button" id="btn_switch_editor_mode" tab-name="question_template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
+                <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="hide" title="Show/Hide Parser tab">{{ btn_toggle_parser_text }}</button>
+				<button type="button" id="btn_switch_editor_mode" tab-name="template-tab" data-tab="xml" title="Switch editor interface">{{ next_editor_mode_name }}</button>
+				<!--<a href="#" class="button cancel-button" id="btn_switch_editor_mode" tab-name="template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
 			</li>
 		</ul>
 	</div>
