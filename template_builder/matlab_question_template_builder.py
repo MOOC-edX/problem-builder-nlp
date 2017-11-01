@@ -320,7 +320,7 @@ Calculate the total price of them?"""
     show_parser = Boolean(
         default=False,
         help="Whether to show Parser tab in Studio view",
-        scope = Scope.user_state
+        scope = Scope.settings
     )
 
     reset_question = Boolean(
