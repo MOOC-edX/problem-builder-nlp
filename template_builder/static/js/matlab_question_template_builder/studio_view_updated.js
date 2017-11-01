@@ -61,6 +61,20 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         lineWrapping: true
     });
 
+    // for show / hide question text
+    var original_question_text_input_element = $(xblockElement).find('input[name=input_question_text]');
+    var original_question_text_div_element = $(xblockElement).find('div[name=original_question_text_div]');
+    var original_answer_text_input_element = $(xblockElement).find('input[name=input_answer_text]');
+    var original_answer_text_div_element = $(xblockElement).find('div[name=original_answer_text_div]');
+
+    var btn_toggle_original_question = $(xblockElement).find('a[name=btn_toggle_original_question]');
+//    var btn_show_original_question = $(xblockElement).find('a[name=btn_show_original_question]');
+//    var btn_hide_original_question = $(xblockElement).find('a[name=btn_hide_original_question]');
+    var btn_toggle_original_answer = $(xblockElement).find('a[name=btn_toggle_original_answer]');
+//    var btn_show_original_answer = $(xblockElement).find('a[name=btn_show_original_answer]');
+//    var btn_hide_original_answer = $(xblockElement).find('a[name=btn_hide_original_answer]');
+
+
     $(function($) {
         // append tab action bar
 
@@ -216,6 +230,49 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             btn_toggle_parser_element.attr('action', next_action);
         });
 
+//        // toggle Original Question
+//        btn_toggle_original_question.bind('click', function(e) {
+//            console.log("toggle Original Question clicked");
+//            var action = $(this).attr('name');
+//            console.log("action = " + action);
+//
+//            if (action == 'show'){
+//                showOriginalQuestionText();
+//                // update toggle elememnt
+//                btn_toggle_original_question.text('Hide Original Question');
+//                btn_toggle_original_question.attr('name', 'hide');
+//            } else {
+//                removeOriginalQuestionText();
+//                // update toggle element
+//                btn_toggle_original_question.text('Show Original Question');
+//                btn_toggle_original_question.attr('name', 'show');
+//            }
+//        });
+
+        // show Original Question
+        btn_toggle_original_question.bind('click', function(e) {
+            console.log("show Original Question clicked");
+            showOriginalQuestionText();
+//            // update toggle element
+//            btn_show_original_question.hide();
+//            btn_hide_original_question.show();
+        });
+
+//        // hide Original Question
+//        btn_hide_original_question.bind('click', function(e) {
+//            console.log("hide Original Question clicked");
+//            showOriginalQuestionText();
+//            // update toggle element
+//            btn_show_original_question.show();
+//            btn_hide_original_question.hide();
+//        });
+
+        // toggle Original Answer
+        btn_toggle_original_answer.bind('click', function(e) {
+            console.log("toggle Original Answer clicked");
+            showOriginalAnswerText();
+        });
+
         // listeners for "Remove" buttons of "Variables"
         variables_table_element.find('input[type=button][class=remove_variable_button]').bind('click', function(e) {
         	var removeButton = $(this);
@@ -269,9 +326,9 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     		$("li[name=add_variable]").hide();
     		// hide button Parse
     		$("li[name=parse]").hide();
-    		// show buttons for Editor and Parser toggle
+    		// update buttons for Editor and Parser toggle
             btn_switch_editor_mode_element.show();
-            btn_toggle_parser_element.show();
+            btn_toggle_parser_element.hide();
     	}
     }
 
@@ -310,8 +367,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     }
 
     function hide_tab_heading(toHide) {
-        console.log($(xblockElement).parent("div").parent("div"));
-        console.log($(xblockElement).parent("div").parent("div").parent("div").children(".modal-header"));
+//        console.log($(xblockElement).parent("div").parent("div").parent("div").children(".modal-header"));
         var atag = $(xblockElement).parent("div").parent("div").parent("div").children(".modal-header").find("a[id="+toHide+"]");
         console.log(atag);
 
@@ -330,6 +386,57 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //        atag.closest('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
 //        atag.closest('li').show();
     }
+
+    // Show original question text
+  	function showOriginalQuestionText() {
+  		console.log('showOriginalQuestionText INVOKED');
+        var original_question_text = original_question_text_input_element.val();
+//  		console.log('original_question_text: ' + original_question_text);
+
+  		var original_question_text_title_element = $('<pre></pre>');
+  		original_question_text_title_element.text('Original Question:');
+
+  		var original_question_text_content_element = $('<pre></pre>');
+  		original_question_text_content_element.text(original_question_text);
+
+  		original_question_text_div_element.append(original_question_text_title_element);
+  		original_question_text_div_element.append(original_question_text_content_element);
+  	}
+
+//  	function removeOriginalQuestionText {
+//  	    // remove displayed question text
+//  	    original_question_text_div_element.find('pre').remove();
+//  	}
+
+  	// Show original answer text
+  	function showOriginalAnswerText() {
+  		console.log('showOriginalAnswerText INVOKED');
+        var original_answer_text = original_answer_text_input_element.val();
+  		console.log('Original answer: ' + original_answer_text);
+
+  		var original_answer_text_title_element = $('<pre></pre>');
+  		original_answer_text_title_element.text('Original Answer:');
+
+  		var original_answer_text_content_element = $('<pre></pre>');
+  		original_answer_text_content_element.text(original_answer_text);
+
+  		original_answer_text_div_element.append(original_answer_text_title_element);
+  		original_answer_text_div_element.append(original_answer_text_content_element);
+
+//  		// update toggle elememnt
+//  		btn_toggle_original_answer.text('Hide Original Answer');
+//  		btn_toggle_original_answer.attr('action', 'hide');
+
+  	}
+
+//  	function removeOriginalAnswerText {
+//  	    // remove displayed question text
+//  	    original_answer_text_div_element.find('pre').remove();
+//
+//  	    // update toggle element
+//  		btn_toggle_original_answer.text('Show Original Answer');
+//  		btn_toggle_original_answer.attr('action', 'show');
+//  	}
 
     /*
      Have the user confirm the one-way conversion to XML.
@@ -819,103 +926,103 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	variables_table_element.append(new_row);
     });
 
-    $(document).ready(function() {
-        var variable_type_select = $(xblockElement).find('.variable_type');
-
-        // Handle variable type select, generate HTML elements based on input
-        variable_type_select.change(function(e) {
-            console.log("Variable Type option changed");
-
-            // Get current row
-            var new_row = $this.closest('tr');
-
-            // 3rd column: Type
-            var third_column  = $('<td></td>');
-            third_column.attr("class", "table_cell_alignment");
-            var variable_type_element = $('<select></select>');
-            variable_type_element.attr("class", "formula_input_text");
-            // Int option
-            var int_option_element = $("<option></option>");
-            int_option_element.attr("value", "int");
-            int_option_element.text("Int");
-            int_option_element.attr("selected", "selected");
-            variable_type_element.append(int_option_element);
-            // Float option
-            var float_option_element = $("<option></option>");
-            float_option_element.attr("value", "float");
-            float_option_element.text("Float");
-            variable_type_element.append(float_option_element);
-            // Custom value option
-            var custom_option_element = $("<option></option>");
-            custom_option_element.attr("value", "custom");
-            custom_option_element.text("Custom values");
-            variable_type_element.append(custom_option_element);
-            // Append element to column
-            third_column.append(variable_type_element);
-            // Append column to row
-            new_row.append(third_column);
-
-            // 4th column: min value
-            var fourth_column  = $('<td></td>');
-            fourth_column.attr("class", "table_cell_alignment number_input_cell");
-            var variable_min_value_element = $('<input />');
-            variable_min_value_element.attr("type", "number");
-            variable_min_value_element.attr("class", "formula_input_text");
-            variable_min_value_element.attr("value", "1");
-            // Append element to column
-            fourth_column.append(variable_min_value_element);
-            // Append column to row
-            new_row.append(fourth_column);
-
-            // 5th column: max value
-            var fith_column  = $('<td></td>');
-            fith_column.attr("class", "table_cell_alignment number_input_cell");
-            var variable_max_value_element = $('<input />');
-            variable_max_value_element.attr("type", "number");
-            variable_max_value_element.attr("class", "formula_input_text");
-            variable_max_value_element.attr("value", "10");
-            // Append element to column
-            fith_column.append(variable_max_value_element);
-            // Append column to row
-            new_row.append(fith_column);
-
-            // 6th column: decimal_places
-            var sixth_column  = $('<td></td>');
-            sixth_column.attr("class", "table_cell_alignment number_input_cell");
-            var variable_decimal_places_element = $('<input>');
-            variable_decimal_places_element.attr("type", "number");
-            variable_decimal_places_element.attr("min", "0");
-            variable_decimal_places_element.attr("max", "7");
-            variable_decimal_places_element.attr("class", "formula_input_text");
-            variable_decimal_places_element.attr("value", "0");
-            // Append element to column
-            sixth_column.append(variable_decimal_places_element);
-            // Append column to row
-            new_row.append(sixth_column);
-
-            // 7th column: Remove button
-            var seventh_column  = $('<td></td>');
-            seventh_column.attr("class", "table_cell_alignment");
-            var remove_variable_button = $('<input>');
-            remove_variable_button.attr("type", "button");
-    //    	remove_variable_button.attr("class", "remove_variable_button");
-            remove_variable_button.addClass("remove_variable_button");
-            remove_variable_button.addClass("remove_button");
-            remove_variable_button.attr("value", "Remove");
-            // Append element to column
-            seventh_column.append(remove_variable_button);
-            // Append column to row
-            new_row.append(seventh_column);
-
-            // Add event listener for Remove button click
-            remove_variable_button.click(function() {
-                new_row.remove();
-            });
-
-            // Finally, append the new row to the table
-            variables_table_element.append(new_row);
-        });
-
-    });
+//    $(document).ready(function() {
+//        var variable_type_select = $(xblockElement).find('.variable_type');
+//
+//        // Handle variable type select, generate HTML elements based on input
+//        variable_type_select.change(function(e) {
+//            console.log("Variable Type option changed");
+//
+//            // Get current row
+//            var new_row = $this.closest('tr');
+//
+//            // 3rd column: Type
+//            var third_column  = $('<td></td>');
+//            third_column.attr("class", "table_cell_alignment");
+//            var variable_type_element = $('<select></select>');
+//            variable_type_element.attr("class", "formula_input_text");
+//            // Int option
+//            var int_option_element = $("<option></option>");
+//            int_option_element.attr("value", "int");
+//            int_option_element.text("Int");
+//            int_option_element.attr("selected", "selected");
+//            variable_type_element.append(int_option_element);
+//            // Float option
+//            var float_option_element = $("<option></option>");
+//            float_option_element.attr("value", "float");
+//            float_option_element.text("Float");
+//            variable_type_element.append(float_option_element);
+//            // Custom value option
+//            var custom_option_element = $("<option></option>");
+//            custom_option_element.attr("value", "custom");
+//            custom_option_element.text("Custom values");
+//            variable_type_element.append(custom_option_element);
+//            // Append element to column
+//            third_column.append(variable_type_element);
+//            // Append column to row
+//            new_row.append(third_column);
+//
+//            // 4th column: min value
+//            var fourth_column  = $('<td></td>');
+//            fourth_column.attr("class", "table_cell_alignment number_input_cell");
+//            var variable_min_value_element = $('<input />');
+//            variable_min_value_element.attr("type", "number");
+//            variable_min_value_element.attr("class", "formula_input_text");
+//            variable_min_value_element.attr("value", "1");
+//            // Append element to column
+//            fourth_column.append(variable_min_value_element);
+//            // Append column to row
+//            new_row.append(fourth_column);
+//
+//            // 5th column: max value
+//            var fith_column  = $('<td></td>');
+//            fith_column.attr("class", "table_cell_alignment number_input_cell");
+//            var variable_max_value_element = $('<input />');
+//            variable_max_value_element.attr("type", "number");
+//            variable_max_value_element.attr("class", "formula_input_text");
+//            variable_max_value_element.attr("value", "10");
+//            // Append element to column
+//            fith_column.append(variable_max_value_element);
+//            // Append column to row
+//            new_row.append(fith_column);
+//
+//            // 6th column: decimal_places
+//            var sixth_column  = $('<td></td>');
+//            sixth_column.attr("class", "table_cell_alignment number_input_cell");
+//            var variable_decimal_places_element = $('<input>');
+//            variable_decimal_places_element.attr("type", "number");
+//            variable_decimal_places_element.attr("min", "0");
+//            variable_decimal_places_element.attr("max", "7");
+//            variable_decimal_places_element.attr("class", "formula_input_text");
+//            variable_decimal_places_element.attr("value", "0");
+//            // Append element to column
+//            sixth_column.append(variable_decimal_places_element);
+//            // Append column to row
+//            new_row.append(sixth_column);
+//
+//            // 7th column: Remove button
+//            var seventh_column  = $('<td></td>');
+//            seventh_column.attr("class", "table_cell_alignment");
+//            var remove_variable_button = $('<input>');
+//            remove_variable_button.attr("type", "button");
+//    //    	remove_variable_button.attr("class", "remove_variable_button");
+//            remove_variable_button.addClass("remove_variable_button");
+//            remove_variable_button.addClass("remove_button");
+//            remove_variable_button.attr("value", "Remove");
+//            // Append element to column
+//            seventh_column.append(remove_variable_button);
+//            // Append column to row
+//            new_row.append(seventh_column);
+//
+//            // Add event listener for Remove button click
+//            remove_variable_button.click(function() {
+//                new_row.remove();
+//            });
+//
+//            // Finally, append the new row to the table
+//            variables_table_element.append(new_row);
+//        });
+//
+//    });
     
 }

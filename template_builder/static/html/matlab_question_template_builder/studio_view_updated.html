@@ -10,6 +10,9 @@
         <!-- For Parser tab -->
 		<input type="hidden" class="hidden" name="show_parser" value="{{ show_parser }}" />
         <input type="hidden" class="hidden" name="btn_toggle_parser_text" value="{{ btn_toggle_parser_text }}" />
+		<!-- For showing original text on Template tab -->
+		<input type="hidden" class="hidden" name="input_question_text" value="{{ question_text_origin }}" />
+        <input type="hidden" class="hidden" name="input_answer_text" value="{{ answer_text_origin }}" />
     </div>
 
 	<!--PARSER TAB-->
@@ -25,7 +28,7 @@
 			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
 					<label class="label setting-label" for="answer_text">Original Answer</label>
-					<textarea name="answer_text" rows=10 cols=80>{{ answer_text_origin }}</textarea>
+					<textarea name="answer_text" rows=5 cols=80>{{ answer_text_origin }}</textarea>
 	        	</div>
 	        </li>
 		</ul>
@@ -40,14 +43,28 @@
 					<label class="label setting-label" for="question_template">Question template</label>
 					<textarea name="question_template" rows=10 cols=80>{{ question_template }}</textarea>
 	        	</div>
+
+				<!-- Original question -->
+				<div name="original_question_text_div">
+					<a href="#" class="button action-primary" name="btn_toggle_original_question">{% trans "Show Original Question" %}</a>
+					<!--<a href="#" class="button action-primary" name="btn_show_original_question">{% trans "Show Original Question" %}</a>-->
+					<!--<a href="#" class="button action-primary" name="btn_hide_original_question">{% trans "Hide Original Question" %}</a>-->
+				</div>
 	        </li>
 
-	        <li class="field comp-setting-entry metadata_entry">
+			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
-					<label class="label setting-label" for="image_url">Image URL</Image></label>
-					<input name="image_url" type="text" class="field-data-control" id="xb-field-edit-image" value="{{ image_url }}" />
+					<label class="label setting-label" for="answer_template">Answer template</label>
+					<textarea name="answer_template" rows=5 cols=80>{{ answer_template_string }}</textarea>
 	        	</div>
-			</li>
+
+				<!-- Original answer -->
+				<div name="original_answer_text_div">
+					<a href="#" class="button action-primary" name="btn_toggle_original_answer">{% trans "Show Original Answer" %}</a>
+					<!--<a href="#" class="button action-primary" name="btn_show_original_answer">{% trans "Show Original Answer" %}</a>-->
+					<!--<a href="#" class="button action-primary" name="btn_hide_original_answer">{% trans "Hide Original Answer" %}</a>-->
+				</div>
+	        </li>
 
 	        <li
 	          class="field comp-setting-entry metadata_entry"
@@ -128,14 +145,12 @@
 	        	</div>
 	        </li>
 
-
-	        <li class="field comp-setting-entry metadata_entry">
+			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
-					<label class="label setting-label" for="answer_template">Answer template</label>
-					<textarea name="answer_template" rows=10 cols=80>{{ answer_template_string }}</textarea>
+					<label class="label setting-label" for="image_url">Image URL</label>
+					<input name="image_url" type="text" class="field-data-control" id="xb-field-edit-image" value="{{ image_url }}" />
 	        	</div>
-	        </li>
-
+			</li>
 		</ul>
 	</div>
 
@@ -274,7 +289,7 @@
 
 			<!-- SWITCH UI DISPLAY OF EDITOR -->
 			<li style="margin-right:50px;" class="pull-right" name="switch_editor_mode_button">
-                <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="hide" title="Show/Hide Parser tab">{{ btn_toggle_parser_text }}</button>
+                <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="show" title="Show/Hide Parser tab">{{ btn_toggle_parser_text }}</button>
 				<button type="button" id="btn_switch_editor_mode" tab-name="template-tab" data-tab="xml" title="Switch editor interface">{{ next_editor_mode_name }}</button>
 				<!--<a href="#" class="button cancel-button" id="btn_switch_editor_mode" tab-name="template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
 			</li>
