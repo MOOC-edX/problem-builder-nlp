@@ -75,7 +75,7 @@
 	        >
 				<div class="wrapper-comp-setting">
 					<!-- NUMERIC VARIABLES SETTINGS-->
-					<table name="variables_table" class="variables_table">
+					<table name="variables_table" id="variables_table" class="variables_table">
 						<tr class="formula_edit_table_header_color formula_edit_table_row">
 							<th width="10%" class="table_cell_alignment first_column">Numeric variables</th>
                             <th width="20%" class="table_cell_alignment">Original text</th>
@@ -85,6 +85,7 @@
 
 							<th width="10%" class="table_cell_alignment" title="Decimal places for Float number">Dec. places</th>
 							<th></th>
+                            <th></th>
 						</tr>
 
 						{% for variable_name, variable in variables.iteritems %}
@@ -101,7 +102,8 @@
 								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_min_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.min_value }}"></td>
 								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_max_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.max_value }}"></td>
 								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="formula_input_text" min="0" max="7" value="{{ variable.decimal_places }}"></td>
-								<td class="table_cell_alignment last_column"><input type="button" class="remove_variable_button" value="Remove"></td>
+								<td class="table_cell_alignment button_cell"><input type="button" class="remove_variable_button" value="x"></td>
+                                <td class="table_cell_alignment button_cell last_column"><input type="button" class="add_variable_button" value="+"></td>
 							</tr>
 						{% endfor %}
 					</table>
@@ -114,7 +116,7 @@
 								<th width="20%" class="table_cell_alignment">Original text</th>
                                 <th width="25%" class="table_cell_alignment">Context</th>
 								<th width="20%" class="table_cell_alignment">Options</th>
-                                <th></th>
+                                <th width="100px"></th>
                             </tr>
                             {% for key, var in string_variables.iteritems %}
                                 <tr class="formula_edit_table_row">
@@ -138,7 +140,7 @@
 											{% endfor %}
                                         </select>
                                     </td>
-                                    <td class="table_cell_alignment last_column"><input type="button" class="remove_variable_button" value="Remove"></td>
+                                    <td class="table_cell_alignment button_cell last_column"><input type="button" class="remove_variable_button" value="x"></td>
                                 </tr>
                             {% endfor %}
 						</tbody>
@@ -149,7 +151,7 @@
 			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
 					<label class="label setting-label" for="image_url">Image URL</label>
-					<input name="image_url" type="text" class="field-data-control" id="xb-field-edit-image" value="{{ image_url }}" />
+					<input name="image_url" type="text" class="field-data-control image_url" id="xb-field-edit-image" value="{{ image_url }}" />
 	        	</div>
 			</li>
 		</ul>
@@ -282,11 +284,11 @@
 				<a href="#" class="button cancel-button">{% trans "Cancel" %}</a>
 			</li>
 
-			{% if is_submitted == 'False' %}
-				<li name="add_variable" class="action-item">
-					<a href="#" class="button action-primary save-button" name="add_variable_button">Add variable</a>
-				</li>
-			{% endif %}
+			<!--{% if is_submitted == 'False' %}-->
+				<!--<li name="add_variable" class="action-item">-->
+					<!--<a href="#" class="button action-primary save-button" name="add_variable_button">Add variable</a>-->
+				<!--</li>-->
+			<!--{% endif %}-->
 
 			<!-- SWITCH UI DISPLAY OF EDITOR -->
 			<li style="margin-right:50px;" class="pull-right" name="switch_editor_mode_button">

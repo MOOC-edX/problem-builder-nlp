@@ -18,6 +18,7 @@
 
 .table_cell_alignment {
     vertical-align: middle;
+    horizontal-align: left;
 }
 
 .first_column {
@@ -45,18 +46,31 @@
 
 .remove_button {
 	width: 100px !important;
-	height: 30px !important;
+	max-width: 100px !important;
+	height: 34px !important;
 	padding: 2px !important;
 }
 
 .remove_variable_button {
 	width: 100px !important;
-	height: 30px !important;
+	max-width: 100px !important;
+	height: 34px !important;
 	padding: 2px !important;
+	color: red;
 }
 
-.variable_remove_button_alignment {
-	text-align: center;
+.add_variable_button {
+	width: 100px !important;
+	max-width: 100px !important;
+	height: 34px !important;
+	padding: 2px !important;
+	color: green;
+}
+
+.button_cell {
+	text-align: left;
+	width: 100px !important;
+	padding: 5px !important;
 }
 
 .general_information {
@@ -102,5 +116,9 @@ input[type="checkbox"], input[type="radio"] {
 .course-outline-modal .list-fields .field-message {
     color: #666;
     font-size: 10px;
+}
+
+.image_url {
+    width: 70% !important;
 }
 

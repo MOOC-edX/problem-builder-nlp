@@ -31,7 +31,9 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     var question_template_textarea_element = $(xblockElement).find('textarea[name=question_template]');
     var url_image_input = $(xblockElement).find('input[name=image_url]');
     var variables_table_element = $(xblockElement).find('table[name=variables_table]');
-    var add_variable_button_element = $(xblockElement).find('li[name=add_variable]');
+//    var variables_table_element = $(xblockElement).find('table[id=variables_table]');
+//    var add_variable_button_element = $(xblockElement).find('li[name=add_variable]');
+//    var add_variable_button_element = $(xblockElement).find('li[name=add_variable]');
     var word_variables_table_element = $(xblockElement).find('table[name=word_variables_table]');
     var answer_template_textarea_element =  $(xblockElement).find('textarea[name=answer_template]');
 
@@ -115,6 +117,13 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //        }
 
         // Set default tab
+        // update default tab
+        if(show_parser_val == 'True'){
+            default_tab = 'parser-tab';
+        } else {
+            default_tab = 'template-tab';
+            hide_tab('parser-tab');
+        };
         tab_switch(default_tab);
 
         // Define tabs' click listeners
@@ -139,11 +148,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             // get current tab
             var current_tab = $(this).attr('tab-name');
 
-            console.log('previous tab id:' + current_tab);
-            console.log('targeted tab id:' + target_tabId_map[current_tab]);
-            console.log('targeted tab name:' + studio_buttons[target_tabId_map[current_tab]]);
-            console.log('next editor mode:' + target_tabName_map[current_tab]);
-            console.log('enable_advanced_editor:' + enable_advanced_editor);
+//            console.log('previous tab id:' + current_tab);
+//            console.log('targeted tab id:' + target_tabId_map[current_tab]);
+//            console.log('targeted tab name:' + studio_buttons[target_tabId_map[current_tab]]);
+//            console.log('next editor mode:' + target_tabName_map[current_tab]);
+//            console.log('enable_advanced_editor:' + enable_advanced_editor);
 
             if(enable_advanced_editor == 'False') {
                 if(! confirmConversionToXml())
@@ -278,6 +287,19 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         	var removeButton = $(this);
         	var parentRow = removeButton.closest('tr');
         	parentRow.remove();
+        });
+
+        // listeners for "Add" buttons of "Variables"
+        variables_table_element.find('input[type=button][class=add_variable_button]').bind('click', function(e) {
+        	var addButton = $(this);
+        	var parentRow = addButton.closest('tr');
+        	console.log(parentRow);
+
+            // Insert new variable row after current row
+            var current_row_index = $(this).parent().parent().index();
+            console.log(current_row_index);
+            addVariableRow(current_row_index)
+
         });
 
         // listeners for "Remove" buttons of "String Variables"
@@ -437,6 +459,127 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //  		btn_toggle_original_answer.text('Show Original Answer');
 //  		btn_toggle_original_answer.attr('action', 'show');
 //  	}
+
+    function addVariableRow(current_row_index) {
+    	console.log("function addVariableRow() invoked");
+
+    	var new_row = $('<tr></tr>');
+    	new_row.attr("class", "formula_edit_table_row");
+
+    	// 1st column: variable name
+    	var first_column = $('<td></td>');
+    	first_column.addClass("table_cell_alignment first_column");
+    	var variable_name_element = $('<input />');
+    	variable_name_element.attr("type", "text");
+    	variable_name_element.attr("class", "formula_input_text");
+    	variable_name_element.attr("value", "");
+    	// Append element to column
+    	first_column.append(variable_name_element);
+    	// Append column to row
+    	new_row.append(first_column);
+
+    	// 2nd column: Original text
+    	var second_column = $('<td></td>');
+    	second_column.addClass("table_cell_alignment number_input_cell");
+    	var original_text_element = $('<input />');
+    	original_text_element.attr("type", "text");
+    	original_text_element.attr("class", "formula_input_text");
+    	original_text_element.attr("value", "");
+    	// Append element to column
+    	second_column.append(original_text_element);
+    	// Append column to row
+    	new_row.append(second_column);
+
+    	// 3rd column: Variable Type
+    	var third_column  = $('<td></td>');
+    	third_column.attr("class", "table_cell_alignment");
+    	var variable_type_element = $('<select></select>');
+    	variable_type_element.attr("class", "variable_type");
+    	// Int option
+    	var int_option_element = $("<option></option>");
+    	int_option_element.attr("value", "int");
+    	int_option_element.text("Int");
+    	int_option_element.attr("selected", "selected");
+    	variable_type_element.append(int_option_element);
+    	// Float option
+    	var float_option_element = $("<option></option>");
+    	float_option_element.attr("value", "float");
+    	float_option_element.text("Float");
+    	variable_type_element.append(float_option_element);
+    	// Custom value option
+    	var custom_option_element = $("<option></option>");
+    	custom_option_element.attr("value", "custom");
+    	custom_option_element.text("Custom values");
+    	variable_type_element.append(custom_option_element);
+    	// Append element to column
+    	third_column.append(variable_type_element);
+    	// Append column to row
+    	new_row.append(third_column);
+
+    	// 4th column: min value
+    	var fourth_column  = $('<td></td>');
+    	fourth_column.attr("class", "table_cell_alignment number_input_cell");
+    	var variable_min_value_element = $('<input />');
+    	variable_min_value_element.attr("type", "number");
+    	variable_min_value_element.attr("class", "formula_input_text");
+    	variable_min_value_element.attr("value", "1");
+    	// Append element to column
+    	fourth_column.append(variable_min_value_element);
+    	// Append column to row
+    	new_row.append(fourth_column);
+
+    	// 5th column: max value
+    	var fith_column  = $('<td></td>');
+    	fith_column.attr("class", "table_cell_alignment number_input_cell");
+
+    	var variable_max_value_element = $('<input />');
+    	variable_max_value_element.attr("type", "number");
+    	variable_max_value_element.attr("class", "formula_input_text");
+    	variable_max_value_element.attr("value", "10");
+    	// Append element to column
+    	fith_column.append(variable_max_value_element);
+    	// Append column to row
+    	new_row.append(fith_column);
+
+    	// 6th column: decimal_places
+    	var sixth_column  = $('<td></td>');
+    	sixth_column.attr("class", "table_cell_alignment number_input_cell");
+    	var variable_decimal_places_element = $('<input>');
+    	variable_decimal_places_element.attr("type", "number");
+    	variable_decimal_places_element.attr("min", "0");
+    	variable_decimal_places_element.attr("max", "7");
+    	variable_decimal_places_element.attr("class", "formula_input_text");
+    	variable_decimal_places_element.attr("value", "0");
+    	// Append element to column
+    	sixth_column.append(variable_decimal_places_element);
+    	// Append column to row
+    	new_row.append(sixth_column);
+
+    	// 7th column: Remove button
+    	var seventh_column  = $('<td></td>');
+    	seventh_column.attr("class", "table_cell_alignment");
+    	var remove_variable_button = $('<input>');
+    	remove_variable_button.attr("type", "button");
+    	remove_variable_button.addClass("remove_variable_button");
+    	remove_variable_button.attr("value", "x");
+    	// Append element to column
+    	seventh_column.append(remove_variable_button);
+    	// Append column to row
+    	new_row.append(seventh_column);
+
+    	// Add event listener for Remove button click
+    	remove_variable_button.click(function() {
+    		new_row.remove();
+    	});
+
+//    	// Finally, append the new row to the table
+//    	variables_table_element.append(new_row);
+
+        // Insert new row after current row
+        console.log('current row index = ' + current_row_index);
+    	$('#variables_table > tbody > tr').eq(current_row_index).after(new_row);
+
+    }
 
     /*
      Have the user confirm the one-way conversion to XML.
@@ -808,123 +951,124 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     });
     
     
-    $(xblockElement).find('a[name=add_variable_button]').bind('click', function(e) {
-    	console.log("Add VARIABLE button clicked");
-
-    	var new_row = $('<tr></tr>');
-    	new_row.attr("class", "formula_edit_table_row");
-    	
-    	// 1st column: variable name
-    	var first_column = $('<td></td>');
-    	first_column.attr("class", "table_cell_alignment");
-    	var variable_name_element = $('<input />');
-    	variable_name_element.attr("type", "text");
-    	variable_name_element.attr("class", "formula_input_text");
-    	variable_name_element.attr("value", "");
-    	// Append element to column
-    	first_column.append(variable_name_element);
-    	// Append column to row
-    	new_row.append(first_column);
-
-    	// 2nd column: Original text
-    	var second_column = $('<td></td>');
-    	second_column.attr("class", "table_cell_alignment");
-    	var original_text_element = $('<input />');
-    	original_text_element.attr("type", "text");
-    	original_text_element.attr("class", "formula_input_text");
-    	original_text_element.attr("value", "");
-    	// Append element to column
-    	second_column.append(original_text_element);
-    	// Append column to row
-    	new_row.append(second_column);
-
-    	// 3rd column: Variable Type
-    	var third_column  = $('<td></td>');
-    	third_column.attr("class", "table_cell_alignment");
-    	var variable_type_element = $('<select></select>');
-    	variable_type_element.attr("class", "variable_type");
-    	// Int option
-    	var int_option_element = $("<option></option>");
-    	int_option_element.attr("value", "int");
-    	int_option_element.text("Int");
-    	int_option_element.attr("selected", "selected");
-    	variable_type_element.append(int_option_element);
-    	// Float option
-    	var float_option_element = $("<option></option>");
-    	float_option_element.attr("value", "float");
-    	float_option_element.text("Float");
-    	variable_type_element.append(float_option_element);
-    	// Custom value option
-    	var custom_option_element = $("<option></option>");
-    	custom_option_element.attr("value", "custom");
-    	custom_option_element.text("Custom values");
-    	variable_type_element.append(custom_option_element);
-    	// Append element to column
-    	third_column.append(variable_type_element);
-    	// Append column to row
-    	new_row.append(third_column);
-
-    	// 4th column: min value
-    	var fourth_column  = $('<td></td>');
-    	fourth_column.attr("class", "table_cell_alignment number_input_cell");
-    	var variable_min_value_element = $('<input />');
-    	variable_min_value_element.attr("type", "number");
-    	variable_min_value_element.attr("class", "formula_input_text");
-    	variable_min_value_element.attr("value", "1");
-    	// Append element to column
-    	fourth_column.append(variable_min_value_element);
-    	// Append column to row
-    	new_row.append(fourth_column);
-
-    	// 5th column: max value
-    	var fith_column  = $('<td></td>');
-    	fith_column.attr("class", "table_cell_alignment number_input_cell");
-    	
-    	var variable_max_value_element = $('<input />');
-    	variable_max_value_element.attr("type", "number");
-    	variable_max_value_element.attr("class", "formula_input_text");
-    	variable_max_value_element.attr("value", "10");
-    	// Append element to column
-    	fith_column.append(variable_max_value_element);
-    	// Append column to row
-    	new_row.append(fith_column);
-
-    	// 6th column: decimal_places
-    	var sixth_column  = $('<td></td>');
-    	sixth_column.attr("class", "table_cell_alignment number_input_cell");
-    	var variable_decimal_places_element = $('<input>');
-    	variable_decimal_places_element.attr("type", "number");
-    	variable_decimal_places_element.attr("min", "0");
-    	variable_decimal_places_element.attr("max", "7");
-    	variable_decimal_places_element.attr("class", "formula_input_text");
-    	variable_decimal_places_element.attr("value", "0");
-    	// Append element to column
-    	sixth_column.append(variable_decimal_places_element);
-    	// Append column to row
-    	new_row.append(sixth_column);
-
-    	// 7th column: Remove button
-    	var seventh_column  = $('<td></td>');
-    	seventh_column.attr("class", "table_cell_alignment");
-    	var remove_variable_button = $('<input>');
-    	remove_variable_button.attr("type", "button");
-//    	remove_variable_button.attr("class", "remove_variable_button");
-    	remove_variable_button.addClass("remove_variable_button");
-    	remove_variable_button.addClass("remove_button");
-    	remove_variable_button.attr("value", "Remove");
-    	// Append element to column
-    	seventh_column.append(remove_variable_button);
-    	// Append column to row
-    	new_row.append(seventh_column);
-    	
-    	// Add event listener for Remove button click
-    	remove_variable_button.click(function() {
-    		new_row.remove();
-    	});
-
-    	// Finally, append the new row to the table
-    	variables_table_element.append(new_row);
-    });
+//    $(xblockElement).find('input[name=add_variable_button]').bind('click', function(e) {
+//    	console.log("Add VARIABLE button clicked");
+//
+//    	var new_row = $('<tr></tr>');
+//    	new_row.attr("class", "formula_edit_table_row");
+//
+//    	// 1st column: variable name
+//    	var first_column = $('<td></td>');
+//    	first_column.attr("class", "table_cell_alignment");
+//    	var variable_name_element = $('<input />');
+//    	variable_name_element.attr("type", "text");
+//    	variable_name_element.attr("class", "formula_input_text");
+//    	variable_name_element.attr("value", "");
+//    	// Append element to column
+//    	first_column.append(variable_name_element);
+//    	// Append column to row
+//    	new_row.append(first_column);
+//
+//    	// 2nd column: Original text
+//    	var second_column = $('<td></td>');
+//    	second_column.attr("class", "table_cell_alignment");
+//    	var original_text_element = $('<input />');
+//    	original_text_element.attr("type", "text");
+//    	original_text_element.attr("class", "formula_input_text");
+//    	original_text_element.attr("value", "");
+//    	// Append element to column
+//    	second_column.append(original_text_element);
+//    	// Append column to row
+//    	new_row.append(second_column);
+//
+//    	// 3rd column: Variable Type
+//    	var third_column  = $('<td></td>');
+//    	third_column.attr("class", "table_cell_alignment");
+//    	var variable_type_element = $('<select></select>');
+//    	variable_type_element.attr("class", "variable_type");
+//    	// Int option
+//    	var int_option_element = $("<option></option>");
+//    	int_option_element.attr("value", "int");
+//    	int_option_element.text("Int");
+//    	int_option_element.attr("selected", "selected");
+//    	variable_type_element.append(int_option_element);
+//    	// Float option
+//    	var float_option_element = $("<option></option>");
+//    	float_option_element.attr("value", "float");
+//    	float_option_element.text("Float");
+//    	variable_type_element.append(float_option_element);
+//    	// Custom value option
+//    	var custom_option_element = $("<option></option>");
+//    	custom_option_element.attr("value", "custom");
+//    	custom_option_element.text("Custom values");
+//    	variable_type_element.append(custom_option_element);
+//    	// Append element to column
+//    	third_column.append(variable_type_element);
+//    	// Append column to row
+//    	new_row.append(third_column);
+//
+//    	// 4th column: min value
+//    	var fourth_column  = $('<td></td>');
+//    	fourth_column.attr("class", "table_cell_alignment number_input_cell");
+//    	var variable_min_value_element = $('<input />');
+//    	variable_min_value_element.attr("type", "number");
+//    	variable_min_value_element.attr("class", "formula_input_text");
+//    	variable_min_value_element.attr("value", "1");
+//    	// Append element to column
+//    	fourth_column.append(variable_min_value_element);
+//    	// Append column to row
+//    	new_row.append(fourth_column);
+//
+//    	// 5th column: max value
+//    	var fith_column  = $('<td></td>');
+//    	fith_column.attr("class", "table_cell_alignment number_input_cell");
+//
+//    	var variable_max_value_element = $('<input />');
+//    	variable_max_value_element.attr("type", "number");
+//    	variable_max_value_element.attr("class", "formula_input_text");
+//    	variable_max_value_element.attr("value", "10");
+//    	// Append element to column
+//    	fith_column.append(variable_max_value_element);
+//    	// Append column to row
+//    	new_row.append(fith_column);
+//
+//    	// 6th column: decimal_places
+//    	var sixth_column  = $('<td></td>');
+//    	sixth_column.attr("class", "table_cell_alignment number_input_cell");
+//    	var variable_decimal_places_element = $('<input>');
+//    	variable_decimal_places_element.attr("type", "number");
+//    	variable_decimal_places_element.attr("min", "0");
+//    	variable_decimal_places_element.attr("max", "7");
+//    	variable_decimal_places_element.attr("class", "formula_input_text");
+//    	variable_decimal_places_element.attr("value", "0");
+//    	// Append element to column
+//    	sixth_column.append(variable_decimal_places_element);
+//    	// Append column to row
+//    	new_row.append(sixth_column);
+//
+//    	// 7th column: Remove button
+//    	var seventh_column  = $('<td></td>');
+//    	seventh_column.attr("class", "table_cell_alignment");
+//    	var remove_variable_button = $('<input>');
+//    	remove_variable_button.attr("type", "button");
+////    	remove_variable_button.attr("class", "remove_variable_button");
+//    	remove_variable_button.addClass("remove_variable_button");
+//    	remove_variable_button.addClass("remove_button");
+//    	remove_variable_button.attr("value", "Remove");
+//    	// Append element to column
+//    	seventh_column.append(remove_variable_button);
+//    	// Append column to row
+//    	new_row.append(seventh_column);
+//
+//    	// Add event listener for Remove button click
+//    	remove_variable_button.click(function() {
+//    		new_row.remove();
+//    	});
+//
+//    	// Finally, append the new row to the table
+//    	variables_table_element.append(new_row);
+//
+//    });
 
 //    $(document).ready(function() {
 //        var variable_type_select = $(xblockElement).find('.variable_type');

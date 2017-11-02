@@ -318,7 +318,7 @@ Calculate the total price of them?"""
 
     # Define if original text question parsed yet
     show_parser = Boolean(
-        default=False,
+        default=True,
         help="Whether to show Parser tab in Studio view",
         scope = Scope.settings
     )
@@ -875,7 +875,7 @@ Calculate the total price of them?"""
         setattr(self,'_question_template', template)
         setattr(self,'_answer_template_string', answer)
         setattr(self,'_string_vars', strings)
-        setattr(self, 'show_parser', True)
+        setattr(self, 'show_parser', False)
 
         print("## End FUNCTION fe_parse_question_studio_edits() ##")
 
