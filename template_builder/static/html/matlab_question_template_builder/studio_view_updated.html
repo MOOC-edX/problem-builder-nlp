@@ -42,28 +42,29 @@
 				<div class="wrapper-comp-setting">
 					<label class="label setting-label" for="question_template">Question template</label>
 					<textarea name="question_template" rows=10 cols=80>{{ question_template }}</textarea>
+
+                    <!-- Original question -->
+                    <div name="original_question_text_div">
+                        <a href="#" class="button action-primary" name="btn_toggle_original_question">{% trans "Show Original Question" %}</a>
+                        <!--<a href="#" class="button action-primary" name="btn_show_original_question">{% trans "Show Original Question" %}</a>-->
+                        <!--<a href="#" class="button action-primary" name="btn_hide_original_question">{% trans "Hide Original Question" %}</a>-->
+                    </div>
 	        	</div>
 
-				<!-- Original question -->
-				<div name="original_question_text_div">
-					<a href="#" class="button action-primary" name="btn_toggle_original_question">{% trans "Show Original Question" %}</a>
-					<!--<a href="#" class="button action-primary" name="btn_show_original_question">{% trans "Show Original Question" %}</a>-->
-					<!--<a href="#" class="button action-primary" name="btn_hide_original_question">{% trans "Hide Original Question" %}</a>-->
-				</div>
 	        </li>
 
 			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
 					<label class="label setting-label" for="answer_template">Answer template</label>
 					<textarea name="answer_template" rows=5 cols=80>{{ answer_template_string }}</textarea>
-	        	</div>
 
-				<!-- Original answer -->
-				<div name="original_answer_text_div">
-					<a href="#" class="button action-primary" name="btn_toggle_original_answer">{% trans "Show Original Answer" %}</a>
-					<!--<a href="#" class="button action-primary" name="btn_show_original_answer">{% trans "Show Original Answer" %}</a>-->
-					<!--<a href="#" class="button action-primary" name="btn_hide_original_answer">{% trans "Hide Original Answer" %}</a>-->
-				</div>
+                    <!-- Original answer -->
+                    <div name="original_answer_text_div">
+                        <a href="#" class="button action-primary" name="btn_toggle_original_answer">{% trans "Show Original Answer" %}</a>
+                        <!--<a href="#" class="button action-primary" name="btn_show_original_answer">{% trans "Show Original Answer" %}</a>-->
+                        <!--<a href="#" class="button action-primary" name="btn_hide_original_answer">{% trans "Hide Original Answer" %}</a>-->
+                    </div>
+	        	</div>
 	        </li>
 
 	        <li
@@ -89,7 +90,7 @@
 						{% for variable_name, variable in variables.iteritems %}
 							<tr class="formula_edit_table_row">
 								<td class="table_cell_alignment first_column"><input type="text" name="variable-{{ variable.name }}" class="formula_input_text" value="{{ variable.name }}"></td>
-                                <td class="table_cell_alignment"><input type="text" name="original_text-{{variable.name}}" class="formula_input_text" value= {{ variable.original_text }} readonly></td>
+                                <td class="table_cell_alignment number_input_cell"><input type="text" name="original_text-{{variable.name}}" class="formula_input_text" value= {{ variable.original_text }} readonly></td>
                                 <td class="table_cell_alignment">
 									<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="variable_type">
 										<option value="int" {% if variable.type == "int" %} selected="true" {% endif %}>Int</option>
@@ -118,7 +119,7 @@
                             {% for key, var in string_variables.iteritems %}
                                 <tr class="formula_edit_table_row">
                                     <td class="table_cell_alignment first_column"><input type="text" name="string_variable-{{var.name}}" class="formula_input_text" value= {{ var.name }} readonly></td>
-									<td class="table_cell_alignment"><input type="text" name="original_text-{{var.name}}" class="formula_input_text" value= {{ var.original_text }} readonly></td>
+									<td class="table_cell_alignment number_input_cell"><input type="text" name="original_text-{{var.name}}" class="formula_input_text" value= {{ var.original_text }} readonly></td>
                                     <td class="table_cell_alignment">
                                         <select name="variable-library-{{ var.name }}" class="formula_input_text">
                                             {% for context_id, context in var.context_list.iteritems %}
