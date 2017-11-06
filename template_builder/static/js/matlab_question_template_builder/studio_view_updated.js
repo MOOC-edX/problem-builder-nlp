@@ -18,13 +18,14 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     var target_tabId_map = {
         'template-tab' : "editor-tab",
         'editor-tab' : "template-tab"
-    }
+    };
 
     // define tab name (heading) for Editor toggle
     var target_tabName_map = {
         'template-tab' : "Simple Template",
         'editor-tab' : "Advanced Editor"
-    }
+    };
+
     var default_tab = 'template-tab';
 
     var error_message_element = $(xblockElement).find('div[name=error-message]');
@@ -124,6 +125,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             default_tab = 'template-tab';
             hide_tab('parser-tab');
         };
+
         tab_switch(default_tab);
 
         // Define tabs' click listeners
@@ -239,47 +241,46 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             btn_toggle_parser_element.attr('action', next_action);
         });
 
-//        // toggle Original Question
-//        btn_toggle_original_question.bind('click', function(e) {
-//            console.log("toggle Original Question clicked");
-//            var action = $(this).attr('name');
-//            console.log("action = " + action);
-//
-//            if (action == 'show'){
-//                showOriginalQuestionText();
-//                // update toggle elememnt
-//                btn_toggle_original_question.text('Hide Original Question');
-//                btn_toggle_original_question.attr('name', 'hide');
-//            } else {
-//                removeOriginalQuestionText();
-//                // update toggle element
-//                btn_toggle_original_question.text('Show Original Question');
-//                btn_toggle_original_question.attr('name', 'show');
-//            }
-//        });
-
-        // show Original Question
+        // toggle Original Question
         btn_toggle_original_question.bind('click', function(e) {
-            console.log("show Original Question clicked");
-            showOriginalQuestionText();
-//            // update toggle element
-//            btn_show_original_question.hide();
-//            btn_hide_original_question.show();
-        });
+            console.log("toggle Original Question clicked");
+            var action = $(this).attr('action');
+            console.log("action = " + action);
 
-//        // hide Original Question
-//        btn_hide_original_question.bind('click', function(e) {
-//            console.log("hide Original Question clicked");
-//            showOriginalQuestionText();
-//            // update toggle element
-//            btn_show_original_question.show();
-//            btn_hide_original_question.hide();
-//        });
+            if (action == 'show'){
+                // show original question
+                showOriginalQuestionText();
+                // update toggle element
+                btn_toggle_original_question.text('Hide Original Question');
+                btn_toggle_original_question.attr('action', 'hide');
+            } else {
+                // Hide original question
+                removeOriginalQuestionText();
+                // update toggle element
+                btn_toggle_original_question.text('Show Original Question');
+                btn_toggle_original_question.attr('action', 'show');
+            }
+        });
 
         // toggle Original Answer
         btn_toggle_original_answer.bind('click', function(e) {
             console.log("toggle Original Answer clicked");
-            showOriginalAnswerText();
+            var action = $(this).attr('action');
+            console.log("action = " + action);
+
+            if (action == 'show'){
+                // show original answer
+                showOriginalAnswerText();
+                // update toggle element
+                btn_toggle_original_answer.text('Hide Original Answer');
+                btn_toggle_original_answer.attr('action', 'hide');
+            } else {
+                // hide original answer
+                removeOriginalAnswerText();
+                // update toggle element
+                btn_toggle_original_answer.text('Show Original Answer');
+                btn_toggle_original_answer.attr('action', 'show');
+            }
         });
 
         // listeners for "Remove" buttons of "Variables"
@@ -317,7 +318,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             if (b != toHighlight) $("a[id=" + b + "]").css({"color": csxColor[0]});
         }
         $("a[id=" + toHighlight + "]").css({"color": csxColor[1]});
-    }
+    };
 
     // Update buttons based on target tab
     function update_buttons(toShow) {
@@ -352,7 +353,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             btn_switch_editor_mode_element.show();
             btn_toggle_parser_element.hide();
     	}
-    }
+    };
 
 
     // Switch to toShow tab, hide others
@@ -368,7 +369,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
         // Update buttons based on target tab
         update_buttons(toShow);
-    }
+    };
 
     // Hide toHide tab
     function hide_tab(toHide) {
@@ -377,7 +378,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
         // Hide tab heading
         hide_tab_heading(toHide);
-    }
+    };
 
     // Show toShow tab
     function show_tab(toShow) {
@@ -386,7 +387,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
         // Show tab heading
         show_tab_heading(toShow);
-    }
+    };
 
     function hide_tab_heading(toHide) {
 //        console.log($(xblockElement).parent("div").parent("div").parent("div").children(".modal-header"));
@@ -397,7 +398,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         atag.parent('li').css({ "display": 'none'}); // Use the CSS function from jQuery to set styles to <li> headding
 //        atag.closest('li').css({ "display": 'none'}); // Use the CSS function from jQuery to set styles to <li> headding
 //        atag.closest('li').hide();
-    }
+    };
 
     function show_tab_heading(toShow) {
         var atag = $(xblockElement).parent("div").parent("div").parent("div").children(".modal-header").find("a[id="+toShow+"]");
@@ -407,7 +408,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         atag.parent('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
 //        atag.closest('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
 //        atag.closest('li').show();
-    }
+    };
 
     // Show original question text
   	function showOriginalQuestionText() {
@@ -415,20 +416,21 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         var original_question_text = original_question_text_input_element.val();
 //  		console.log('original_question_text: ' + original_question_text);
 
-  		var original_question_text_title_element = $('<pre></pre>');
+  		var original_question_text_title_element = $('<h6></h6>');
   		original_question_text_title_element.text('Original Question:');
+  		original_question_text_title_element.css('font-weight', 'bold');
 
   		var original_question_text_content_element = $('<pre></pre>');
   		original_question_text_content_element.text(original_question_text);
 
   		original_question_text_div_element.append(original_question_text_title_element);
   		original_question_text_div_element.append(original_question_text_content_element);
-  	}
+  	};
 
-//  	function removeOriginalQuestionText {
-//  	    // remove displayed question text
-//  	    original_question_text_div_element.find('pre').remove();
-//  	}
+  	function removeOriginalQuestionText() {
+  	    // remove displayed question text
+  	    original_question_text_div_element.find('pre').remove();
+  	};
 
   	// Show original answer text
   	function showOriginalAnswerText() {
@@ -436,29 +438,21 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         var original_answer_text = original_answer_text_input_element.val();
   		console.log('Original answer: ' + original_answer_text);
 
-  		var original_answer_text_title_element = $('<pre></pre>');
+  		var original_answer_text_title_element = $('<h6></h6>');
   		original_answer_text_title_element.text('Original Answer:');
+  		original_answer_text_title_element.css('font-weight', 'bold');
 
   		var original_answer_text_content_element = $('<pre></pre>');
   		original_answer_text_content_element.text(original_answer_text);
 
   		original_answer_text_div_element.append(original_answer_text_title_element);
   		original_answer_text_div_element.append(original_answer_text_content_element);
+  	};
 
-//  		// update toggle elememnt
-//  		btn_toggle_original_answer.text('Hide Original Answer');
-//  		btn_toggle_original_answer.attr('action', 'hide');
-
-  	}
-
-//  	function removeOriginalAnswerText {
-//  	    // remove displayed question text
-//  	    original_answer_text_div_element.find('pre').remove();
-//
-//  	    // update toggle element
-//  		btn_toggle_original_answer.text('Show Original Answer');
-//  		btn_toggle_original_answer.attr('action', 'show');
-//  	}
+  	function removeOriginalAnswerText() {
+  	    // remove displayed question text
+  	    original_answer_text_div_element.find('pre').remove();
+  	};
 
     function addVariableRow(current_row_index) {
     	console.log("function addVariableRow() invoked");
@@ -561,6 +555,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	var remove_variable_button = $('<input>');
     	remove_variable_button.attr("type", "button");
     	remove_variable_button.addClass("remove_variable_button");
+    	remove_variable_button.addClass("button_cell");
     	remove_variable_button.attr("value", "x");
     	// Append element to column
     	seventh_column.append(remove_variable_button);
@@ -579,7 +574,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         console.log('current row index = ' + current_row_index);
     	$('#variables_table > tbody > tr').eq(current_row_index).after(new_row);
 
-    }
+    };
 
     /*
      Have the user confirm the one-way conversion to XML.

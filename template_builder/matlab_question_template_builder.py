@@ -122,6 +122,14 @@ Calculate the total price of them?""",
         scope = Scope.settings
     )
 
+    runtime_question_template = String(
+        display_name="Question Template",
+        help="",
+        default="""Given [a] [string0]s and [b] [string1]s. One [string0] cost [x] USD, one [string1] cost [y] USD.
+    Calculate the total price of them?""",
+        scope=Scope.user_state
+    )
+
     _answer_template = Dict(
         display_name="Answer Template",
         help="Teacher has to fill the answer template here!!!",
@@ -137,6 +145,13 @@ Calculate the total price of them?""",
         help="Teacher has to fill the answer template here!!!",
         default= '''price = [a] * [x] + [b] * [y]''',
         scope=Scope.settings
+    )
+
+    runtime_answer_template_string = String(
+        display_name="Answer Template",
+        help="Teacher has to fill the answer template here!!!",
+        default=_answer_template_string,
+        scope=Scope.user_state
     )
 
     _variables = Dict (
@@ -311,6 +326,7 @@ Calculate the total price of them?"""
     variables = {}
     _generated_question = ""
     _generated_variables = {}
+    _generated_answer = ""
     student_answer = ""
 
     # Define current editor mode
@@ -323,15 +339,21 @@ Calculate the total price of them?"""
         scope = Scope.settings
     )
 
+    reset_question_after_edit = Boolean(
+        default=False,
+        help="Whether to generate new problem for the specific xBlock usage after edit",
+        scope=Scope.settings
+    )
+
     reset_question = Boolean(
         default=True,
-        help="Whether to generate random variables' values of the current xBlock usage for specific One user",
+        help="Whether to generate new problem for the specific xBlock usage, and for specific user in Student view",
         scope = Scope.user_state
     )
 
     reset_question_preview = Boolean(
         default=True,
-        help="Whether to generate random variables' values of the current xBlock usage for specific One user in Studio preview",
+        help="Whether to generate new problem for the specific xBlock usage, and for specific user in Studio preview",
         scope=Scope.user_state
     )
 
@@ -401,36 +423,63 @@ Calculate the total price of them?"""
 
         should_disbled = ''
         show_reset_button = self.allow_reset
+        print("self.reset_question = {}".format(self.reset_question))
+        print("self.runtime_question_template = {}".format(self.runtime_question_template))
+        print("self._question_template = {}".format(self._question_template))
+        print("self.runtime_answer_template_string = {}".format(self.runtime_answer_template_string))
+        print("self._answer_template_string = {}".format(self._answer_template_string))
+
+        # Check if there were modification in question / answer template?
+        # if Yes, turn on trigger for problem reset
+        if self.runtime_question_template != self._question_template or self.runtime_answer_template_string != self._answer_template_string:
+            setattr(self, 'reset_question', True)
+            print("self.reset_question = {}".format(self.reset_question))
 
         # generate question from template if necessary
         if self.reset_question == True:
-            self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-                self._question_template, self._variables, randomization=True)
-            # append string variables
-            self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-            # Generate answer
-            generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-                                                                              self._answer_template_string)
-            # update user_state fields
+            # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+            #     self._question_template, self._variables, randomization=True)
+            # # Append string variables to the question template
+            # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+            # # Generate answer
+            # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+            #                                                                   self._answer_template_string)
+            # # update user_state fields
+            # setattr(self, 'reset_question', False)
+            # setattr(self, 'runtime_generated_question', self._generated_question)
+            # setattr(self, 'runtime_generated_variables', self._generated_variables)
+            # setattr(self, 'runtime_generated_string_variables', self._string_vars)
+            # setattr(self, 'runtime_generated_answer', generated_answer)
+            # setattr(self, '_generated_answer', generated_answer)
+
+            # Reset problem runtime data (user_state fields)
+            self.reset_problem();
+            # Turn off trigger for problem reset
             setattr(self, 'reset_question', False)
-            setattr(self, 'runtime_generated_question', self._generated_question)
-            setattr(self, 'runtime_generated_variables', self._generated_variables)
-            setattr(self, 'runtime_generated_string_variables', self._string_vars)
-            setattr(self, 'runtime_generated_answer', generated_answer)
+            setattr(self, 'runtime_question_template', self._question_template)
+            setattr(self, 'runtime_answer_template_string', self._answer_template_string)
         else:
+            print "self._generated_question = {}".format(self._generated_question)
+            print "self._generated_answer = {}".format(self._generated_answer)
+            print "self._generated_variables = {}".format(self._generated_variables)
             self._generated_question = self.runtime_generated_question
             self._generated_variables = self.runtime_generated_variables
+            self._generated_answer = self.runtime_generated_answer
+
         print("self.reset_question = {}".format(self.reset_question))
+        print("self.runtime_question_template = {}".format(self.runtime_question_template))
+        print("self._question_template = {}".format(self._question_template))
+        print("self.runtime_answer_template_string = {}".format(self.runtime_answer_template_string))
+        print("self._answer_template_string = {}".format(self._answer_template_string))
         print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
         print "self.runtime_generated_answer = {}".format(self.runtime_generated_answer)
+        print "self._generated_answer = {}".format(self._generated_answer)
         print("self.runtime_generated_variables = {}".format(self.runtime_generated_variables))
         print("self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables))
 
 
         # Get previous submissions made by student
         submissions = sub_api.get_submissions(self.student_item_key, 1)
-        # print("self.student_item_key = {}".format(self.student_item_key))
-        print("previous submissions = {}".format(submissions))
 
         # Only show student's last submission
         # TODO: to figure out how to handle student's previous submissions
@@ -441,7 +490,7 @@ Calculate the total price of them?"""
             answer = latest_submission['answer'] # saved "answer information"
             print("answer = {}".format(answer))
             self._generated_question = answer['generated_question']
-            self.generated_answer = answer['generated_answer']  # teacher's generated answer
+            self._generated_answer = answer['generated_answer']  # teacher's generated answer
             self.student_answer = answer['student_answer'] # student's submitted answer
 
             # TODO: check what is this block for?
@@ -454,6 +503,13 @@ Calculate the total price of them?"""
             self.attempt_number = latest_submission['attempt_number']
             if (self.attempt_number >= self.max_attempts):
                 should_disbled = 'disabled'
+
+            # update runtime data (user_state fields), to get submitted answer when invoked Show answer button
+            setattr(self, 'runtime_generated_question', self._generated_question)
+            setattr(self, 'runtime_generated_answer', self._generated_answer)
+            setattr(self, 'runtime_generated_variables', self._generated_variables)
+            # setattr(self, 'runtime_generated_string_variables', self._string_vars)
+
 
         # Serialize some fields in context dictionary before passing to student_view template
         self.serialize_data_to_context(context)
@@ -496,55 +552,93 @@ Calculate the total price of them?"""
 
         should_disbled = ''
         show_reset_button = self.allow_reset
+        print("self.reset_question_preview = {}".format(self.reset_question_preview))
+        print("self.runtime_question_template = {}".format(self.runtime_question_template))
+        print("self._question_template = {}".format(self._question_template))
+        print("self.runtime_answer_template_string = {}".format(self.runtime_answer_template_string))
+        print("self._answer_template_string = {}".format(self._answer_template_string))
+
+        # Check if there were modification in question / answer template?
+        # if Yes, turn on trigger for problem reset
+        if self.runtime_question_template != self._question_template or self.runtime_answer_template_string != self._answer_template_string:
+            setattr(self, 'reset_question_preview', True)
+            print("self.reset_question_preview = {}".format(self.reset_question_preview))
 
         # generate question from template if necessary
         if self.reset_question_preview == True:
-            self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-                self._question_template, self._variables, randomization=True)
-            # append string variables
-            self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-            # Generate answer
-            generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-                                                                              self._answer_template_string)
-            # update user_state fields
-            setattr(self, 'runtime_generated_question', self._generated_question)
-            setattr(self, 'runtime_generated_answer', generated_answer)
-            setattr(self, 'runtime_generated_variables', self._generated_variables)
-            setattr(self, 'runtime_generated_string_variables', self._string_vars)
+            # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+            #     self._question_template, self._variables, randomization=True)
+            # # Append string variables to the question template
+            # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+            # # Generate answer
+            # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+            #                                                                   self._answer_template_string)
+            # # update user_state fields
+            # setattr(self, 'runtime_generated_question', self._generated_question)
+            # setattr(self, 'runtime_generated_answer', generated_answer)
+            # setattr(self, 'runtime_generated_variables', self._generated_variables)
+            # setattr(self, 'runtime_generated_string_variables', self._string_vars)
+            # setattr(self, '_generated_answer', generated_answer)
+
+            # Reset problem runtime data (user_state fields)
+            self.reset_problem();
+            # Turn off trigger for problem reset
+            setattr(self, 'reset_question_preview', False)
+            setattr(self, 'runtime_question_template', self._question_template)
+            setattr(self, 'runtime_answer_template_string', self._answer_template_string)
+
+            # Reset score and previous submissions made by staff (author)
+            sub_api.reset_score(self.student_item_key['student_id'], self.student_item_key['course_id'],
+                                self.student_item_key['item_id'], clear_state=True)
         else:
+            print "self._generated_question = {}".format(self._generated_question)
+            print "self._generated_answer = {}".format(self._generated_answer)
+            print "self._generated_variables = {}".format(self._generated_variables)
             self._generated_question = self.runtime_generated_question
             self._generated_variables = self.runtime_generated_variables
+            self._generated_answer = self.runtime_generated_answer
 
-        # # Get previous submissions made by student
-        # submissions = sub_api.get_submissions(self.student_item_key, 1)
-        # # print("self.student_item_key = {}".format(self.student_item_key))
-        # # print("previous submissions = {}".format(submissions))
-        #
-        # # Only show student's last submission
-        # # TODO: to figure out how to handle student's previous submissions
-        # if submissions:
-        #     latest_submission = submissions[0]
-        #
-        #     # parse the answer
-        #     answer = latest_submission['answer'] # saved "answer information"
-        #     # self._generated_question = answer['generated_question']
-        #     # self.generated_answer = answer['generated_answer']  # teacher's generated answer
-        #     self.student_answer = answer['student_answer'] # student's submitted answer
-        #
-        #     # TODO: check what is this block for?
-        #     # Retrived the generated variables of the last submission
-        #     if ('variable_values' in answer): # backward compatibility
-        #         saved_generated_variables = json.loads(answer['variable_values'])
-        #         for var_name, var_value in saved_generated_variables.iteritems():
-        #             self._generated_variables[var_name] = var_value
-        #
-        #     self.attempt_number = latest_submission['attempt_number']
-        #     if (self.attempt_number >= self.max_attempts):
-        #         should_disbled = 'disabled'
+        print("self.reset_question_preview = {}".format(self.reset_question_preview))
+        print("self.runtime_question_template = {}".format(self.runtime_question_template))
+        print("self._question_template = {}".format(self._question_template))
+        print("self.runtime_answer_template_string = {}".format(self.runtime_answer_template_string))
+        print("self._answer_template_string = {}".format(self._answer_template_string))
+        print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
+        print "self.runtime_generated_answer = {}".format(self.runtime_generated_answer)
+        print "self._generated_answer = {}".format(self._generated_answer)
+        print("self.runtime_generated_variables = {}".format(self.runtime_generated_variables))
+        print("self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables))
 
-        # Reset score and previous submissions made by staff (author)
-        sub_api.reset_score(self.student_item_key['student_id'], self.student_item_key['course_id'],
-                            self.student_item_key['item_id'], clear_state=True)
+        # Get previous submissions made by student
+        submissions = sub_api.get_submissions(self.student_item_key, 1)
+
+        # Only show student's last submission
+        # TODO: to figure out how to handle student's previous submissions
+        if submissions:
+            latest_submission = submissions[0]
+
+            # parse the answer
+            answer = latest_submission['answer'] # saved "answer information"
+            self._generated_question = answer['generated_question']
+            self._generated_answer = answer['generated_answer']  # teacher's generated answer
+            self.student_answer = answer['student_answer'] # student's submitted answer
+
+            # TODO: check what is this block for?
+            # Retrived the generated variables of the last submission
+            if ('variable_values' in answer): # backward compatibility
+                saved_generated_variables = json.loads(answer['variable_values'])
+                for var_name, var_value in saved_generated_variables.iteritems():
+                    self._generated_variables[var_name] = var_value
+
+            self.attempt_number = latest_submission['attempt_number']
+            if (self.attempt_number >= self.max_attempts):
+                should_disbled = 'disabled'
+
+            # update runtime data (user_state fields), to get submitted answer when invoked Show answer button
+            setattr(self, 'runtime_generated_question', self._generated_question)
+            setattr(self, 'runtime_generated_answer', self._generated_answer)
+            setattr(self, 'runtime_generated_variables', self._generated_variables)
+            # setattr(self, 'runtime_generated_string_variables', self._string_vars)
 
         # Serialize some fields in context dictionary before passing to student_view template
         self.serialize_data_to_context(context)
@@ -655,11 +749,12 @@ Calculate the total price of them?"""
         print("## Start FUNCTION serialize_data_to_context() ##")
         print("## BEFORE ADDING FIELDS ##")
         print("context = {}".format(context))
-        # print("self._question_template = {}".format(self._question_template))
-        # print("self._image_url = {}".format(self._image_url))
+        print("self._question_template = {}".format(self._question_template))
+        print "self._answer_template_string = ", self._answer_template_string
+        print("self._generated_answer = {}".format(self._generated_answer))
         print("self._variables= {}".format(self._variables))
         print("self._generated_variables= {}".format(self._generated_variables))
-        # print "self._answer_template_string = ", self._answer_template_string
+
 
 
         # Add following fields to context variable
@@ -668,10 +763,14 @@ Calculate the total price of them?"""
         context['serialized_variables'] = json.dumps(self._variables)
         context['serialized_generated_variables'] = json.dumps(self._generated_variables)
         context['saved_answer_template'] = self._answer_template_string # string
-        context['saved_resolver_selection'] = self._problem_solver  # use _problem_solver from editable_fields
+        context['saved_generated_answer'] = self._generated_answer
+        # context['saved_resolver_selection'] = self._problem_solver  # use _problem_solver from editable_fields
 
-        # print("## AFTER, ADDED FIELDS ##")
+        print("## AFTER, ADDED FIELDS ##")
         print("context = {}".format(context))
+        print("self._question_template = {}".format(self._question_template))
+        print "self._answer_template_string = ", self._answer_template_string
+        print("self._generated_answer = {}".format(self._generated_answer))
         print("self._variables= {}".format(self._variables))
         print("self._generated_variables= {}".format(self._generated_variables))
         print("## End FUNCTION serialize_data_to_context() ##")
@@ -1053,17 +1152,20 @@ Calculate the total price of them?"""
         self.validate_field_data(validation, preview_data)
         # print("preview_data fields: {}".format(preview_data))
 
-        # Generate new problem
-        # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
-        #     self._question_template, self._variables)
-        self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-            self._question_template, self._variables, randomization=True)
+        # # Generate new problem
+        # # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
+        # #     self._question_template, self._variables)
+        # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+        #     self._question_template, self._variables, randomization=True)
+        #
+        # # Now, append string_vars into the generated question
+        # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        # # generated answer string
+        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+        #                                                                   self._answer_template_string)
 
-        # Now, append string_vars into the generated question
-        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-        # generated answer string
-        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-                                                                          self._answer_template_string)
+        # Turn on the trigger to reset problem after studio edits
+        setattr(self, 'reset_question_after_edit', True)
         print("## End FUNCTION fe_submit_studio_edits() ###")
 
         if validation:
@@ -1137,19 +1239,27 @@ Calculate the total price of them?"""
         # Reset score and previous submissions made by student
         sub_api.reset_score(self.student_item_key['student_id'], self.student_item_key['course_id'], self.student_item_key['item_id'], clear_state=True)
 
-        # Generate question from template if necessary
-        self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-            self._question_template, self._variables, randomization=True)
-        # Append string variables
-        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-        # Generate answer
-        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-                                                                          self._answer_template_string)
-        # Update user_state fields
-        setattr(self, 'runtime_generated_question', self._generated_question)
-        setattr(self, 'runtime_generated_variables', self._generated_variables)
-        setattr(self, 'runtime_generated_string_variables', self._string_vars)
-        setattr(self, 'runtime_generated_answer', generated_answer)
+        # Reset problem runtime data (user_state fields)
+        self.reset_problem();
+        # Turn off trigger for problem reset
+        setattr(self, 'reset_question', False)
+        setattr(self, 'runtime_question_template', self._question_template)
+        setattr(self, 'runtime_answer_template_string', self._answer_template_string)
+
+        # # Generate question from template if necessary
+        # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+        #     self._question_template, self._variables, randomization=True)
+        # # Append string variables to the question template
+        # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        # # Generate answer
+        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+        #                                                                   self._answer_template_string)
+        # # Update user_state fields
+        # setattr(self, 'runtime_generated_question', self._generated_question)
+        # setattr(self, 'runtime_generated_variables', self._generated_variables)
+        # setattr(self, 'runtime_generated_string_variables', self._string_vars)
+        # setattr(self, 'runtime_generated_answer', generated_answer)
+        # setattr(self, '_generated_answer', generated_answer)
 
         # Add following fields to problem variable
         problem['question'] = self.runtime_generated_question
@@ -1166,12 +1276,45 @@ Calculate the total price of them?"""
         print "self._generated_question = {}".format(self._generated_question)
         print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
         print "self.runtime_generated_answer = {}".format(getattr(self, 'runtime_generated_answer'))
+        print "self._generated_answer = {}".format(self._generated_answer)
         print "self._generated_variables = {}".format(self._generated_variables)
         print "self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables)
         # print "problem = {}".format(problem)
         print "## END FUNCTION reset_problem_handler() ##"
 
         return problem
+
+    def reset_problem(self, suffix=''):
+        """
+        Reset problem runtime data (user_state fields)
+        """
+        print("## Start FUNCTION reset_problem() ##")
+
+        # Generate question from template if necessary
+        self._generated_question, self._generated_variables = matlab_question_service.new_problem(
+            self._question_template, self._variables, randomization=True)
+        # Append string variables to the question template
+        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        # Generate answer
+        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
+                                                                          self._answer_template_string)
+        # Update user_state fields
+        setattr(self, 'runtime_generated_question', self._generated_question)
+        setattr(self, 'runtime_generated_variables', self._generated_variables)
+        setattr(self, 'runtime_generated_string_variables', self._string_vars)
+        setattr(self, 'runtime_generated_answer', generated_answer)
+        setattr(self, '_generated_answer', generated_answer)
+
+
+        print "self._generated_question = {}".format(self._generated_question)
+        print "self.runtime_generated_question = {}".format(self.runtime_generated_question)
+        print "self.runtime_generated_answer = {}".format(getattr(self, 'runtime_generated_answer'))
+        print "self._generated_answer = {}".format(self._generated_answer)
+        print "self._generated_variables = {}".format(self._generated_variables)
+        print "self.runtime_generated_string_variables = {}".format(self.runtime_generated_string_variables)
+        print "## END FUNCTION reset_problem ##"
+
+        return {'result': 'success'}
 
     # TO-DO: change this to create the scenarios you'd like to see in the
     # workbench while developing your XBlock.

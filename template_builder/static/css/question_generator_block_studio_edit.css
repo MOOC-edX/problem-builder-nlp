@@ -122,3 +122,15 @@ input[type="checkbox"], input[type="radio"] {
     width: 70% !important;
 }
 
+.block-left {
+    display: inline-block;
+    width: 25%;
+    margin-right: 10px;
+    /* float: left; */
+}
+
+.block-right {
+    /* width: 75%; */
+    display: inline-block;
+    /* float: right; */
+}
