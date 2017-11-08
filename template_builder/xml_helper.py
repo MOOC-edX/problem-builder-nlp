@@ -138,7 +138,7 @@ def convert_data_from_dict_to_xml(data):
 
     xml_string = ET.tostring(indented_problem)
 
-    print "Output xml string = ", xml_string
+    # print "Output xml string = ", xml_string
     print("## End FUNCTION convert_data_from_dict_to_xml() ##")
 
     return xml_string

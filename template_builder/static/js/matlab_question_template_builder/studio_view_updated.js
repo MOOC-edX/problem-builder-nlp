@@ -1,7 +1,8 @@
 /* Javascript for StudioEditableXBlockMixin. */
 function StudioEditableXBlockMixin(runtime, xblockElement) {
     "use strict";
-    console.log(xblockElement);
+
+//    console.log(xblockElement);
     var fields = [];
     var tinyMceAvailable = (typeof $.fn.tinymce !== 'undefined'); // Studio includes a copy of tinyMCE and its jQuery plugin
     var datepickerAvailable = (typeof $.fn.datepicker !== 'undefined'); // Studio includes datepicker jQuery plugin
@@ -26,17 +27,31 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         'editor-tab' : "Advanced Editor"
     };
 
-    var default_tab = 'template-tab';
-
     var error_message_element = $(xblockElement).find('div[name=error-message]');
+
+    // var on TEMPLATE tab
     var question_template_textarea_element = $(xblockElement).find('textarea[name=question_template]');
+    var show_question_original_text_textarea_element = $(xblockElement).find('textarea[name=show_question_original_text]');
+    var answer_template_textarea_element =  $(xblockElement).find('textarea[name=answer_template]');
+    var show_answer_original_text_textarea_element = $(xblockElement).find('textarea[name=show_answer_original_text]');
+    // for show / hide question text
+    var original_question_text_input_element = $(xblockElement).find('input[name=input_question_text]'); // hidden input
+    var original_answer_text_input_element = $(xblockElement).find('input[name=input_answer_text]'); // hidden input
+    var question_original_text = original_question_text_input_element.val();
+    var answer_original_text = original_answer_text_input_element.val();
+    var original_question_text_div_element = $(xblockElement).find('div[name=original_question_text_div]');
+    var original_answer_text_div_element = $(xblockElement).find('div[name=original_answer_text_div]');
+
+    var btn_toggle_original_question = $(xblockElement).find('a[name=btn_toggle_original_question]');
+    var btn_toggle_original_answer = $(xblockElement).find('a[name=btn_toggle_original_answer]');
+
+    // Image URL
     var url_image_input = $(xblockElement).find('input[name=image_url]');
+    // Variables
     var variables_table_element = $(xblockElement).find('table[name=variables_table]');
 //    var variables_table_element = $(xblockElement).find('table[id=variables_table]');
-//    var add_variable_button_element = $(xblockElement).find('li[name=add_variable]');
-//    var add_variable_button_element = $(xblockElement).find('li[name=add_variable]');
-    var word_variables_table_element = $(xblockElement).find('table[name=word_variables_table]');
-    var answer_template_textarea_element =  $(xblockElement).find('textarea[name=answer_template]');
+    var string_variables_table_element = $(xblockElement).find('table[name=string_variables_table]');
+
 
     // for editor mode toggle
     var btn_switch_editor_mode_element = $(xblockElement).find('button[id=btn_switch_editor_mode]');
@@ -64,20 +79,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         lineWrapping: true
     });
 
-    // for show / hide question text
-    var original_question_text_input_element = $(xblockElement).find('input[name=input_question_text]');
-    var original_question_text_div_element = $(xblockElement).find('div[name=original_question_text_div]');
-    var original_answer_text_input_element = $(xblockElement).find('input[name=input_answer_text]');
-    var original_answer_text_div_element = $(xblockElement).find('div[name=original_answer_text_div]');
-
-    var btn_toggle_original_question = $(xblockElement).find('a[name=btn_toggle_original_question]');
-//    var btn_show_original_question = $(xblockElement).find('a[name=btn_show_original_question]');
-//    var btn_hide_original_question = $(xblockElement).find('a[name=btn_hide_original_question]');
-    var btn_toggle_original_answer = $(xblockElement).find('a[name=btn_toggle_original_answer]');
-//    var btn_show_original_answer = $(xblockElement).find('a[name=btn_show_original_answer]');
-//    var btn_hide_original_answer = $(xblockElement).find('a[name=btn_hide_original_answer]');
-
-
     $(function($) {
         // append tab action bar
 
@@ -89,43 +90,39 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //                    )
 //                );
 //        }
-        console.log('show_parser_val =' + show_parser_val)
 
-//        if (show_parser_val == 'False'){
-            // Show question parser tab
-            $('.editor-modes')
-                .append(
-                    $('<li>', {class: "action-item"}).append(
-                        $('<a />', {class: "action-primary", id: 'parser-tab', text: studio_buttons['parser-tab']})
-                    )
-                );
-//            btn_switch_editor_mode_element.hide();
-//        } else {
-            // Show template tab
-            $('.editor-modes')
-                .append(
-                    $('<li>', {class: "action-item"}).append(
-                        $('<a />', {class: "action-primary", id: 'template-tab', text: studio_buttons['template-tab']})
-                    )
-                );
-            // Show settings tab
-            $('.editor-modes')
-                .append(
-                    $('<li>', {class: "action-item"}).append(
-                        $('<a />', {class: "action-primary", id: 'settings-tab', text: studio_buttons['settings-tab']})
-                    )
-                );
-//        }
+        // Show question parser tab
+        $('.editor-modes')
+            .append(
+                $('<li>', {class: "action-item"}).append(
+                    $('<a />', {class: "action-primary", id: 'parser-tab', text: studio_buttons['parser-tab']})
+                )
+            );
+        // Show template tab
+        $('.editor-modes')
+            .append(
+                $('<li>', {class: "action-item"}).append(
+                    $('<a />', {class: "action-primary", id: 'template-tab', text: studio_buttons['template-tab']})
+                )
+            );
+        // Show settings tab
+        $('.editor-modes')
+            .append(
+                $('<li>', {class: "action-item"}).append(
+                    $('<a />', {class: "action-primary", id: 'settings-tab', text: studio_buttons['settings-tab']})
+                )
+            );
 
         // Set default tab
-        // update default tab
+        var default_tab = 'template-tab';
+        // Update default tab
         if(show_parser_val == 'True'){
             default_tab = 'parser-tab';
         } else {
             default_tab = 'template-tab';
             hide_tab('parser-tab');
         };
-
+        // Switch to default tab
         tab_switch(default_tab);
 
         // Define tabs' click listeners
@@ -150,39 +147,30 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             // get current tab
             var current_tab = $(this).attr('tab-name');
 
-//            console.log('previous tab id:' + current_tab);
-//            console.log('targeted tab id:' + target_tabId_map[current_tab]);
-//            console.log('targeted tab name:' + studio_buttons[target_tabId_map[current_tab]]);
-//            console.log('next editor mode:' + target_tabName_map[current_tab]);
-//            console.log('enable_advanced_editor:' + enable_advanced_editor);
-
             if(enable_advanced_editor == 'False') {
                 if(! confirmConversionToXml())
                     return;
-                // if confirmed, proceed
-                // update editor mode
+                // if confirmed, proceed updating editor mode
                 enable_advanced_editor = 'True'; // update JS global variable
                 enable_advanced_editor_element.val(enable_advanced_editor); // update value to hidden element enable_advanced_editor
             } else {
                 if(! confirmConversionToTemplate())
                     return;
-                // if confirmed, proceed
-                // update editor mode
+                // if confirmed, proceed updating editor mode
                 enable_advanced_editor = 'False'; // update global variable
                 enable_advanced_editor_element.val(enable_advanced_editor); // update value to hidden input element
             }
-            // Already removed button 'Add Variable' in tab switching function
 
-            // update attributes for the current tab <li> tag
-            // update text
+            // Update attributes for the current tab <li> tag
+            // Update text
             $("#"+current_tab).text(studio_buttons[target_tabId_map[current_tab]]);
-            // update attribute
+            // Update attribute
             $("#"+current_tab).attr('id', target_tabId_map[current_tab]);
 
-            // update attributes for Editor toggle button
-            // update text
+            // Update attributes for Editor toggle button
+            // Update text
             btn_switch_editor_mode_element.text(target_tabName_map[current_tab]);
-            // update target tab attribute
+            // Update target tab attribute
             btn_switch_editor_mode_element.attr('tab-name', target_tabId_map[current_tab]);
 
             // targeted editor_mode_name
@@ -194,7 +182,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 ////            $('#btn_switch_editor_mode').attr('title', 'Switch to ' + editor_mode_name + ' mode'); // update title for the Editor mode button
 //            $('#btn_switch_editor_mode').title('Switch to ' + editor_mode_name + ' mode'); // update title for the Editor mode button
 
-            // switch to the targeted tab
+            // Switch to the targeted tab
             tab_switch(target_tabId_map[current_tab]);
 
         });
@@ -304,7 +292,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         });
 
         // listeners for "Remove" buttons of "String Variables"
-        word_variables_table_element.find('input[type=button][class=remove_variable_button]').bind('click', function(e) {
+        string_variables_table_element.find('input[type=button][class=remove_variable_button]').bind('click', function(e) {
         	var removeButton = $(this);
         	var parentRow = removeButton.closest('tr');
         	parentRow.remove();
@@ -402,7 +390,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     function show_tab_heading(toShow) {
         var atag = $(xblockElement).parent("div").parent("div").parent("div").children(".modal-header").find("a[id="+toShow+"]");
-        console.log(atag);
+        //console.log(atag);
 
         // Show the <li> headding
         atag.parent('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
@@ -414,14 +402,15 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
   	function showOriginalQuestionText() {
   		console.log('showOriginalQuestionText INVOKED');
         var original_question_text = original_question_text_input_element.val();
-//  		console.log('original_question_text: ' + original_question_text);
+  		console.log('original_question_text: ' + original_question_text);
 
   		var original_question_text_title_element = $('<h6></h6>');
   		original_question_text_title_element.text('Original Question:');
   		original_question_text_title_element.css('font-weight', 'bold');
 
-  		var original_question_text_content_element = $('<pre></pre>');
-  		original_question_text_content_element.text(original_question_text);
+//  		var original_question_text_content_element = $('<pre></pre>');
+        var original_question_text_content_element = $('<textarea name="show_question_original_text" rows=10 cols=80></textarea>');
+  		original_question_text_content_element.val(original_question_text);
 
   		original_question_text_div_element.append(original_question_text_title_element);
   		original_question_text_div_element.append(original_question_text_content_element);
@@ -429,12 +418,13 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
   	function removeOriginalQuestionText() {
   	    // remove displayed question text
-  	    original_question_text_div_element.find('pre').remove();
+  	    original_question_text_div_element.find('h6').hide();
+  	    original_question_text_div_element.find('textarea').hide();
   	};
 
   	// Show original answer text
   	function showOriginalAnswerText() {
-  		console.log('showOriginalAnswerText INVOKED');
+  		console.log('showOriginalAnswerText() INVOKED');
         var original_answer_text = original_answer_text_input_element.val();
   		console.log('Original answer: ' + original_answer_text);
 
@@ -442,7 +432,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
   		original_answer_text_title_element.text('Original Answer:');
   		original_answer_text_title_element.css('font-weight', 'bold');
 
-  		var original_answer_text_content_element = $('<pre></pre>');
+//  		var original_answer_text_content_element = $('<pre></pre>');
+        var original_answer_text_content_element = $('<textarea name="show_answer_original_text" rows=5 cols=80></textarea>');
   		original_answer_text_content_element.text(original_answer_text);
 
   		original_answer_text_div_element.append(original_answer_text_title_element);
@@ -451,7 +442,8 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
   	function removeOriginalAnswerText() {
   	    // remove displayed question text
-  	    original_answer_text_div_element.find('pre').remove();
+  	    original_answer_text_div_element.find('h6').hide();
+        original_answer_text_div_element.find('textarea').hide();
   	};
 
     function addVariableRow(current_row_index) {
@@ -551,28 +543,52 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// 7th column: Remove button
     	var seventh_column  = $('<td></td>');
-    	seventh_column.attr("class", "table_cell_alignment");
+    	seventh_column.attr("class", "table_cell_alignment button_cell");
     	var remove_variable_button = $('<input>');
     	remove_variable_button.attr("type", "button");
     	remove_variable_button.addClass("remove_variable_button");
-    	remove_variable_button.addClass("button_cell");
     	remove_variable_button.attr("value", "x");
     	// Append element to column
     	seventh_column.append(remove_variable_button);
     	// Append column to row
     	new_row.append(seventh_column);
 
-    	// Add event listener for Remove button click
-    	remove_variable_button.click(function() {
-    		new_row.remove();
-    	});
+        // 8th column: Add button
+    	var eighth_column  = $('<td></td>');
+    	eighth_column.attr("class", "table_cell_alignment button_cell last_column");
+    	var add_variable_button = $('<input>');
+    	add_variable_button.attr("type", "button");
+    	add_variable_button.addClass("add_variable_button");
+    	add_variable_button.attr("value", "+");
+    	// Append element to column
+    	eighth_column.append(add_variable_button);
+    	// Append column to row
+    	new_row.append(eighth_column);
 
-//    	// Finally, append the new row to the table
+    	//    	// Finally, append the new row to the table
 //    	variables_table_element.append(new_row);
 
         // Insert new row after current row
         console.log('current row index = ' + current_row_index);
     	$('#variables_table > tbody > tr').eq(current_row_index).after(new_row);
+
+    	// Add event listener for Remove button click
+    	remove_variable_button.click(function() {
+    		new_row.remove();
+    	});
+
+    	// listeners for "Add" buttons of "Variables"
+        variables_table_element.find('input[type=button][class=add_variable_button]').bind('click', function(e) {
+        	var addButton = $(this);
+        	var parentRow = addButton.closest('tr');
+        	console.log(parentRow);
+
+            // Insert new variable row after current row
+            var current_row_index = $(this).parent().parent().index();
+            console.log(current_row_index);
+            addVariableRow(current_row_index)
+
+        });
 
     };
 
@@ -719,10 +735,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     // Save action
     $(xblockElement).find('a[name=save_button]').bind('click', function(e) {
     	console.log("Save button clicked");
-    	
+
+    	// Reset error message if have
     	error_message_element.empty();
     	
-    	// "General information" tab
+    	// Handle "SETTINGS" tab
         e.preventDefault();
         var fieldValues = {};
         var fieldValuesNotSet = []; // List of field names that should be set to default values
@@ -740,63 +757,67 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             }
         }
 
-        // 1. xml_editor_element
+        // 1. Handle xml_editor element
         var raw_editor_xml_data = xml_editor.getValue();
-        console.log('raw_editor_xml_data: ' + raw_editor_xml_data);
+        //console.log('raw_editor_xml_data: ' + raw_editor_xml_data);
         
-        
-        // "Template" tab
         /*
+        Handle "TEMPLATE" tab
 			1. question_template
-			2. variables (name, min_valua, max_value, type, decimal_places)
-			3. answer_template
+			2. answer_template
+			3. Image URL
+			4. variables (name, min_valua, max_value, type, decimal_places)
+
         */
-        // 1. question_template_textarea_element
+        // 1.1: Get question template from question_template_textarea_element
         var question_template = question_template_textarea_element.val();
         console.log('question_template: ' + question_template);
 
-        // image
-        var image_url = url_image_input.val();
-        console.log('image_url: ' + image_url);
+        // 2.1 answer_template
+        var answer_template = answer_template_textarea_element.val();
+        console.log('answer_template: ' + answer_template);
 
-        // Handle string variables
-        var strings = []
-        word_variables_table_element.find('tr').each(function(row_index)
+        // 3: image
+        var image_url = url_image_input.val();
+
+        // 4.1: Handle string variables
+        // Get values from string variables table element
+        var string_variables = []
+        string_variables_table_element.find('tr').each(function(row_index)
         {
             if (row_index > 0)
             {
                 var variable = {};
                 var columns = $(this).find('td');
-//                var variable_name = columns.eq(1).children().eq(0).val();
                 var variable_name = columns.eq(0).children().eq(0).val();
                 var context = columns.eq(2).children().eq(0).val();
                 var value = columns.eq(3).children().eq(0).val();
                 variable['name'] = variable_name;
                 variable['context'] = context;
                 variable['value'] = value;
+
                 // add to string variable list
-                strings.push(variable);                                                            
+                string_variables.push(variable);
             }        
         });
-        console.log("string varirables: " + strings);
+//        console.log("string varirables: " + string_variables);
 
-        // 2.2: Handle variables
+        // 4.2: Handle numeric variables
         // Get values from variables_table_element
         var variables = {};
     	variables_table_element.find('tr').each(function(row_index) {
-    		if (row_index > 0) { // first row is the header
+    		if (row_index > 0) { // first row is the table header
     			var variable = {}
     			var columns = $(this).find('td');
     			
     			// 1st column: "variable name"
-//    			var variable_name = columns.eq(1).children().eq(0).val();
                 var variable_name = columns.eq(0).children().eq(0).val();
     			if (variable_name.length == 0) { // empty variable name
     				fillErrorMessage('Variable name can not be empty');
     				return false;
     			}
-    			console.log('variable_name = ' + variable_name);
-    			console.log('variables dict = ' + JSON.stringify(variables));
+//    			console.log('variable_name = ' + variable_name);
+//    			console.log('variables dict = ' + JSON.stringify(variables));
     			if (variables.hasOwnProperty(variable_name)) { // duplicate verification
     				fillErrorMessage('Variable name can not be duplicated');
     				return false;
@@ -805,7 +826,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     			// 2nd column: "original_text"
                 var original_text = columns.eq(1).children().eq(0).val();
-    			if (original_text.length == 0) { // empty variable name
+    			if (original_text.length == 0) { // check empty
     				fillErrorMessage('Original text shall not be empty');
     				return false;
     			}
@@ -816,12 +837,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     			variable['original_text'] = original_text;
 
     			// 3rd column: "type"
-//    			var type = columns.eq(4).children().eq(0).val();
     			var type = columns.eq(2).children().eq(0).val();
     			variable['type'] = type;
 
     			// 4th column: "min_value"
-//    			var min_value = columns.eq(2).children().eq(0).val();
     			var min_value = columns.eq(3).children().eq(0).val();
     			if (min_value.length == 0) { // empty min_value
     				fillErrorMessage('min_value can not be empty');
@@ -830,7 +849,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     			variable['min_value'] = min_value;
 
     			// 5th column: "max_value"
-//    			var max_value = columns.eq(3).children().eq(0).val();
     			var max_value = columns.eq(4).children().eq(0).val();
     			if (max_value.length == 0) { // empty max_value
     				fillErrorMessage('max_value can not be empty');
@@ -845,7 +863,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     			variable['max_value'] = max_value;
     			
     			// 6th column: "decimal_places"
-//    			var decimal_places = columns.eq(5).children().eq(0).val();
     			var decimal_places = columns.eq(5).children().eq(0).val();
     			variable['decimal_places'] = decimal_places;
     			
@@ -854,35 +871,84 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     		}
     	});
     	
-    	
-    	// 3. answer_template 
-        var answer_template = answer_template_textarea_element.val();
-        console.log('answer_template: ' + answer_template);
-        
-        
-        // client-side validation error
+        // Client-side validation error
         if (error_message_element.children().length > 0) { 
         	return;
         }
 
-//        debugger;
-        // server side validation
-        // perform studio submit and update default editor mode
-        var submit_data = {enable_advanced_editor: enable_advanced_editor, values: fieldValues, defaults: fieldValuesNotSet, question_template: question_template, image_url: image_url, variables: variables, answer_template: answer_template, raw_editor_xml_data: raw_editor_xml_data, strings: strings};
+        var submit_data = {
+                            enable_advanced_editor: enable_advanced_editor,
+                            values: fieldValues,
+                            defaults: fieldValuesNotSet,
+                            question_template: question_template,
+                            image_url: image_url,
+                            variables: variables,
+                            answer_template: answer_template,
+                            raw_editor_xml_data: raw_editor_xml_data,
+                            string_variables: string_variables
+                            };
+
+        /*
+        HANDLE ORIGINAL TEXT UPDATE
+        */
+        // 1.2: Get question original text if shown from question_original_text_textarea_element
+        // Relocate the element to get its updated value
+        show_question_original_text_textarea_element = $(xblockElement).find('textarea[name=show_question_original_text]');
+        if(show_question_original_text_textarea_element.length > 0){ // element found
+            var updated_question_original_text = show_question_original_text_textarea_element.val();
+
+            // Check if show_question_original_text_textarea_element found and its value changed,
+            // Add the updated value into submit_data for studio edit submission
+            console.log('question_original_text = ' + question_original_text);
+            console.log('updated_question_original_text = ' + updated_question_original_text);
+            if(updated_question_original_text !== undefined && updated_question_original_text != question_original_text){
+                submit_data['updated_question_original_text'] = updated_question_original_text;
+
+                // Update newly value from textarea back to hidden input element
+                original_question_text_input_element.val(updated_question_original_text);
+            }
+        }
+
+        // 2.2: Get answer original text if shown from answer_original_text_textarea_element
+        // Relocate the element to get its updated value
+        show_answer_original_text_textarea_element = $(xblockElement).find('textarea[name=show_answer_original_text]');
+        if(show_answer_original_text_textarea_element.length > 0){ // element found
+            var updated_answer_original_text = show_answer_original_text_textarea_element.val();
+
+            // Check if show_answer_original_text_textarea_element found and its value changed,
+            // Add the updated value into submit_data for studio edit submission
+            console.log('answer_original_text = ' + answer_original_text);
+            console.log('updated_answer_original_text: ' + updated_answer_original_text);
+            if(updated_answer_original_text !== undefined && updated_answer_original_text != answer_original_text){
+                submit_data['updated_answer_original_text'] = updated_answer_original_text;
+
+                // Update newly value from textarea back to hidden input element
+                original_answer_text_input_element.val(updated_answer_original_text);
+            }
+        }
+        console.log(submit_data);
+
+        // Server side validation
+        // perform save action submit and update default editor mode
 	    studioSubmit(submit_data);
     });
 
 
-    // Handle parse question text
+    /*
+    * Handle parse question text (Cont.)
+    * Server side processing
+    */
     var studioPasreQuestion = function(data) {
         var handlerUrl = runtime.handlerUrl(xblockElement, 'fe_parse_question_studio_edits');
         runtime.notify('save', {state: 'start', message: gettext("Parsing text ...")});
-        console.log(JSON.stringify(data));
+
+        var data_json = JSON.stringify(data);
+        console.log(data_json);
 
         $.ajax({
             type: "POST",
             url: handlerUrl,
-            data: JSON.stringify(data),
+            data: data_json,
             dataType: "json",
             global: false,  // Disable Studio's error handling that conflicts with studio's notify('save') and notify('cancel') :-/
             success: function(response) { runtime.notify('save', {state: 'end'}); }
@@ -901,34 +967,41 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         });
     };
 
-    // Handle parse button click, collect data
+    /*
+    * Handle parse button click
+    * collect data, pass to backend validation
+    */
     $(xblockElement).find('a[name=parse_button]').bind('click', function(e) {
     	console.log("Parse button clicked");
-
+        // Empty error message element
     	error_message_element.empty();
 
-//        get question text fields
+        // Get question text fields
         var q = question_text_element.val();
         var a = answer_text_element.val();
 
-        if (q.length == 0) { // empty variable name
+        if (q.length == 0) { // check if empty question
                 fillErrorMessage('Question can not be empty!');
                 return false;
         }
 
-        if (a.length == 0) { // empty variable name
+        if (a.length == 0) { // check if empty answer
                 fillErrorMessage('Answer can not be empty!');
                 return false;
         }
 
-        // client-side validation error
+        // Client-side error validation
         if (error_message_element.children().length > 0) {
         	return;
         }
 
-//        debugger;
-        // server side validation
-	    studioPasreQuestion({question: q, answer: a});
+        var data = {
+                        original_question: q,
+                        original_answer: a
+                   };
+
+        // Server side validation
+	    studioPasreQuestion(data);
     });
 
 

@@ -68,7 +68,7 @@
 }
 
 .button_cell {
-	text-align: left;
+	align: left;
 	width: 100px !important;
 	padding: 5px !important;
 }

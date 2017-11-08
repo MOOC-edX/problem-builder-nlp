@@ -83,13 +83,13 @@
 						<tr class="formula_edit_table_header_color formula_edit_table_row">
 							<th width="10%" class="table_cell_alignment first_column">Numeric variables</th>
                             <th width="20%" class="table_cell_alignment">Original text</th>
-                            <th width="15%" class="table_cell_alignment">Type</th>
+                            <th width="10%" class="table_cell_alignment">Type</th>
 							<th width="15%" class="table_cell_alignment">Min</th>
 							<th width="15%" class="table_cell_alignment">Max</th>
 
 							<th width="10%" class="table_cell_alignment" title="Decimal places for Float number">Dec. places</th>
-							<th></th>
-                            <th></th>
+							<th width="10%"></th>
+                            <th width="10%"></th>
 						</tr>
 
 						{% for variable_name, variable in variables.iteritems %}
@@ -113,14 +113,14 @@
 					</table>
 
 					<!-- STRING VARIABLES SETTINGS-->
-					<table name="word_variables_table" class="variables_table">
+					<table name="string_variables_table" class="variables_table">
 						<tbody>
                             <tr class="formula_edit_table_header_color formula_edit_table_row">
                                 <th width="10%" class="table_cell_alignment first_column">String variables</th>
 								<th width="20%" class="table_cell_alignment">Original text</th>
-                                <th width="25%" class="table_cell_alignment">Context</th>
-								<th width="20%" class="table_cell_alignment">Options</th>
-                                <th width="100px"></th>
+                                <th width="40%" class="table_cell_alignment">Context</th>
+								<th width="20%%" class="table_cell_alignment">Options</th>
+                                <th width="10%"></th>
                             </tr>
                             {% for key, var in string_variables.iteritems %}
                                 <tr class="formula_edit_table_row">
@@ -137,8 +137,8 @@
                                         <select name="variable-value-{{ var.name }}" class="formula_input_text">
 											{% for context_id, context in var.context_list.iteritems %}
 												{% if context_id == var.context %}
-													{% for word in context.synonyms %}
-													<option value="{{word}}" {% if word == var.value %} selected="true" {% endif %}> {{word}} </option>
+													{% for string in context.synonyms %}
+													<option value="{{string}}" {% if string == var.value %} selected="true" {% endif %}> {{string}} </option>
 													{% endfor %}
 												{% endif %}
 											{% endfor %}

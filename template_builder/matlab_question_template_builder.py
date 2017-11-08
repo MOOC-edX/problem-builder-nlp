@@ -437,21 +437,6 @@ Calculate the total price of them?"""
 
         # generate question from template if necessary
         if self.reset_question == True:
-            # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-            #     self._question_template, self._variables, randomization=True)
-            # # Append string variables to the question template
-            # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-            # # Generate answer
-            # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-            #                                                                   self._answer_template_string)
-            # # update user_state fields
-            # setattr(self, 'reset_question', False)
-            # setattr(self, 'runtime_generated_question', self._generated_question)
-            # setattr(self, 'runtime_generated_variables', self._generated_variables)
-            # setattr(self, 'runtime_generated_string_variables', self._string_vars)
-            # setattr(self, 'runtime_generated_answer', generated_answer)
-            # setattr(self, '_generated_answer', generated_answer)
-
             # Reset problem runtime data (user_state fields)
             self.reset_problem();
             # Turn off trigger for problem reset
@@ -566,20 +551,6 @@ Calculate the total price of them?"""
 
         # generate question from template if necessary
         if self.reset_question_preview == True:
-            # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-            #     self._question_template, self._variables, randomization=True)
-            # # Append string variables to the question template
-            # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-            # # Generate answer
-            # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-            #                                                                   self._answer_template_string)
-            # # update user_state fields
-            # setattr(self, 'runtime_generated_question', self._generated_question)
-            # setattr(self, 'runtime_generated_answer', generated_answer)
-            # setattr(self, 'runtime_generated_variables', self._generated_variables)
-            # setattr(self, 'runtime_generated_string_variables', self._string_vars)
-            # setattr(self, '_generated_answer', generated_answer)
-
             # Reset problem runtime data (user_state fields)
             self.reset_problem();
             # Turn off trigger for problem reset
@@ -673,14 +644,9 @@ Calculate the total price of them?"""
         print("## Start FUNCTION studio_view() ##")
         print("context = {}".format(context))
 
-        # if the XBlock has been submitted already then disable the studio_edit screen
         location = self.location.replace(branch=None, version=None)  # Standardize the key in case it isn't already
         item_id=unicode(location)
 
-        # print("self._variables = {}".format(self._variables))
-        # print "self._string_vars = {}".format(self._string_vars)
-
-        # Student not yet submit then we can edit the XBlock
         context = {'fields': []}
         # Build a list of all the fields that can be edited:
         for field_name in self.editable_fields:
@@ -693,8 +659,6 @@ Calculate the total price of them?"""
             field_info = self._make_field_info(field_name, field)
             if field_info is not None:
                 context["fields"].append(field_info)
-
-        # print("self.show_parser = {}".format(self.show_parser))
 
         # self.serialize_data_to_context(context) ??? REMOVE not necessary, remove ???
         context['question_text_origin'] = self._question_text
@@ -783,30 +747,26 @@ Calculate the total price of them?"""
         print("## Start FUNCTION deserialize_data_from_context() ##")
         print("## BEFORE ##")
         print("context = {}".format(context))
-        print("self._question_template = {}".format(self._question_template))
-        print("self._image_url = {}".format(self._image_url))
         print("self.variables = {}".format(self.variables))
-        print("self._variables= {}".format(self._variables))
         print("self._generated_variables= {}".format(self._generated_variables))
         print "self.question_template_string = ", self.question_template_string
         print "self._answer_template_string = ", self._answer_template_string
 
         self.question_template_string = context['saved_question_template']
         self.image_url = context['saved_url_image']
-        # self._answer_template = context['saved_answer_template']
-        # self._answer_template_string = context['saved_answer_template']
         self.variables = json.loads(context['serialized_variables'])
         self._generated_variables = json.loads(context['serialized_generated_variables'])
-        self.resolver_selection = context['saved_resolver_selection']   # TODO: update this to new field in Settings tab
+        # self.resolver_selection = context['saved_resolver_selection']   # TODO: update this to new field in Settings tab
 
         print("## AFTER: ##")
         print("self._question_template = {}".format(self.question_template_string))
         print("self.image_url = {}".format(self.image_url))
+        print("self._image_url = {}".format(self._image_url))
         print("self.variables = {}".format(self.variables))
         print("self._variables= {}".format(self._variables))
+        print("check if(self._variables == self.variables)?: {}".format(self._variables == self.variables))
         print("self._generated_variables= {}".format(self._generated_variables))
         print "self.question_template_string = ", self.question_template_string
-        print "self._answer_template_string = ", self._answer_template_string
         print("## End FUNCTION deserialize_data_from_context() ##")
 
 
@@ -814,7 +774,6 @@ Calculate the total price of them?"""
         """
         Load question template data from MySQL
         """
-
         if self.xblock_id is None:
             self.xblock_id = unicode(self.location.replace(branch=None, version=None))
 
@@ -825,6 +784,8 @@ Calculate the total price of them?"""
     def student_submit(self, data, suffix=''):
         """
         AJAX handler for Submit button
+
+        NOT USED ATM
         """
         print("## Start FUNCTION student_submit() ##")
         print("data = {}".format(data))
@@ -834,16 +795,12 @@ Calculate the total price of them?"""
 
         points_earned = 0
 
-        # TODO generate the teacher's answer
         # Generate answer for this submission
-        # generated_answer = matlab_question_service.generate_answer(self._generated_variables, self._answer_template)
-        # print("generated_answer = {}".format(generated_answer))
-
         generated_answer = matlab_question_service.generate_answer_string(self._generated_variables, self._answer_template_string)
         print "generated_answer = ", generated_answer
 
         student_answer = data['student_answer']
-        # save the submission
+        # save the submission data
         submission_data = {
             'generated_question': data['saved_generated_question'],
             'student_answer': student_answer,
@@ -851,22 +808,21 @@ Calculate the total price of them?"""
             'variable_values': data['serialized_generated_variables']
         }
         print "submission_data = {}".format(submission_data)
-        print "self.resolver_selection = " + self.resolver_selection
+        print "self._problem_solver = " + self._problem_solver
 
         # call problem grader
-        evaluation_result = self.resolver_handling.syncCall(self.resolver_selection, generated_answer, student_answer )
-        #evaluation_result = matlab_service.evaluate_matlab_answer(self.matlab_server_url, self.matlab_solver_url, generated_answer, student_answer)
-
+        evaluation_result = self.resolver_handling.syncCall(self._problem_solver, generated_answer, student_answer )
         if evaluation_result == True:
             points_earned = self.max_points
 
         submission = sub_api.create_submission(self.student_item_key, submission_data)
+        # Set score for the submission
         sub_api.set_score(submission['uuid'], points_earned, self.max_points)
 
         submit_result = {}
         submit_result['point_string'] = self.point_string
 
-        # disable the "Submit" button once the submission attempts reach max_attemps value
+        # disable the "Submit" button once the submission attempts reach predefined max_attemps
         self.attempt_number = submission['attempt_number']
         submit_result['attempt_number'] = self.attempt_number_string
         if (self.attempt_number >= self.max_attempts):
@@ -883,60 +839,46 @@ Calculate the total price of them?"""
         """
         AJAX handler for Submit button
         """
-
         print("## Start FUNCTION student_submit_handler() ##")
         print("data = {}".format(data))
 
-        # self.deserialize_data_from_context(data)
-
         points_earned = 0
 
-        # # TODO generate the teacher's answer
-        # # Generate answer for this submission
-        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-        #                                                                   self._answer_template_string)
-        # print "generated_answer = ", generated_answer
-
-        student_answer = data['student_answer']
-        generated_question = self.runtime_generated_question
-        generated_answer = self.runtime_generated_answer
-        generated_variables = json.dumps(self.runtime_generated_variables)
-        generated_string_variables = json.dumps(self.runtime_generated_string_variables)
+        # Generate answer for this submission
+        student_answer_str = data['student_answer']
+        generated_question_str = self.runtime_generated_question
+        generated_answer_str = self.runtime_generated_answer
+        # Serialize ``obj`` to a JSON formatted ``str``.
+        generated_variables_json = json.dumps(self.runtime_generated_variables)
+        generated_string_variables_json = json.dumps(self.runtime_generated_string_variables)
 
 
         # save the submission
-        # submission_data = {
-        #     'generated_question': data['saved_generated_question'],
-        #     'student_answer': student_answer,
-        #     'generated_answer': generated_answer,
-        #     'variable_values': data['serialized_generated_variables']
-        # }
         submission_data = {
-            'generated_question': generated_question,
-            'student_answer': student_answer,
-            'generated_answer': generated_answer,
-            'variable_values': generated_variables
+            'generated_question': generated_question_str,
+            'student_answer': student_answer_str,
+            'generated_answer': generated_answer_str,
+            'variable_values': generated_variables_json,
+            'string_variable_values': generated_string_variables_json
         }
 
         print "submission_data = {}".format(submission_data)
-        print "self.resolver_selection = " + self.resolver_selection
-        print "self._problem_solver = " + self._problem_solver
+        # print "self._problem_solver = " + self._problem_solver
 
         # call problem grader
-        # evaluation_result = self.resolver_handling.syncCall(self.resolver_selection, generated_answer, student_answer)
-        evaluation_result = self.resolver_handling.syncCall(self._problem_solver, generated_answer, student_answer)
-
+        evaluation_result = self.resolver_handling.syncCall(self._problem_solver, generated_answer_str, student_answer_str)
         if evaluation_result == True:
             points_earned = self.max_points
 
         submission = sub_api.create_submission(self.student_item_key, submission_data)
+        # Set score for the submission
         sub_api.set_score(submission['uuid'], points_earned, self.max_points)
 
         submit_result = {}
         submit_result['point_string'] = self.point_string
         self.attempt_number = submission['attempt_number']
         submit_result['attempt_number'] = self.attempt_number_string
-        # Disable the "Submit" button once the submission attempts reach max_attemps value
+        # Disable the "Submit" button once the submission attempts reach predefined max_attempts
         if (self.attempt_number >= self.max_attempts):
             submit_result['submit_disabled'] = 'disabled'
         else:
@@ -949,31 +891,31 @@ Calculate the total price of them?"""
     @XBlock.json_handler
     def fe_parse_question_studio_edits(self, data, suffix=''):
         print("## Start FUNCTION fe_parse_question_studio_edits() ##")
-        q = data['question']
-        a = data['answer']
+        original_question = data['original_question']
+        original_answer = data['original_answer']
 
         # update fields
-        setattr(self, '_question_text', q)
-        setattr(self, '_answer_text', a)
-        logging.debug("Tammd wants to know q = %s, a = %s", q, a)
+        setattr(self, '_question_text', original_question)
+        setattr(self, '_answer_text', original_answer)
+        logging.debug("Tammd wants to know original_question = %s, original_answer = %s", original_question, original_answer)
 
         # parse question text
-        # template, variables, strings = parse_question_v2(q)
-        template, variables, strings = parse_question_improved(q)
-        # logging.debug("Tammd wants to know template = {}", template)
+        # question_template, variables, string_variables = parse_question_v2(original_question)
+        question_template, variables, string_variables = parse_question_improved(original_question)
+        # logging.debug("Tammd wants to know question_template = {}", question_template)
         # logging.debug("Tammd wants to know variables = {}", variables)
-        # logging.debug("Tammd wants to know strings = {}", strings)
+        # logging.debug("Tammd wants to know string_variables = {}", string_variables)
 
         # parse answer text
-        # answer = parse_answer_v2(a, variables)
-        answer = parse_answer_improved(a, variables)
-        # logging.debug("Tammd wants to know answer = %s", answer)
+        # answer = parse_answer_v2(original_answer, variables)
+        answer_template = parse_answer_improved(original_answer, variables)
 
         # update fields
         setattr(self,'_variables', variables)
-        setattr(self,'_question_template', template)
-        setattr(self,'_answer_template_string', answer)
-        setattr(self,'_string_vars', strings)
+        setattr(self,'_question_template', question_template)
+        setattr(self,'_answer_template_string', answer_template)
+        setattr(self,'_string_vars', string_variables)
+        # Hide parser after parsing text
         setattr(self, 'show_parser', False)
 
         print("## End FUNCTION fe_parse_question_studio_edits() ##")
@@ -983,40 +925,30 @@ Calculate the total price of them?"""
     @XBlock.json_handler
     def fe_submit_studio_edits(self, data, suffix=''):
         """
-        AJAX handler for studio edit submission, two edit modes:
+        AJAX handler for studio edit submission base on edit modes:
 
-        1. Basic template (Default mode)
-        2. Advanced editor
+        1. Simple Template (Default mode)
+        2. Advanced Editor
 
         """
-
         print("## Start FUNCTION fe_submit_studio_edits() ###")
-        # print("data fields: {}".format(data))
-        # print("### editor updated xml_data: ###")
-        # print(data['raw_editor_xml_data'])
-
-        # print("BEFORE SAVE, self.enable_advanced_editor = {}".format(self.enable_advanced_editor))
-        # print("targeted mode, data['enable_advanced_editor'] = {}".format(data['enable_advanced_editor']))
-        # print("self.raw_editor_xml_data = {}".format(self.raw_editor_xml_data))
+        print("TYPE of data: {}".format(type(data)))
+        print("data: {}".format(data))
 
         if self.xblock_id is None:
             self.xblock_id = unicode(self.location.replace(branch=None, version=None))
 
-        string_variables = self._string_vars
-
-        if data['enable_advanced_editor'] == 'False':
+        # Process base on Template or Advanced Editor mode
+        if data['enable_advanced_editor'] == 'False': # In Simple Template mode
             print("### IN CASE self.enable_advanced_editor == False: ###")
             # process problem edit via UI template
             updated_question_template = data['question_template']
             updated_url_image = data['image_url']
             updated_variables = data['variables']
             updated_answer_template = data['answer_template']
-            updated_string_vars_list = data['strings']
+            updated_string_vars_list = data['string_variables']
 
-            # print("updated_string_vars_list = {}".format(updated_string_vars_list))
-            # print("BEFORE, self._string_vars = {}".format(self._string_vars))
-
-            string_variables, updated_string_vars, removed_string_vars, added_string_vars = qgb_question_service.update_string_variables(string_variables, updated_string_vars_list)
+            string_variables, updated_string_vars, removed_string_vars, added_string_vars = qgb_question_service.update_string_variables(self._string_vars, updated_string_vars_list)
             # print("updated_string_vars = {}".format(updated_string_vars))
             # print("removed_string_vars = {}".format(removed_string_vars))
             # print("added_string_vars = {}".format(added_string_vars))
@@ -1026,30 +958,6 @@ Calculate the total price of them?"""
             updated_question_template = qgb_question_service.update_question_template(updated_question_template,
                                                                             updated_string_vars, removed_string_vars, added_string_vars)
 
-            # # Update XBlock's values
-            # self.enable_advanced_editor = False
-            # self.question_template_string = updated_question_template
-            # self.image_url = updated_url_image
-            # self.variables = updated_variables
-            # self._answer_template_string = updated_answer_template
-            #
-            # # setattr(self,'_string_vars', updated_string_vars)
-            # setattr(self, '_string_vars', string_variables)
-            # setattr(self, '_image_url', updated_url_image)
-            # setattr(self, '_question_template', updated_question_template)
-            # # setattr(self, '_answer_template', updated_answer_template)
-            # setattr(self, '_answer_template_string', updated_answer_template)
-            # setattr(self, '_variables', updated_variables)
-
-            # build xml string for problem raw edit fields,
-            # then update value to field '_raw_editor_xml_data' for editor
-            # input_data = {
-            #     'question_template': self.question_template_string,
-            #     'image_url': self.image_url,
-            #     'variables': self.variables,
-            #     'answer_template': self._answer_template_string,
-            #     'string_variables': self._string_vars,
-            # }
             input_data = {
                 'question_template': updated_question_template,
                 'image_url': updated_url_image,
@@ -1057,59 +965,29 @@ Calculate the total price of them?"""
                 'answer_template': updated_answer_template,
                 'string_variables': string_variables,
             }
-
             # Convert dict data to xml
-            xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
+            problem_xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
 
-            # Finally, update value for editor field attribute
-            setattr(self, '_raw_editor_xml_data', xml_string)
-
-        elif data['enable_advanced_editor'] == 'True':
+        elif data['enable_advanced_editor'] == 'True': # In Advance Editor mode
             print("### IN CASE self.enable_advanced_editor == True: ###")
             # Process raw edit
-            updated_xml_string = data['raw_editor_xml_data']
+            problem_xml_string = data['raw_editor_xml_data']
 
             # Extract data fields from xml string
-            raw_edit_data = xml_helper.extract_data_from_xmlstring_to_dict(updated_xml_string)
-
-            # TODO: then save to DB model? To remove this line
-            # qgb_db_service.update_question_template(self.xblock_id, updated_question_template, updated_url_image, updated_resolver_selection, updated_variables, updated_answer_template)
-
+            raw_edit_data = xml_helper.extract_data_from_xmlstring_to_dict(problem_xml_string)
             updated_question_template = raw_edit_data['question_template']
             updated_url_image = raw_edit_data['image_url']
             updated_variables = raw_edit_data['variables']
-            # get only one firt answer for now.
-            # TODO: update to support multi-answers attributes for multiple solutions
+            # Get answer template
+            # For now, only get the first answer template if many were given.
+            # TODO: update to support multi-answers attributes for multiple answers/ hints
             updated_answer_template_dict = raw_edit_data['answer_template'][1]
             string_variables = raw_edit_data['string_variables']
 
             # convert answer dict to string
             updated_answer_template = xml_helper.convert_answer_template_dict_to_string(updated_answer_template_dict)
 
-            # # "refresh" XBlock's values
-            # # update values to global variables
-            # self.enable_advanced_editor = True
-            # self.question_template_string = updated_question_template
-            # self.image_url = updated_url_image
-            # self.variables = updated_variables
-            # # setattr(self, '_answer_template', updated_answer_template)
-            # self._answer_template_string = updated_answer_template
-            # # self.resolver_selection = updated_resolver_selection
-            #
-            # # update values to global fields
-            # setattr(self, '_question_template', updated_question_template)
-            # setattr(self, '_image_url', updated_url_image)
-            # # setattr(self, '_answer_template', updated_answer_template)
-            # setattr(self, '_answer_template_string', updated_answer_template)
-            # setattr(self, '_variables', updated_variables)
-            # setattr(self, '_string_vars', string_variables)
-
-            # update raw edit fields data
-            self.raw_editor_xml_data = updated_xml_string
-            setattr(self, '_raw_editor_xml_data', updated_xml_string)
-
-        # update fields
-        # Update XBlock's values
+        # Update value of problem fields
         self.enable_advanced_editor = False
         self.question_template_string = updated_question_template
         self.image_url = updated_url_image
@@ -1118,12 +996,18 @@ Calculate the total price of them?"""
         setattr(self, '_string_vars', string_variables)
         setattr(self, '_image_url', updated_url_image)
         setattr(self, '_question_template', updated_question_template)
-        # setattr(self, '_answer_template', updated_answer_template)
         setattr(self, '_answer_template_string', updated_answer_template)
         setattr(self, '_variables', updated_variables)
-        # # update original text
-        # setattr(self, '_question_text', self._generated_question)
-        # setattr(self, '_answer_text', generated_answer)
+        # Finally, update value for editor field attribute
+        setattr(self, '_raw_editor_xml_data', problem_xml_string)
+
+        # Update original text fields if changed
+        if 'updated_question_original_text' in data:
+            updated_question_original_text = data['updated_question_original_text']
+            setattr(self, '_question_text', updated_question_original_text)
+        if 'updated_answer_original_text' in data:
+            updated_answer_original_text = data['updated_answer_original_text']
+            setattr(self, '_answer_text', updated_answer_original_text)
 
         # copy from StudioEditableXBlockMixin (can not call parent method)
         values = {}  # dict of new field values we are updating
@@ -1151,21 +1035,6 @@ Calculate the total price of them?"""
 
         self.validate_field_data(validation, preview_data)
         # print("preview_data fields: {}".format(preview_data))
-
-        # # Generate new problem
-        # # self._generated_question, self._generated_variables = matlab_question_service.generate_question(
-        # #     self._question_template, self._variables)
-        # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-        #     self._question_template, self._variables, randomization=True)
-        #
-        # # Now, append string_vars into the generated question
-        # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-        # # generated answer string
-        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-        #                                                                   self._answer_template_string)
-
-        # Turn on the trigger to reset problem after studio edits
-        setattr(self, 'reset_question_after_edit', True)
         print("## End FUNCTION fe_submit_studio_edits() ###")
 
         if validation:
@@ -1182,15 +1051,15 @@ Calculate the total price of them?"""
     def show_answer_handler(self, data, suffix=''):
         """
         AJAX handler for "Show/Hide Answer" button
+
+        NOT USED ATM
         """
         print("## Start FUNCTION show_answer_handler() ##")
         print("data = {}".format(data))
 
         self.deserialize_data_from_context(data)
 
-        # generated_answer = matlab_question_service.generate_answer(self._generated_variables, self._answer_template)
         generated_answer = matlab_question_service.generate_answer_string(self._generated_variables, self._answer_template_string)
-
         print("generated_answer = {}".format(generated_answer))
         print("## END FUNCTION show_answer_handler() ##")
 
@@ -1204,20 +1073,9 @@ Calculate the total price of them?"""
         AJAX handler for "Show/Hide Answer" button
         """
         print("## Start FUNCTION get_answer_handler() ##")
-        print("data = {}".format(data))
-
-        # self.deserialize_data_from_context(data)
-
-        # print("self._generated_variables = {}".format(self._generated_variables))
-        # print("self._answer_template_string = {}".format(self._answer_template_string))
-        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-        #                                                                   self._answer_template_string)
-        #
-        # print("generated_answer = {}".format(generated_answer))
         print("self.runtime_generated_variables = {}".format(self.runtime_generated_variables))
-        print("self.runtime_generated_variables = {}".format(self.runtime_generated_variables))
+        print("self.runtime_answer_template_string = {}".format(self.runtime_answer_template_string))
         print("self.runtime_generated_answer = {}".format(self.runtime_generated_answer))
-
         print("## END FUNCTION get_answer_handler() ##")
 
         return {
@@ -1245,21 +1103,6 @@ Calculate the total price of them?"""
         setattr(self, 'reset_question', False)
         setattr(self, 'runtime_question_template', self._question_template)
         setattr(self, 'runtime_answer_template_string', self._answer_template_string)
-
-        # # Generate question from template if necessary
-        # self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-        #     self._question_template, self._variables, randomization=True)
-        # # Append string variables to the question template
-        # self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
-        # # Generate answer
-        # generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-        #                                                                   self._answer_template_string)
-        # # Update user_state fields
-        # setattr(self, 'runtime_generated_question', self._generated_question)
-        # setattr(self, 'runtime_generated_variables', self._generated_variables)
-        # setattr(self, 'runtime_generated_string_variables', self._string_vars)
-        # setattr(self, 'runtime_generated_answer', generated_answer)
-        # setattr(self, '_generated_answer', generated_answer)
 
         # Add following fields to problem variable
         problem['question'] = self.runtime_generated_question
