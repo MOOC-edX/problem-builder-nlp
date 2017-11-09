@@ -51,10 +51,18 @@
 }
 
 .remove_variable_button {
+    align: middle;
+	width: 93% !important;
+	height: 35px !important;
+	padding: 0px !important;
 	color: red;
 }
 
 .add_variable_button {
+    align: middle;
+	width: 93% !important;
+	height: 35px !important;
+	padding: 0px !important;
 	color: green;
 }
 

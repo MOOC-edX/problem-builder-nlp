@@ -140,8 +140,8 @@
 								<td class="variables_table_col"><input type="number" name="variable_min_value-{{ variable.name }}" class="variable_input_number" value="{{ variable.min_value }}"></td>
 								<td class="variables_table_col"><input type="number" name="variable_max_value-{{ variable.name }}" class="variable_input_number" value="{{ variable.max_value }}"></td>
 								<td class="variables_table_col"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="variable_input_number" min="0" max="7" value="{{ variable.decimal_places }}"></td>
-								<td class="variables_table_col variables_action_col"><input type="button" class="action_button remove_variable_button" value="x" title="Remove this variable"></td>
-                                <td class="variables_table_col variables_action_col"><input type="button" class="action_button add_variable_button" value="+" title="Insert variable after this row"></td>
+								<td class="variables_table_col variables_action_col"><input type="button" class="remove_variable_button" value="x" title="Remove this variable"></td>
+                                <td class="variables_table_col variables_action_col"><input type="button" class="add_variable_button" value="+" title="Insert variable after this row"></td>
 							</tr>
 						{% endfor %}
 					</table>
@@ -178,7 +178,7 @@
 											{% endfor %}
                                         </select>
                                     </td>
-                                    <td class="variables_table_col variables_action_col"><input type="button" class="action_button remove_variable_button" value="x" title="Remove this variable"></td>
+                                    <td class="variables_table_col variables_action_col"><input type="button" class="remove_variable_button" value="x" title="Remove this variable"></td>
                                 </tr>
                             {% endfor %}
 						</tbody>

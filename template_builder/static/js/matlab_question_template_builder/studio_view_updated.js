@@ -283,15 +283,12 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
         // listeners for "Add" buttons of "Variables"
         variables_table_element.find('input[type=button][class=add_variable_button]').bind('click', function(e) {
-//        	var addButton = $(this);
-//        	var parentRow = addButton.closest('tr');
-//        	console.log(parentRow);
-
+        	var addButton = $(this);
+        	var parentRow = addButton.closest('tr');
+        	var current_row_index = parentRow.index();
+        	console.log(current_row_index);
             // Insert new variable row after current row
-            var current_row_index = $(this).parent().parent().index();
-            console.log(current_row_index);
             addVariableRow(current_row_index)
-
         });
 
         // listeners for "Remove" buttons of "String Variables"
@@ -563,7 +560,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	seventh_column.attr("class", "variables_table_col variables_action_col");
     	var remove_variable_button = $('<input>');
     	remove_variable_button.attr("type", "button");
-    	remove_variable_button.addClass("action_button remove_variable_button");
+    	remove_variable_button.addClass("remove_variable_button");
     	remove_variable_button.attr("value", "x");
     	// Append element to column
     	seventh_column.append(remove_variable_button);
@@ -575,7 +572,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	eighth_column.attr("class", "variables_table_col variables_action_col");
     	var add_variable_button = $('<input>');
     	add_variable_button.attr("type", "button");
-    	add_variable_button.addClass("action_button add_variable_button");
+    	add_variable_button.addClass("add_variable_button");
     	add_variable_button.attr("value", "+");
     	// Append element to column
     	eighth_column.append(add_variable_button);
@@ -594,19 +591,13 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     		new_row.remove();
     	});
 
-    	// listeners for "Add" buttons of "Variables"
-        variables_table_element.find('input[type=button][class=add_variable_button]').bind('click', function(e) {
-//        	var new_addButton = $(this);
-//        	var new_parentRow = new_addButton.closest('tr');
-//        	console.log(new_parentRow);
-
+        // Add event listener for Add button click
+    	add_variable_button.click(function() {
             // Insert new variable row after current row
             var new_current_row_index = $(this).parent().parent().index();
             console.log(new_current_row_index);
             addVariableRow(new_current_row_index)
-
-        });
-
+    	});
     };
 
     /*
