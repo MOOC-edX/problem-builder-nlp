@@ -10,6 +10,7 @@
         <!-- For Parser tab -->
 		<input type="hidden" class="hidden" name="show_parser" value="{{ show_parser }}" />
         <input type="hidden" class="hidden" name="btn_toggle_parser_text" value="{{ btn_toggle_parser_text }}" />
+		<input type="hidden" class="hidden" name="btn_toggle_parser_action" value="{{ btn_toggle_parser_action }}" />
 		<!-- For showing original text on Template tab -->
 		<input type="hidden" class="hidden" name="input_question_text" value="{{ question_text_origin }}" />
         <input type="hidden" class="hidden" name="input_answer_text" value="{{ answer_text_origin }}" />
@@ -48,7 +49,7 @@
 					<div class="block-right">
 						<!-- Original question -->
 						<div name="original_question_text_div">
-							<a href="#" class="button action-primary" name="btn_toggle_original_question" action="show">{% trans "Show Original Question" %}</a>
+							<a href="javascript:;" class="button action-primary" name="btn_toggle_original_question" action="show">{% trans "Show Question Original Text" %}</a>
 						</div>
 					</div>
 	        	</div>
@@ -65,7 +66,7 @@
 					<div class="block-right">
 						<!-- Original answer -->
 						<div name="original_answer_text_div">
-							<a href="#" class="button action-primary" name="btn_toggle_original_answer" action="show">{% trans "Show Original Answer" %}</a>
+							<a href="javascript:;" class="button action-primary" name="btn_toggle_original_answer" action="show">{% trans "Show Answer Original Text" %}</a>
 						</div>
 					</div>
 	        	</div>
@@ -79,35 +80,68 @@
 	        >
 				<div class="wrapper-comp-setting">
 					<!-- NUMERIC VARIABLES SETTINGS-->
-					<table name="variables_table" id="variables_table" class="variables_table">
-						<tr class="formula_edit_table_header_color formula_edit_table_row">
-							<th width="10%" class="table_cell_alignment first_column">Numeric variables</th>
-                            <th width="20%" class="table_cell_alignment">Original text</th>
-                            <th width="10%" class="table_cell_alignment">Type</th>
-							<th width="15%" class="table_cell_alignment">Min</th>
-							<th width="15%" class="table_cell_alignment">Max</th>
+					<!--<table name="variables_table" id="variables_table" class="variables_table">-->
+						<!--<tr class="formula_edit_table_header_color formula_edit_table_row">-->
+							<!--<th width="10%" class="table_cell_alignment first_column">Numeric variables</th>-->
+                            <!--<th width="20%" class="table_cell_alignment">Original text</th>-->
+                            <!--<th width="10%" class="table_cell_alignment">Type</th>-->
+							<!--<th width="15%" class="table_cell_alignment">Min</th>-->
+							<!--<th width="15%" class="table_cell_alignment">Max</th>-->
 
-							<th width="10%" class="table_cell_alignment" title="Decimal places for Float number">Dec. places</th>
-							<th width="10%"></th>
-                            <th width="10%"></th>
+							<!--<th width="10%" class="table_cell_alignment" title="Decimal places for Float number">Dec. places</th>-->
+							<!--<th width="10%"></th>-->
+                            <!--<th width="10%"></th>-->
+						<!--</tr>-->
+
+						<!--{% for variable_name, variable in variables.iteritems %}-->
+							<!--<tr class="formula_edit_table_row">-->
+								<!--<td class="table_cell_alignment first_column"><input type="text" name="variable-{{ variable.name }}" class="formula_input_text" value="{{ variable.name }}"></td>-->
+                                <!--<td class="table_cell_alignment number_input_cell"><input type="text" name="original_text-{{variable.name}}" class="formula_input_text" value= {{ variable.original_text }} readonly></td>-->
+                                <!--<td class="table_cell_alignment">-->
+									<!--<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="variable_type">-->
+										<!--<option value="int" {% if variable.type == "int" %} selected="true" {% endif %}>Int</option>-->
+										<!--<option value="float" {% if variable.type == "float" %} selected="true" {% endif %}>Float</option>-->
+                                        <!--&lt;!&ndash;<option value="custom" {% if variable.type == "custom" %} selected="true" {% endif %}>Custom</option>&ndash;&gt;-->
+									<!--</select>-->
+								<!--</td>-->
+								<!--<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_min_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.min_value }}"></td>-->
+								<!--<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_max_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.max_value }}"></td>-->
+								<!--<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="formula_input_text" min="0" max="7" value="{{ variable.decimal_places }}"></td>-->
+								<!--<td class="table_cell_alignment button_cell"><input type="button" class="remove_variable_button" value="x" title="Remove this variable"></td>-->
+                                <!--<td class="table_cell_alignment button_cell last_column"><input type="button" class="add_variable_button" value="+" title="Insert after this row"></td>-->
+							<!--</tr>-->
+						<!--{% endfor %}-->
+					<!--</table>-->
+
+					<table name="variables_table" id="variables_table" class="variables_table">
+						<tr class="formula_edit_table_header_color">
+							<th width="15" class="variables_table_col">Numeric variables</th>
+                            <th width="15%" class="variables_table_col">Original text</th>
+                            <th width="10%" class="variables_table_col">Type</th>
+							<th width="15%" class="variables_table_col">Min</th>
+							<th width="15%" class="variables_table_col">Max</th>
+
+							<th width="10%" class="variables_table_col" title="Decimal places for Float number">Dec. places</th>
+							<th width="10%" class="variables_table_col"></th>
+                            <th width="10%" class="variables_table_col"></th>
 						</tr>
 
 						{% for variable_name, variable in variables.iteritems %}
-							<tr class="formula_edit_table_row">
-								<td class="table_cell_alignment first_column"><input type="text" name="variable-{{ variable.name }}" class="formula_input_text" value="{{ variable.name }}"></td>
-                                <td class="table_cell_alignment number_input_cell"><input type="text" name="original_text-{{variable.name}}" class="formula_input_text" value= {{ variable.original_text }} readonly></td>
-                                <td class="table_cell_alignment">
-									<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="variable_type">
+							<tr class="">
+								<td class="variables_table_col"><input type="text" name="variable-{{ variable.name }}" class="variable_input" value="{{ variable.name }}"></td>
+                                <td class="variables_table_col"><input type="text" name="original_text-{{variable.name}}" class="variable_input" value= {{ variable.original_text }} readonly></td>
+                                <td class="variables_table_col">
+									<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="variable_input_select">
 										<option value="int" {% if variable.type == "int" %} selected="true" {% endif %}>Int</option>
 										<option value="float" {% if variable.type == "float" %} selected="true" {% endif %}>Float</option>
                                         <!--<option value="custom" {% if variable.type == "custom" %} selected="true" {% endif %}>Custom</option>-->
 									</select>
 								</td>
-								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_min_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.min_value }}"></td>
-								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_max_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.max_value }}"></td>
-								<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="formula_input_text" min="0" max="7" value="{{ variable.decimal_places }}"></td>
-								<td class="table_cell_alignment button_cell"><input type="button" class="remove_variable_button" value="x"></td>
-                                <td class="table_cell_alignment button_cell last_column"><input type="button" class="add_variable_button" value="+"></td>
+								<td class="variables_table_col"><input type="number" name="variable_min_value-{{ variable.name }}" class="variable_input_number" value="{{ variable.min_value }}"></td>
+								<td class="variables_table_col"><input type="number" name="variable_max_value-{{ variable.name }}" class="variable_input_number" value="{{ variable.max_value }}"></td>
+								<td class="variables_table_col"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="variable_input_number" min="0" max="7" value="{{ variable.decimal_places }}"></td>
+								<td class="variables_table_col variables_action_col"><input type="button" class="action_button remove_variable_button" value="x" title="Remove this variable"></td>
+                                <td class="variables_table_col variables_action_col"><input type="button" class="action_button add_variable_button" value="+" title="Insert variable after this row"></td>
 							</tr>
 						{% endfor %}
 					</table>
@@ -115,26 +149,26 @@
 					<!-- STRING VARIABLES SETTINGS-->
 					<table name="string_variables_table" class="variables_table">
 						<tbody>
-                            <tr class="formula_edit_table_header_color formula_edit_table_row">
-                                <th width="10%" class="table_cell_alignment first_column">String variables</th>
-								<th width="20%" class="table_cell_alignment">Original text</th>
-                                <th width="40%" class="table_cell_alignment">Context</th>
-								<th width="20%%" class="table_cell_alignment">Options</th>
-                                <th width="10%"></th>
+                            <tr class="formula_edit_table_header_color">
+                                <th width="15" class="variables_table_col">String variables</th>
+								<th width="15%" class="variables_table_col">Original text</th>
+                                <th width="40%" class="variables_table_col">Context</th>
+								<th width="20%%" class="variables_table_col">Options</th>
+                                <th width="10%" class="variables_table_col"></th>
                             </tr>
                             {% for key, var in string_variables.iteritems %}
-                                <tr class="formula_edit_table_row">
-                                    <td class="table_cell_alignment first_column"><input type="text" name="string_variable-{{var.name}}" class="formula_input_text" value= {{ var.name }} readonly></td>
-									<td class="table_cell_alignment number_input_cell"><input type="text" name="original_text-{{var.name}}" class="formula_input_text" value= {{ var.original_text }} readonly></td>
-                                    <td class="table_cell_alignment">
-                                        <select name="variable-library-{{ var.name }}" class="formula_input_text">
+                                <tr class="">
+                                    <td class="variables_table_col"><input type="text" name="string_variable-{{var.name}}" class="variable_input" value= {{ var.name }} readonly></td>
+									<td class="variables_table_col"><input type="text" name="original_text-{{var.name}}" class="variable_input" value= {{ var.original_text }} readonly></td>
+                                    <td class="variables_table_col">
+                                        <select name="variable-library-{{ var.name }}" class="variable_input_select">
                                             {% for context_id, context in var.context_list.iteritems %}
                                                 <option value="{{context_id}}" {% if var.context == context_id %} selected="true" {% endif %}> {{context.name}} </option>
                                             {% endfor %}
                                         </select>
                                     </td>
-									<td class="table_cell_alignment">
-                                        <select name="variable-value-{{ var.name }}" class="formula_input_text">
+									<td class="variables_table_col">
+                                        <select name="variable-value-{{ var.name }}" class="variable_input_select">
 											{% for context_id, context in var.context_list.iteritems %}
 												{% if context_id == var.context %}
 													{% for string in context.synonyms %}
@@ -144,7 +178,7 @@
 											{% endfor %}
                                         </select>
                                     </td>
-                                    <td class="table_cell_alignment button_cell last_column"><input type="button" class="remove_variable_button" value="x"></td>
+                                    <td class="variables_table_col variables_action_col"><input type="button" class="action_button remove_variable_button" value="x" title="Remove this variable"></td>
                                 </tr>
                             {% endfor %}
 						</tbody>
@@ -288,15 +322,9 @@
 				<a href="#" class="button cancel-button">{% trans "Cancel" %}</a>
 			</li>
 
-			<!--{% if is_submitted == 'False' %}-->
-				<!--<li name="add_variable" class="action-item">-->
-					<!--<a href="#" class="button action-primary save-button" name="add_variable_button">Add variable</a>-->
-				<!--</li>-->
-			<!--{% endif %}-->
-
 			<!-- SWITCH UI DISPLAY OF EDITOR -->
 			<li style="margin-right:50px;" class="pull-right" name="switch_editor_mode_button">
-                <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="show" title="Show/Hide Parser tab">{{ btn_toggle_parser_text }}</button>
+                <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="{{btn_toggle_parser_action}}" title="Toggle PARSER tab for text parsing">{{ btn_toggle_parser_text }}</button>
 				<button type="button" id="btn_switch_editor_mode" tab-name="template-tab" data-tab="xml" title="Switch editor interface">{{ next_editor_mode_name }}</button>
 				<!--<a href="#" class="button cancel-button" id="btn_switch_editor_mode" tab-name="template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
 			</li>

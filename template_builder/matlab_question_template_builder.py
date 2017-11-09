@@ -684,8 +684,10 @@ Calculate the total price of them?"""
         context['show_parser'] = self.show_parser
         if self.show_parser == True:
             context['btn_toggle_parser_text'] = 'Hide Parser'
+            context['btn_toggle_parser_action'] = 'hide'
         else:
             context['btn_toggle_parser_text'] = 'Show Parser'
+        context['btn_toggle_parser_action'] = 'show'
 
         # append xml data for raw xml editor
         context['raw_editor_xml_data'] = self._raw_editor_xml_data

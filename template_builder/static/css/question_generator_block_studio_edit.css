@@ -7,7 +7,7 @@
 
 .formula_edit_table_header_color {
     background-color: #009fe6;
-    height: 40px;
+    height: 40px !important;
     color: white;
     font-weight: bold;
 }
@@ -21,14 +21,7 @@
     horizontal-align: left;
 }
 
-.first_column {
-    padding-left: 10px;
-    padding-right: 10px;
-}
 
-.last_column {
-    padding-right: 10px;
-}
 
 .formula_input_text {
 	width: 90% !important;
@@ -46,24 +39,22 @@
 
 .remove_button {
 	width: 100px !important;
-	max-width: 100px !important;
 	height: 34px !important;
 	padding: 2px !important;
 }
 
+.action_button {
+    align: middle;
+	width: 93% !important;
+	height: 35px !important;
+	padding: 0px !important;
+}
+
 .remove_variable_button {
-	width: 100px !important;
-	max-width: 100px !important;
-	height: 34px !important;
-	padding: 2px !important;
 	color: red;
 }
 
 .add_variable_button {
-	width: 100px !important;
-	max-width: 100px !important;
-	height: 34px !important;
-	padding: 2px !important;
 	color: green;
 }
 
@@ -133,4 +124,37 @@ input[type="checkbox"], input[type="radio"] {
     /* width: 75%; */
     display: inline-block;
     /* float: right; */
+}
+
+.variables_table_col {
+    padding: 5px 5px !important;
+    vertical-align: middle;
+}
+
+.variables_action_col {
+    text-align: center;
+    width:80px !important;
+    padding: 0px !important;
+}
+
+.variable_input {
+    width: 100% !important;
+    height: 35px !important;
+    padding: 0px 5px !important;
+}
+
+.variable_input_number {
+	width: 93% !important;
+	height: 35px !important;
+	padding: 0px 5px !important;
+}
+
+.variable_input_select {
+	width: 100% !important;
+	height: 35px !important;
+	padding: 0px !important;
+}
+
+.variable_name {
+    width: 10% !important;
 }

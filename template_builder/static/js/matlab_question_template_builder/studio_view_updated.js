@@ -52,7 +52,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 //    var variables_table_element = $(xblockElement).find('table[id=variables_table]');
     var string_variables_table_element = $(xblockElement).find('table[name=string_variables_table]');
 
-
     // for editor mode toggle
     var btn_switch_editor_mode_element = $(xblockElement).find('button[id=btn_switch_editor_mode]');
     var enable_advanced_editor_element = $(xblockElement).find('input[name=enable_advanced_editor]');
@@ -63,8 +62,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     // for Parser tab
     var show_parser_input_element = $(xblockElement).find('input[name=show_parser]');
     var show_parser_val = show_parser_input_element.val();
-    var btn_toggle_parser_text = $(xblockElement).find('input[name=btn_toggle_parser_text]');
     var btn_toggle_parser_element = $(xblockElement).find('button[id=btn_toggle_parser_id]');
+    var btn_toggle_parser_text = $(xblockElement).find('input[name=btn_toggle_parser_text]');
+    var btn_toggle_parser_action = $(xblockElement).find('input[name=btn_toggle_parser_action]');
+    var btn_toggle_parser_action_val = btn_toggle_parser_action.val();
+    // Text fields in PARSER tab
     var question_text_element = $(xblockElement).find('textarea[name=question_text]');
     var answer_text_element = $(xblockElement).find('textarea[name=answer_text]');
 
@@ -116,6 +118,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         // Set default tab
         var default_tab = 'template-tab';
         // Update default tab
+        console.log(show_parser_val);
         if(show_parser_val == 'True'){
             default_tab = 'parser-tab';
         } else {
@@ -239,13 +242,13 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
                 // show original question
                 showOriginalQuestionText();
                 // update toggle element
-                btn_toggle_original_question.text('Hide Original Question');
+                btn_toggle_original_question.text('Hide Question Original Text');
                 btn_toggle_original_question.attr('action', 'hide');
             } else {
                 // Hide original question
                 removeOriginalQuestionText();
                 // update toggle element
-                btn_toggle_original_question.text('Show Original Question');
+                btn_toggle_original_question.text('Show Question Original Text');
                 btn_toggle_original_question.attr('action', 'show');
             }
         });
@@ -260,13 +263,13 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
                 // show original answer
                 showOriginalAnswerText();
                 // update toggle element
-                btn_toggle_original_answer.text('Hide Original Answer');
+                btn_toggle_original_answer.text('Hide Answer Original Text');
                 btn_toggle_original_answer.attr('action', 'hide');
             } else {
                 // hide original answer
                 removeOriginalAnswerText();
                 // update toggle element
-                btn_toggle_original_answer.text('Show Original Answer');
+                btn_toggle_original_answer.text('Show Answer Original Text');
                 btn_toggle_original_answer.attr('action', 'show');
             }
         });
@@ -280,9 +283,9 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
         // listeners for "Add" buttons of "Variables"
         variables_table_element.find('input[type=button][class=add_variable_button]').bind('click', function(e) {
-        	var addButton = $(this);
-        	var parentRow = addButton.closest('tr');
-        	console.log(parentRow);
+//        	var addButton = $(this);
+//        	var parentRow = addButton.closest('tr');
+//        	console.log(parentRow);
 
             // Insert new variable row after current row
             var current_row_index = $(this).parent().parent().index();
@@ -364,7 +367,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         // Hide tab content
         $("div[name="+toHide+"]").hide();
 
-        // Hide tab heading
+        // Hide tab heading button
         hide_tab_heading(toHide);
     };
 
@@ -373,32 +376,39 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         // Show tab content
         $("div[name="+toShow+"]").show();
 
-        // Show tab heading
+        // Show tab heading button
         show_tab_heading(toShow);
     };
 
+  	/*
+    * Hide the tab heading button
+    */
     function hide_tab_heading(toHide) {
-//        console.log($(xblockElement).parent("div").parent("div").parent("div").children(".modal-header"));
+        // Locate the tab heading element base on tab ID toHide
         var atag = $(xblockElement).parent("div").parent("div").parent("div").children(".modal-header").find("a[id="+toHide+"]");
-        console.log(atag);
+//        console.log(atag);
 
         // Hide the <li> headding
         atag.parent('li').css({ "display": 'none'}); // Use the CSS function from jQuery to set styles to <li> headding
-//        atag.closest('li').css({ "display": 'none'}); // Use the CSS function from jQuery to set styles to <li> headding
 //        atag.closest('li').hide();
     };
 
+  	/*
+    * Show the tab heading button
+    */
     function show_tab_heading(toShow) {
+        // Locate the tab heading element base on tab ID toShow
         var atag = $(xblockElement).parent("div").parent("div").parent("div").children(".modal-header").find("a[id="+toShow+"]");
         //console.log(atag);
 
         // Show the <li> headding
         atag.parent('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
-//        atag.closest('li').css({ "display": 'inline'}); // Use the CSS function from jQuery to set styles to <li> headding
 //        atag.closest('li').show();
     };
 
-    // Show original question text
+  	/*
+    * Show the question original text
+    */
   	function showOriginalQuestionText() {
   		console.log('showOriginalQuestionText INVOKED');
         var original_question_text = original_question_text_input_element.val();
@@ -408,21 +418,27 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
   		original_question_text_title_element.text('Original Question:');
   		original_question_text_title_element.css('font-weight', 'bold');
 
-//  		var original_question_text_content_element = $('<pre></pre>');
         var original_question_text_content_element = $('<textarea name="show_question_original_text" rows=10 cols=80></textarea>');
   		original_question_text_content_element.val(original_question_text);
+
+//  		original_question_text_div_element.append(original_question_text_title_element);
+//  		original_question_text_div_element.append(original_question_text_content_element);
 
   		original_question_text_div_element.append(original_question_text_title_element);
   		original_question_text_div_element.append(original_question_text_content_element);
   	};
 
+    /*
+    * Hide the shown question original text
+    */
   	function removeOriginalQuestionText() {
-  	    // remove displayed question text
   	    original_question_text_div_element.find('h6').hide();
   	    original_question_text_div_element.find('textarea').hide();
   	};
 
-  	// Show original answer text
+  	/*
+    * Show the Answer original text
+    */
   	function showOriginalAnswerText() {
   		console.log('showOriginalAnswerText() INVOKED');
         var original_answer_text = original_answer_text_input_element.val();
@@ -432,7 +448,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
   		original_answer_text_title_element.text('Original Answer:');
   		original_answer_text_title_element.css('font-weight', 'bold');
 
-//  		var original_answer_text_content_element = $('<pre></pre>');
         var original_answer_text_content_element = $('<textarea name="show_answer_original_text" rows=5 cols=80></textarea>');
   		original_answer_text_content_element.text(original_answer_text);
 
@@ -440,8 +455,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
   		original_answer_text_div_element.append(original_answer_text_content_element);
   	};
 
+    /*
+    * Hide the shown answer original text
+    */
   	function removeOriginalAnswerText() {
-  	    // remove displayed question text
   	    original_answer_text_div_element.find('h6').hide();
         original_answer_text_div_element.find('textarea').hide();
   	};
@@ -450,14 +467,14 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	console.log("function addVariableRow() invoked");
 
     	var new_row = $('<tr></tr>');
-    	new_row.attr("class", "formula_edit_table_row");
+//    	new_row.attr("class", "formula_edit_table_row");
 
     	// 1st column: variable name
     	var first_column = $('<td></td>');
-    	first_column.addClass("table_cell_alignment first_column");
+    	first_column.addClass("variables_table_col");
     	var variable_name_element = $('<input />');
     	variable_name_element.attr("type", "text");
-    	variable_name_element.attr("class", "formula_input_text");
+    	variable_name_element.attr("class", "variable_input");
     	variable_name_element.attr("value", "");
     	// Append element to column
     	first_column.append(variable_name_element);
@@ -466,10 +483,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// 2nd column: Original text
     	var second_column = $('<td></td>');
-    	second_column.addClass("table_cell_alignment number_input_cell");
+    	second_column.addClass("variables_table_col");
     	var original_text_element = $('<input />');
     	original_text_element.attr("type", "text");
-    	original_text_element.attr("class", "formula_input_text");
+    	original_text_element.attr("class", "variable_input");
     	original_text_element.attr("value", "");
     	// Append element to column
     	second_column.append(original_text_element);
@@ -478,9 +495,9 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// 3rd column: Variable Type
     	var third_column  = $('<td></td>');
-    	third_column.attr("class", "table_cell_alignment");
+    	third_column.attr("class", "variables_table_col");
     	var variable_type_element = $('<select></select>');
-    	variable_type_element.attr("class", "variable_type");
+    	variable_type_element.attr("class", "variable_input_select");
     	// Int option
     	var int_option_element = $("<option></option>");
     	int_option_element.attr("value", "int");
@@ -492,11 +509,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	float_option_element.attr("value", "float");
     	float_option_element.text("Float");
     	variable_type_element.append(float_option_element);
-    	// Custom value option
-    	var custom_option_element = $("<option></option>");
-    	custom_option_element.attr("value", "custom");
-    	custom_option_element.text("Custom values");
-    	variable_type_element.append(custom_option_element);
+//    	// Custom value option
+//    	var custom_option_element = $("<option></option>");
+//    	custom_option_element.attr("value", "custom");
+//    	custom_option_element.text("Custom values");
+//    	variable_type_element.append(custom_option_element);
     	// Append element to column
     	third_column.append(variable_type_element);
     	// Append column to row
@@ -504,10 +521,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// 4th column: min value
     	var fourth_column  = $('<td></td>');
-    	fourth_column.attr("class", "table_cell_alignment number_input_cell");
+    	fourth_column.attr("class", "variables_table_col");
     	var variable_min_value_element = $('<input />');
     	variable_min_value_element.attr("type", "number");
-    	variable_min_value_element.attr("class", "formula_input_text");
+    	variable_min_value_element.attr("class", "variable_input_number");
     	variable_min_value_element.attr("value", "1");
     	// Append element to column
     	fourth_column.append(variable_min_value_element);
@@ -516,11 +533,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// 5th column: max value
     	var fith_column  = $('<td></td>');
-    	fith_column.attr("class", "table_cell_alignment number_input_cell");
+    	fith_column.attr("class", "variables_table_col");
 
     	var variable_max_value_element = $('<input />');
     	variable_max_value_element.attr("type", "number");
-    	variable_max_value_element.attr("class", "formula_input_text");
+    	variable_max_value_element.attr("class", "variable_input_number");
     	variable_max_value_element.attr("value", "10");
     	// Append element to column
     	fith_column.append(variable_max_value_element);
@@ -529,12 +546,12 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// 6th column: decimal_places
     	var sixth_column  = $('<td></td>');
-    	sixth_column.attr("class", "table_cell_alignment number_input_cell");
+    	sixth_column.attr("class", "variables_table_col");
     	var variable_decimal_places_element = $('<input>');
     	variable_decimal_places_element.attr("type", "number");
     	variable_decimal_places_element.attr("min", "0");
     	variable_decimal_places_element.attr("max", "7");
-    	variable_decimal_places_element.attr("class", "formula_input_text");
+    	variable_decimal_places_element.attr("class", "variable_input_number");
     	variable_decimal_places_element.attr("value", "0");
     	// Append element to column
     	sixth_column.append(variable_decimal_places_element);
@@ -543,10 +560,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// 7th column: Remove button
     	var seventh_column  = $('<td></td>');
-    	seventh_column.attr("class", "table_cell_alignment button_cell");
+    	seventh_column.attr("class", "variables_table_col variables_action_col");
     	var remove_variable_button = $('<input>');
     	remove_variable_button.attr("type", "button");
-    	remove_variable_button.addClass("remove_variable_button");
+    	remove_variable_button.addClass("action_button remove_variable_button");
     	remove_variable_button.attr("value", "x");
     	// Append element to column
     	seventh_column.append(remove_variable_button);
@@ -555,17 +572,17 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
         // 8th column: Add button
     	var eighth_column  = $('<td></td>');
-    	eighth_column.attr("class", "table_cell_alignment button_cell last_column");
+    	eighth_column.attr("class", "variables_table_col variables_action_col");
     	var add_variable_button = $('<input>');
     	add_variable_button.attr("type", "button");
-    	add_variable_button.addClass("add_variable_button");
+    	add_variable_button.addClass("action_button add_variable_button");
     	add_variable_button.attr("value", "+");
     	// Append element to column
     	eighth_column.append(add_variable_button);
     	// Append column to row
     	new_row.append(eighth_column);
 
-    	//    	// Finally, append the new row to the table
+//    	// Finally, append the new row to the table
 //    	variables_table_element.append(new_row);
 
         // Insert new row after current row
@@ -579,14 +596,14 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
 
     	// listeners for "Add" buttons of "Variables"
         variables_table_element.find('input[type=button][class=add_variable_button]').bind('click', function(e) {
-        	var addButton = $(this);
-        	var parentRow = addButton.closest('tr');
-        	console.log(parentRow);
+//        	var new_addButton = $(this);
+//        	var new_parentRow = new_addButton.closest('tr');
+//        	console.log(new_parentRow);
 
             // Insert new variable row after current row
-            var current_row_index = $(this).parent().parent().index();
-            console.log(current_row_index);
-            addVariableRow(current_row_index)
+            var new_current_row_index = $(this).parent().parent().index();
+            console.log(new_current_row_index);
+            addVariableRow(new_current_row_index)
 
         });
 
@@ -608,16 +625,21 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         return confirm(gettext('Are you sure you want to switch back to the Simple Template interface. You can toggle back and forth between Simple Template and Advanced Editor anytime.\n\nProceed ?')); // eslint-disable-line max-len, no-alert
     };
 
-
-   function fillErrorMessage(errorMessage) {
+    /*
+    Show error message
+    */
+    function fillErrorMessage(errorMessage) {
 		error_message_element.empty();
 
 		if (errorMessage != null) {
 			var errorLabelNode = "<label class='validation_error'>" + errorMessage + "</label>";
 			error_message_element.append(errorLabelNode);
 		}
-    }
+    };
 
+    /*
+    Handle xBlock fields data
+    */
     $(xblockElement).find('.field-data-control').each(function() {
         var $field = $(this);
         var $wrapper = $field.closest('li');
