@@ -83,6 +83,7 @@
 .validation_error {
 	color: rgb(255, 14, 14);
 	font-weight: bold;
+	padding: 30px;
 }
 
 /*
@@ -165,4 +166,12 @@ input[type="checkbox"], input[type="radio"] {
 
 .variable_name {
     width: 10% !important;
+}
+
+.original_text {
+    padding-top: 10px;
+}
+
+.original_text_toggle {
+    padding-top: 5px;
 }

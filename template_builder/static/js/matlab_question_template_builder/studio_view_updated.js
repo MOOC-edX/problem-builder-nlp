@@ -312,8 +312,6 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     function update_buttons(toShow) {
         if (toShow == 'parser-tab') { // tab PARSER
             $("li[name=parse]").show();
-            // hide button Add Variable
-            $("li[name=add_variable]").hide();
             // hide button Save
             $("li[name=save]").hide();
             // show buttons for Editor and Parser toggle
@@ -323,8 +321,15 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
     	} else if (toShow == 'template-tab') { // tab TEMPLATE
     	    // show Save button
     	    $("li[name=save]").show();
-    	    // only show "Add variable" on TEMPLATE tab
-    		$("li[name=add_variable]").show();
+    		// hide button Parse
+    		$("li[name=parse]").hide();
+    		// show Editor toggle button
+    	    btn_switch_editor_mode_element.show();
+    		// show button Show Parser
+    		btn_toggle_parser_element.show();
+    	} else if (toShow == 'editor-tab') { // tab Advanced Editor
+    	    // show Save button
+    	    $("li[name=save]").show();
     		// hide button Parse
     		$("li[name=parse]").hide();
     		// show Editor toggle button
@@ -411,15 +416,12 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         var original_question_text = original_question_text_input_element.val();
   		console.log('original_question_text: ' + original_question_text);
 
-  		var original_question_text_title_element = $('<h6></h6>');
+  		var original_question_text_title_element = $('<h6 class="original_text"></h6>');
   		original_question_text_title_element.text('Original Question:');
   		original_question_text_title_element.css('font-weight', 'bold');
 
         var original_question_text_content_element = $('<textarea name="show_question_original_text" rows=10 cols=80></textarea>');
   		original_question_text_content_element.val(original_question_text);
-
-//  		original_question_text_div_element.append(original_question_text_title_element);
-//  		original_question_text_div_element.append(original_question_text_content_element);
 
   		original_question_text_div_element.append(original_question_text_title_element);
   		original_question_text_div_element.append(original_question_text_content_element);
@@ -441,11 +443,11 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         var original_answer_text = original_answer_text_input_element.val();
   		console.log('Original answer: ' + original_answer_text);
 
-  		var original_answer_text_title_element = $('<h6></h6>');
+  		var original_answer_text_title_element = $('<h6 class="original_text"></h6>');
   		original_answer_text_title_element.text('Original Answer:');
   		original_answer_text_title_element.css('font-weight', 'bold');
 
-        var original_answer_text_content_element = $('<textarea name="show_answer_original_text" rows=5 cols=80></textarea>');
+        var original_answer_text_content_element = $('<textarea name="show_answer_original_text" rows=7 cols=80></textarea>');
   		original_answer_text_content_element.text(original_answer_text);
 
   		original_answer_text_div_element.append(original_answer_text_title_element);
@@ -905,8 +907,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         HANDLE ORIGINAL TEXT UPDATE
         */
         // 1.2: Get question original text if shown from question_original_text_textarea_element
+        //
         // Relocate the element to get its updated value
         show_question_original_text_textarea_element = $(xblockElement).find('textarea[name=show_question_original_text]');
+
         if(show_question_original_text_textarea_element.length > 0){ // element found
             var updated_question_original_text = show_question_original_text_textarea_element.val();
 
@@ -923,8 +927,10 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         }
 
         // 2.2: Get answer original text if shown from answer_original_text_textarea_element
+        //
         // Relocate the element to get its updated value
         show_answer_original_text_textarea_element = $(xblockElement).find('textarea[name=show_answer_original_text]');
+
         if(show_answer_original_text_textarea_element.length > 0){ // element found
             var updated_answer_original_text = show_answer_original_text_textarea_element.val();
 

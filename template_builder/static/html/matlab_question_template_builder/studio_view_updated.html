@@ -29,7 +29,7 @@
 			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
 					<label class="label setting-label" for="answer_text">Original Answer</label>
-					<textarea name="answer_text" rows=5 cols=80>{{ answer_text_origin }}</textarea>
+					<textarea name="answer_text" rows=7 cols=80>{{ answer_text_origin }}</textarea>
 	        	</div>
 	        </li>
 		</ul>
@@ -48,7 +48,7 @@
 
 					<div class="block-right">
 						<!-- Original question -->
-						<div name="original_question_text_div">
+						<div name="original_question_text_div" class="original_text_toggle">
 							<a href="javascript:;" class="button action-primary" name="btn_toggle_original_question" action="show">{% trans "Show Question Original Text" %}</a>
 						</div>
 					</div>
@@ -59,13 +59,13 @@
 			<li class="field comp-setting-entry metadata_entry">
 				<div class="wrapper-comp-setting">
 					<label class="label setting-label" for="answer_template">Answer template</label>
-					<textarea name="answer_template" rows=5 cols=80>{{ answer_template_string }}</textarea>
+					<textarea name="answer_template" rows=7 cols=80>{{ answer_template_string }}</textarea>
 
 					<div class="block-left"></div>
 
 					<div class="block-right">
 						<!-- Original answer -->
-						<div name="original_answer_text_div">
+						<div name="original_answer_text_div" class="original_text_toggle">
 							<a href="javascript:;" class="button action-primary" name="btn_toggle_original_answer" action="show">{% trans "Show Answer Original Text" %}</a>
 						</div>
 					</div>
@@ -80,39 +80,6 @@
 	        >
 				<div class="wrapper-comp-setting">
 					<!-- NUMERIC VARIABLES SETTINGS-->
-					<!--<table name="variables_table" id="variables_table" class="variables_table">-->
-						<!--<tr class="formula_edit_table_header_color formula_edit_table_row">-->
-							<!--<th width="10%" class="table_cell_alignment first_column">Numeric variables</th>-->
-                            <!--<th width="20%" class="table_cell_alignment">Original text</th>-->
-                            <!--<th width="10%" class="table_cell_alignment">Type</th>-->
-							<!--<th width="15%" class="table_cell_alignment">Min</th>-->
-							<!--<th width="15%" class="table_cell_alignment">Max</th>-->
-
-							<!--<th width="10%" class="table_cell_alignment" title="Decimal places for Float number">Dec. places</th>-->
-							<!--<th width="10%"></th>-->
-                            <!--<th width="10%"></th>-->
-						<!--</tr>-->
-
-						<!--{% for variable_name, variable in variables.iteritems %}-->
-							<!--<tr class="formula_edit_table_row">-->
-								<!--<td class="table_cell_alignment first_column"><input type="text" name="variable-{{ variable.name }}" class="formula_input_text" value="{{ variable.name }}"></td>-->
-                                <!--<td class="table_cell_alignment number_input_cell"><input type="text" name="original_text-{{variable.name}}" class="formula_input_text" value= {{ variable.original_text }} readonly></td>-->
-                                <!--<td class="table_cell_alignment">-->
-									<!--<select name="variable_type-{{ variable.name }}-{{ variable.type }}" class="variable_type">-->
-										<!--<option value="int" {% if variable.type == "int" %} selected="true" {% endif %}>Int</option>-->
-										<!--<option value="float" {% if variable.type == "float" %} selected="true" {% endif %}>Float</option>-->
-                                        <!--&lt;!&ndash;<option value="custom" {% if variable.type == "custom" %} selected="true" {% endif %}>Custom</option>&ndash;&gt;-->
-									<!--</select>-->
-								<!--</td>-->
-								<!--<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_min_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.min_value }}"></td>-->
-								<!--<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_max_value-{{ variable.name }}" class="formula_input_text" value="{{ variable.max_value }}"></td>-->
-								<!--<td class="table_cell_alignment number_input_cell"><input type="number" name="variable_value_decimal_places-{{ variable.name }}" class="formula_input_text" min="0" max="7" value="{{ variable.decimal_places }}"></td>-->
-								<!--<td class="table_cell_alignment button_cell"><input type="button" class="remove_variable_button" value="x" title="Remove this variable"></td>-->
-                                <!--<td class="table_cell_alignment button_cell last_column"><input type="button" class="add_variable_button" value="+" title="Insert after this row"></td>-->
-							<!--</tr>-->
-						<!--{% endfor %}-->
-					<!--</table>-->
-
 					<table name="variables_table" id="variables_table" class="variables_table">
 						<tr class="formula_edit_table_header_color">
 							<th width="15" class="variables_table_col">Numeric variables</th>
@@ -309,24 +276,24 @@
 	<div class="xblock-actions">
 		<ul>
 				<li class="action-item" name="parse">
-					<a href="#" class="button action-primary" name="parse_button">{% trans "Parse" %}</a>
+					<a href="javascript:;" class="button action-primary" name="parse_button">{% trans "Parse" %}</a>
 				</li>
 
 			{% if is_submitted == 'False' %}
 				<li class="action-item" name="save">
-					<a href="#" class="button action-primary save-button" name="save_button">{% trans "Save" %}</a>
+					<a href="javascript:;" class="button action-primary save-button" name="save_button">{% trans "Save" %}</a>
 				</li>
 			{% endif %}
 
 			<li class="action-item">
-				<a href="#" class="button cancel-button">{% trans "Cancel" %}</a>
+				<a href="javascript:;" class="button cancel-button">{% trans "Cancel" %}</a>
 			</li>
 
 			<!-- SWITCH UI DISPLAY OF EDITOR -->
 			<li style="margin-right:50px;" class="pull-right" name="switch_editor_mode_button">
                 <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="{{btn_toggle_parser_action}}" title="Toggle PARSER tab for text parsing">{{ btn_toggle_parser_text }}</button>
 				<button type="button" id="btn_switch_editor_mode" tab-name="template-tab" data-tab="xml" title="Switch editor interface">{{ next_editor_mode_name }}</button>
-				<!--<a href="#" class="button cancel-button" id="btn_switch_editor_mode" tab-name="template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
+				<!--<a href="javascript:;" class="button cancel-button" id="btn_switch_editor_mode" tab-name="template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
 			</li>
 		</ul>
 	</div>

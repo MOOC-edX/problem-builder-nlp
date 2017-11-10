@@ -33,6 +33,7 @@ loader = ResourceLoader(__name__)
 ADVANCED_EDITOR_NAME = 'Advanced Editor'
 SIMPLE_EDITOR_NAME = 'Simple Template'
 
+
 def _(text):
     return text
 
@@ -339,12 +340,6 @@ Calculate the total price of them?"""
         scope = Scope.settings
     )
 
-    reset_question_after_edit = Boolean(
-        default=False,
-        help="Whether to generate new problem for the specific xBlock usage after edit",
-        scope=Scope.settings
-    )
-
     reset_question = Boolean(
         default=True,
         help="Whether to generate new problem for the specific xBlock usage, and for specific user in Student view",
@@ -615,6 +610,7 @@ Calculate the total price of them?"""
         self.serialize_data_to_context(context)
 
         # Add following fields to context variable
+        context['problem_name'] = self.display_name
         context['disabled'] = should_disbled
         context['student_answer'] = self.student_answer
         context['image_url'] = self._image_url
@@ -660,10 +656,8 @@ Calculate the total price of them?"""
             if field_info is not None:
                 context["fields"].append(field_info)
 
-        # self.serialize_data_to_context(context) ??? REMOVE not necessary, remove ???
         context['question_text_origin'] = self._question_text
         context['answer_text_origin'] = self._answer_text
-
         context['image_url'] = self._image_url
         context['question_template'] = self._question_template
         context['variables'] = self._variables
@@ -695,11 +689,9 @@ Calculate the total price of them?"""
         print("context = {}".format(context))
 
         fragment = Fragment()
-        # fragment.content = loader.render_template('static/html/matlab_question_template_builder/problem_edit.html', context)
         fragment.content = loader.render_template('static/html/matlab_question_template_builder/studio_view_updated.html',
                                                   context)
         fragment.add_css(self.resource_string("static/css/question_generator_block_studio_edit.css"))
-        # fragment.add_javascript(loader.load_unicode('static/js/matlab_question_template_builder/problem_edit.js'))
         fragment.add_javascript(loader.load_unicode('static/js/matlab_question_template_builder/studio_view_updated.js'))
         fragment.initialize_js('StudioEditableXBlockMixin')
 
@@ -726,11 +718,11 @@ Calculate the total price of them?"""
         # Add following fields to context variable
         context['saved_question_template'] = self._question_template
         context['saved_url_image'] = self._image_url
+        context['saved_answer_template'] = self._answer_template_string
+        context['saved_generated_answer'] = self._generated_answer
+        # Serialize ``obj`` to a JSON formatted ``str``
         context['serialized_variables'] = json.dumps(self._variables)
         context['serialized_generated_variables'] = json.dumps(self._generated_variables)
-        context['saved_answer_template'] = self._answer_template_string # string
-        context['saved_generated_answer'] = self._generated_answer
-        # context['saved_resolver_selection'] = self._problem_solver  # use _problem_solver from editable_fields
 
         print("## AFTER, ADDED FIELDS ##")
         print("context = {}".format(context))
@@ -756,9 +748,9 @@ Calculate the total price of them?"""
 
         self.question_template_string = context['saved_question_template']
         self.image_url = context['saved_url_image']
+        # Deserialize ``s`` (a ``str`` or ``unicode`` instance containing a JSON document) to a Python object
         self.variables = json.loads(context['serialized_variables'])
         self._generated_variables = json.loads(context['serialized_generated_variables'])
-        # self.resolver_selection = context['saved_resolver_selection']   # TODO: update this to new field in Settings tab
 
         print("## AFTER: ##")
         print("self._question_template = {}".format(self.question_template_string))
@@ -920,6 +912,27 @@ Calculate the total price of them?"""
         # Hide parser after parsing text
         setattr(self, 'show_parser', False)
 
+        # Prepare input data
+        # Format input variables data before passing xml.tostring()
+        variables = json.loads(json.dumps(variables))
+        string_variables = json.loads(json.dumps(string_variables))
+        logging.info("canhdq wants to know TYPE of variables = {}".format(type(variables)))
+        logging.info("canhdq wants to know variables = {}".format(variables))
+
+        input_data = {
+            'question_template': question_template,
+            'image_url': '',
+            'variables': variables,
+            'answer_template': answer_template,
+            'string_variables': string_variables,
+        }
+
+        # Convert dict data to xml string
+        problem_xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
+
+        # Finally, update value for XML editor field
+        setattr(self, '_raw_editor_xml_data', problem_xml_string)
+
         print("## End FUNCTION fe_parse_question_studio_edits() ##")
 
         return {'result': 'success'}
@@ -960,6 +973,7 @@ Calculate the total price of them?"""
             updated_question_template = qgb_question_service.update_question_template(updated_question_template,
                                                                             updated_string_vars, removed_string_vars, added_string_vars)
 
+            # Convert problem data to xml string
             input_data = {
                 'question_template': updated_question_template,
                 'image_url': updated_url_image,
@@ -967,7 +981,8 @@ Calculate the total price of them?"""
                 'answer_template': updated_answer_template,
                 'string_variables': string_variables,
             }
-            # Convert dict data to xml
+            logging.info("canhdq wants to know input_data = {}".format(input_data))
+            # Convert dict data to xml string
             problem_xml_string = xml_helper.convert_data_from_dict_to_xml(input_data)
 
         elif data['enable_advanced_editor'] == 'True': # In Advance Editor mode
@@ -1000,7 +1015,7 @@ Calculate the total price of them?"""
         setattr(self, '_question_template', updated_question_template)
         setattr(self, '_answer_template_string', updated_answer_template)
         setattr(self, '_variables', updated_variables)
-        # Finally, update value for editor field attribute
+        # Finally, update value for XML editor field
         setattr(self, '_raw_editor_xml_data', problem_xml_string)
 
         # Update original text fields if changed

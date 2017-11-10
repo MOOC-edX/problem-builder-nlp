@@ -52,25 +52,6 @@ def convert_data_from_dict_to_xml(data):
     description = ET.SubElement(problem, 'description')
     description.text = field_question_template
 
-
-    # convert image
-    field_image_url = data['image_url']
-    # xml elements
-    images = ET.SubElement(problem, 'images')
-    image_url = ET.SubElement(images, 'image_url')
-    # Set attribute
-    image_url.set('link', field_image_url)
-
-    # convert variables
-    field_variables = data['variables']
-    # xml elements
-    variables_elem = ET.SubElement(problem, 'variables')
-    for var_name, attributes in field_variables.iteritems():
-        var_name = ET.SubElement(variables_elem, 'variable')
-        for attribute, value in attributes.iteritems():
-            # Set attribute
-            var_name.set(attribute, value)
-
     # Convert answer template tring to dictionary,
     # then build xml string for raw edit fields
     field_answer_template = data['answer_template']
@@ -78,6 +59,7 @@ def convert_data_from_dict_to_xml(data):
     if not field_answer_template:
         raise JsonHandlerError(400, "Answer template must not be empty")
 
+    # Handle answer template
     # Parse and convert answer template string to dictionary first
     answer_template_dict = {}
     answer_template_list = field_answer_template.split('\n')
@@ -86,7 +68,7 @@ def convert_data_from_dict_to_xml(data):
         # only process if not empty, ignore empty answer template
         if answer:
             # answer template must contains '=' character
-            if (answer.find('=') != -1):    # found '=' at lowest index of string
+            if (answer.find('=') != -1):  # found '=' at lowest index of string
                 answer_attrib_list = answer.split('=')
                 # print "answer_attrib_list = "
                 # print(answer_attrib_list)
@@ -112,17 +94,28 @@ def convert_data_from_dict_to_xml(data):
                 # Add answer attribute to dict
                 answer_template_dict[answer_attrib_key] = answer_attrib_value
             else:
-                raise JsonHandlerError(400, "Unsupported answer format. Answer template must contains '=' character: {}".format(answer))
-
-    # print("Resulted answer_template_dict: {}".format(answer_template_dict))
-
-    # xml elements
+                raise JsonHandlerError(400,
+                                       "Unsupported answer format. Answer template must contains '=' character: {}".format(
+                                           answer))
+                # print("Resulted answer_template_dict: {}".format(answer_template_dict))
+    # Answer template xml elements
     answer_templates = ET.SubElement(problem, 'answer_templates')
     answer = ET.SubElement(answer_templates, 'answer')
     # Add the converted dict data to xml elements
     for attrib_key, attrib_value in answer_template_dict.iteritems():
         answer.set(attrib_key, attrib_value)
         answer.text = "Teacher's answer"
+
+
+    # Convert numeric variables
+    field_variables = data['variables']
+    # xml elements
+    variables_elem = ET.SubElement(problem, 'variables')
+    for var_name, attributes in field_variables.iteritems():
+        var_name = ET.SubElement(variables_elem, 'variable')
+        for attribute, value in attributes.iteritems():
+            # Set attribute
+            var_name.set(attribute, value)
 
     # Convert string variables dictionary to xml string
     field_string_variables = data['string_variables']
@@ -131,13 +124,19 @@ def convert_data_from_dict_to_xml(data):
     # Adds the element subelement to the end of this elements internal list of subelements.
     problem.append(string_variables_elem)
 
+    # convert image
+    field_image_url = data['image_url']
+    # xml elements
+    images = ET.SubElement(problem, 'images')
+    image_url = ET.SubElement(images, 'image_url')
+    # Set attribute
+    image_url.set('link', field_image_url)
 
     # print "before indent, Problem elem dum = ", ET.dump(problem)
     indented_problem = indent(problem)
     # print "after indent ,Problem elem dum = ", ET.dump(indented_problem)
 
     xml_string = ET.tostring(indented_problem)
-
     # print "Output xml string = ", xml_string
     print("## End FUNCTION convert_data_from_dict_to_xml() ##")
 

@@ -1,6 +1,7 @@
 from nltk import word_tokenize
 from nltk import pos_tag
 import re
+import json
 
 ANSWER_SEPERATOR = "Answer"
 
@@ -298,6 +299,7 @@ def parse_question_improved(question_text):
     # Remove unneccessary characters: '.', '*' at the end of each tokenized words returned by NLTK
     expected_words = get_expected_tokenized_words(words)
     print 'expected_words = {}'.format(expected_words)
+
     # Identify type of each tokenized words
     list_pos = part_of_speech_tagging(expected_words)
     print "list_pos= {}".format(list_pos)
@@ -326,22 +328,23 @@ def parse_question_improved(question_text):
     for i in range(len(variables)):
         var_index = 'var{}'.format(i)
         # print 'i = {}, variables[i] = {}'.format(str(i), variables[i])
-        numeric_variables[var_index] = {
-                                            'name': var_index,
-                                            'original_text': variables[i][0],
-                                            'min_value': 1,
-                                            'max_value': 100,
-                                            'type': variables[i][1],
-                                            'decimal_places': 2
+        var = {
+                'name': var_index,
+                'original_text': variables[i][0],
+                'min_value': '1',
+                'max_value': '100',
+                'type': variables[i][1],
+                'decimal_places': '0'
         }
-    # print "numeric_variables = {}".format(numeric_variables)
+
+        # Add to variable dict
+        numeric_variables[var_index] = var
 
     # Create string variables
     # string_variables = parse_noun(question_text)
     string_variables = create_string_variables(list_pos)
 
     # Generate question template
-    # New method
     # Replace original text by variable help to improve performance
     question_template = question_text
     # Put numeric variables' name into the question template
@@ -355,9 +358,9 @@ def parse_question_improved(question_text):
          # Only replace original text which has at least one space before it.
          question_template = re.sub(" {}".format(string_variable["original_text"]), " [{}]".format(string_variable["name"]), question_template )
 
-    print "question template= {}".format(question_template)
-    print "numeric_variables= {}".format(numeric_variables)
-    print "string_variables= {}".format(string_variables)
+    # print "question template= {}".format(question_template)
+    # print "numeric_variables= {}".format(numeric_variables)
+    # print "string_variables= {}".format(string_variables)
     print "### END FUNCTION parse_question_improved()###"
 
     return question_template, numeric_variables, string_variables
