@@ -27,6 +27,12 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
         'editor-tab' : "Advanced Editor"
     };
 
+    // define tab title for Editor toggle button
+    var target_tabTitle_map = {
+        'template-tab' : "Switch to Simple Template interface",
+        'editor-tab' : "Switch to Advanced Editor"
+    };
+
     var error_message_element = $(xblockElement).find('div[name=error-message]');
 
     // var on TEMPLATE tab
@@ -173,6 +179,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             // Update attributes for Editor toggle button
             // Update text
             btn_switch_editor_mode_element.text(target_tabName_map[current_tab]);
+            btn_switch_editor_mode_element.attr('title', target_tabTitle_map[current_tab]);
             // Update target tab attribute
             btn_switch_editor_mode_element.attr('tab-name', target_tabId_map[current_tab]);
 
@@ -221,6 +228,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
                 // Update button's text and action
                 btn_toggle_parser_text = 'Show Parser';
                 next_action = 'show';
+//                next_title = '';
 
                 // hide the Parser and switch to show_this_tab
                 hide_tab(target_tab_id);
@@ -230,6 +238,7 @@ function StudioEditableXBlockMixin(runtime, xblockElement) {
             // update text and action attributes for parser toggle button
             btn_toggle_parser_element.text(btn_toggle_parser_text);
             btn_toggle_parser_element.attr('action', next_action);
+//            btn_toggle_parser_element.attr('title', next_title);
         });
 
         // toggle Original Question

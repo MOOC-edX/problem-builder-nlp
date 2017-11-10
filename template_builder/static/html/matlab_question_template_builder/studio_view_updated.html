@@ -80,7 +80,7 @@
 	        >
 				<div class="wrapper-comp-setting">
 					<!-- NUMERIC VARIABLES SETTINGS-->
-					<table name="variables_table" id="variables_table" class="variables_table">
+					<table name="variables_table" id="variables_table" class="variables_table table-hover">
 						<tr class="formula_edit_table_header_color">
 							<th width="15" class="variables_table_col">Numeric variables</th>
                             <th width="15%" class="variables_table_col">Original text</th>
@@ -291,8 +291,8 @@
 
 			<!-- SWITCH UI DISPLAY OF EDITOR -->
 			<li style="margin-right:50px;" class="pull-right" name="switch_editor_mode_button">
-                <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="{{btn_toggle_parser_action}}" title="Toggle PARSER tab for text parsing">{{ btn_toggle_parser_text }}</button>
-				<button type="button" id="btn_switch_editor_mode" tab-name="template-tab" data-tab="xml" title="Switch editor interface">{{ next_editor_mode_name }}</button>
+                <button type="button" id="btn_toggle_parser_id" tab-name="parser-tab" action="{{btn_toggle_parser_action}}" title="Toggle text parser tab">{{ btn_toggle_parser_text }}</button>
+				<button type="button" id="btn_switch_editor_mode" tab-name="template-tab" data-tab="xml" title="Switch to {{ next_editor_mode_name }} ">{{ next_editor_mode_name }}</button>
 				<!--<a href="javascript:;" class="button cancel-button" id="btn_switch_editor_mode" tab-name="template-tab" title="Switch problem edit interface">{{ next_editor_mode_name }}</a>-->
 			</li>
 		</ul>
