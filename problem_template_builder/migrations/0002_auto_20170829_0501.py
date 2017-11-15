@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('template_builder', '0001_initial'),
+        ('problem_template_builder', '0001_initial'),
     ]
 
     operations = [

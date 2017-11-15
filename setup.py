@@ -14,21 +14,16 @@ def package_data(pkg, root_list):
     return {pkg: data}
 
 BLOCKS = [
-    'template_builder = template_builder.mentoring:TemplateBlock',
-    # 'tb-fancy = template_builder.mentoring:FancyXBlock',
-    # 'tb-question-answer = template_builder.mentoring:QuestionAnswerXBlock',
-    # 'tb-question-generator = template_builder.question_generator_block:QuestionGeneratorXBlock',
-    # 'tb-matlab-question = template_builder.matlab_question_generator:MatlabExerciseGeneratorXBlock',
-    'tb-matlab-question-template-builder = template_builder.matlab_question_template_builder:MatlabQuestionTemplateBuilderXBlock',
-    # 'tb-matlab-question-generator = template_builder.matlab_question:MatlabQuestionXBlock',
+    'problem-template-builder = problem_template_builder.mentoring:TemplateBuilderContainerBlock',
+    'tb-math-problem-template-builder = problem_template_builder.math_problem_template_builder:MathProblemTemplateBuilderXBlock',
     ]
 
 
 setup(
-    name='xblock-question-builder',
+    name='xblock-problem-template-builder',
     version='1.0.0',
-    description='Xblock - Question Template Builder',
-    packages=['template_builder'],
+    description='Xblock - Problem Template Builder using Nature Language Processing',
+    packages=['problem_template_builder'],
     install_requires=[
         'XBlock',
         'xblock-utils',
@@ -36,7 +31,7 @@ setup(
     entry_points={
         'xblock.v1' : BLOCKS,
     },
-    package_data=package_data("template_builder", ["templates", "public", "migrations", "static"]),
+    package_data=package_data("problem_template_builder", ["templates", "public", "migrations", "static"]),
 )
 
 

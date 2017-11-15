@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('template_builder', '0003_matlabquestion_questionnode'),
+        ('problem_template_builder', '0003_matlabquestion_questionnode'),
     ]
 
     operations = [

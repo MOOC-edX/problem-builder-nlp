@@ -1,0 +1,12 @@
+*~
+*.pyc
+/.coverage
+/xblock_problem_template_builder.egg-info
+/workbench.*
+/dist
+/templates
+/var
+*.iml
+.idea/*
+dump.rdb
+problem_template_builder.tests.*

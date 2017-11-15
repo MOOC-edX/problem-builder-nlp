@@ -1,5 +1,5 @@
-/* Javascript for MatlabQuestionTemplateBuilderXBlock. */
-function MatlabQuestionTemplateBuilderXBlock(runtime, xblockElement) {
+/* Javascript for MathProblemTemplateBuilderXBlock. */
+function MathProblemTemplateBuilderXBlock(runtime, xblockElement) {
 	"use strict";
 
 	var student_answer_textarea_element = $(xblockElement).find('textarea[name=student_answer]');
