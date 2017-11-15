@@ -1,5 +1,5 @@
 from Constants import Constants
-import matlab_service
+import matlab_grading_service
 from google_service import gsheets
 
 class resolver_machine():
@@ -68,7 +68,7 @@ class resolver_machine():
             result =  False
         elif resolver == self.NAME.MATLAB:
             print "self.NAME.MATLAB:"
-            result = matlab_service.evaluate_matlab_answer(self.APIAddress.MATLAB, self.APIURL.MATLAB, teacher_answer, student_answer)
+            result = matlab_grading_service.evaluate_matlab_answer(self.APIAddress.MATLAB, self.APIURL.MATLAB, teacher_answer, student_answer)
         elif resolver == self.NAME.EXCEL:
             print "self.NAME.EXCEL:"
             gsheet = gsheets()

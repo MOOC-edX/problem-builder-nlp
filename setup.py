@@ -31,7 +31,7 @@ setup(
     entry_points={
         'xblock.v1' : BLOCKS,
     },
-    package_data=package_data("problem_template_builder", ["templates", "public", "migrations", "static"]),
+    package_data=package_data("problem_template_builder", ["static"]),
 )
 
 

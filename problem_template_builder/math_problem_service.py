@@ -15,7 +15,75 @@ SEVEN_PLACES = Decimal(10) ** -7
 
 DECIMAL_PLACES = [ ONE_PLACE, TWO_PLACES, THREE_PLACES, FOUR_PLACES, FIVE_PLACES, SIX_PLACES, SEVEN_PLACES ]
 
+def new_problem(question_template, variables, string_variables, randomization):
+    compiled_variable_patterns = {}
+    generated_variables = {}
 
+    print("## Start FUNCTION new_problem() ##")
+    print("question_template = {}".format(question_template))
+    print("variables= {}".format(variables))
+
+    # generate the question and answer
+    generated_question = question_template
+
+    if randomization:
+        # generate variables' value
+        for var_name, variable in variables.iteritems():
+            #
+            compiled_variable_patterns[var_name] = re.compile('\[' + var_name + '\]')
+            var_type = variable['type']
+
+            var_value = ""
+            if var_type == 'int' or var_type == 'integer':
+                var_value = str(random.randint(int(variable['min_value']), int(variable['max_value'])))
+            elif var_type == 'float' or var_type == 'double' or var_type == 'real':  # number is not integer
+                var_decimal_places_int = int(variable['decimal_places'])
+                var_value = str(random.uniform(float(variable['min_value']), float(variable['max_value'])))
+                var_decimal_places = get_decimal_places(var_decimal_places_int)
+                var_value = str(Decimal(var_value).quantize(var_decimal_places))
+            else:  # string?
+                pass
+
+            generated_variables[var_name] = var_value
+
+        # replace values into number varibales
+        for var_name, var_value in generated_variables.iteritems():
+            generated_question = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]),
+                                                                      generated_question)
+    # print("generated_question= {}".format(generated_question))
+    # print("string_variables= {}".format(string_variables))
+
+    # append string vars into the generated question
+    generated_question = append_string_variables(generated_question, string_variables)
+
+    print("generated_question= {}".format(generated_question))
+    print("generated_variables= {}".format(generated_variables))
+    print("## End FUNCTION new_problem() ##")
+
+    return generated_question, generated_variables
+
+
+# USE THIS FUNCTION ATM
+def generate_answer_string(generated_variables, answer_template_string):
+
+    print("## Start FUNCTION generate_answer_string() ##")
+    print("generated_variables = {}".format(generated_variables))
+    print "answer_template_string = ", answer_template_string
+
+    compiled_variable_patterns = {}
+    for var_name, var_value in generated_variables.iteritems():
+        # compiled_variable_patterns[var_name] = re.compile('<' + var_name + '>')
+        compiled_variable_patterns[var_name] = re.compile('\[' + var_name + '\]')
+
+    generated_answer = answer_template_string  # string
+    for var_name, var_value in generated_variables.iteritems():
+        generated_answer = compiled_variable_patterns[var_name].sub(str(generated_variables[var_name]),
+                                                                    generated_answer)
+
+    print "generated_answer = ", generated_answer
+    print("## End FUNCTION generate_answer_string() ##")
+
+    return generated_answer
 
 def generate_question_template():
     """
@@ -102,17 +170,14 @@ def generate_answer(generated_variables, answer_template):
     
     return generated_answer
 
-def append_string(template, string_variables):
-    print("## Start FUNCTION append_string() ##")
-    print("template = {}".format(template))
+def append_string_variables(question_template, string_variables):
+    print("## Start FUNCTION append_string_variables() ##")
+    print("question_template = {}".format(question_template))
     print("string_variables = {}".format(string_variables))
-
-    # for string in string_variables:
-    #     template = re.sub( "\[{}\]".format(string["name"]), "{}".format(string['value']), template )
 
     # Generate string variables use dict for variables
     # first, for each string var, randomly select a value from list of its synonyms
-    # then, update value to this var in the given question template
+    # then, replace the value for this var in given question template
     for var_name, var in string_variables.iteritems():
         value = var['value']
         # print("var_name = {}, value = {}".format(var_name, value))
@@ -120,12 +185,12 @@ def append_string(template, string_variables):
             if var['context'] == context_id: # get random value of selected context only
                 value = get_random_item_from_list(context['synonyms'])
                 # print("context_id = {}, var_name = {}, value = {}".format(context_id, var_name, value))
-        # update template
-        template = re.sub( "\[{}\]".format(var["name"]), "{}".format(value), template )
+        # update question_template
+        question_template = re.sub("\[{}\]".format(var["name"]), "{}".format(value), question_template)
 
-    print("template = {}".format(template))
-    print("## End FUNCTION append_string() ##")
-    return template
+    print("question_template = {}".format(question_template))
+    print("## End FUNCTION append_string_variables() ##")
+    return question_template
 
 def update_default(template, string_variables):
     print("## Start FUNCTION update_default() ##")
@@ -267,7 +332,7 @@ def test_append_string_vars_to_template():
                     }
     }
 
-    result = append_string(template, string_variables)
+    result = append_string_variables(template, string_variables)
     print "generated question = {}".format(result)
 
 def test_update_string_vars():

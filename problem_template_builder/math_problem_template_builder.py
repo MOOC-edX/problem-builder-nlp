@@ -16,15 +16,11 @@ from sub_api_util import SubmittingXBlockMixin
 from xblockutils.studio_editable import StudioEditableXBlockMixin, FutureFields
 from xblockutils.resources import ResourceLoader
 
-import matlab_service
-import matlab_question_service
-import qgb_db_service
 import json
 from resolver_machine import resolver_machine
 import logging
-# import xblock_deletion_handler
-from question_parser import parse_question_v2, parse_answer_v2, parse_question_improved, parse_answer_improved
-import qgb_question_service
+from text_parser_nltk import parse_question_v2, parse_answer_v2, parse_question_improved, parse_answer_improved
+import math_problem_service
 import xml_helper
 
 loader = ResourceLoader(__name__)
@@ -97,12 +93,6 @@ class MathProblemTemplateBuilderXBlock(XBlock, SubmittingXBlockMixin, StudioEdit
         help ="",
         default="",
         scope = Scope.settings)
-
-    _resolver_selection = String(
-        display_name = "Resolver Machine",
-        help ="",
-        default = 'none',
-        scope = Scope.content)
 
     _problem_solver = String(
         display_name = "Problem Solver",
@@ -200,19 +190,17 @@ Calculate the total price of them?""",
     raw_editor_xml_data = '''
     <problem>
         <description>Given [a] [string0]s and [b] [string1]s. One [string0] cost [x] USD, one [string1] cost [y] USD.
-Calculate the total price of them? </description>
-        <images>
-            <image_url link="">Image</image_url>
-        </images>
+Calculate the total price of them? 
+        </description>
+        <answer_templates>
+            <answer price = "[a] * [x] + [b] * [y]">Teacher's answer</answer>
+        </answer_templates>
         <variables>
             <variable name="a" min_value="1" max_value="10" type="int"/>
             <variable name="b" min_value="1" max_value="20" type="int"/>
             <variable name="x" min_value="4500" max_value="100000" type="float" decimal_places="2"/>
             <variable name="y" min_value="100001" max_value="500000" type="float" decimal_places="2"/>
         </variables>
-        <answer_templates>
-            <answer price = "[a] * [x] + [b] * [y]">Teacher's answer</answer>
-        </answer_templates>
         <string_variables>
             <string_variable default="car" name="string0" original_text="car" value="car">
                 <context_list>
@@ -238,6 +226,9 @@ Calculate the total price of them? </description>
                 </context_list>
             </string_variable>
         </string_variables>
+        <images>
+            <image_url link="">Image</image_url>
+        </images>        
     </problem>'''
 
     # This field is to store editor's value to keep for future initilization of xBlock after edit (student_view, studio_view).
@@ -790,7 +781,7 @@ Calculate the total price of them?"""
         points_earned = 0
 
         # Generate answer for this submission
-        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables, self._answer_template_string)
+        generated_answer = math_problem_service.generate_answer_string(self._generated_variables, self._answer_template_string)
         print "generated_answer = ", generated_answer
 
         student_answer = data['student_answer']
@@ -963,15 +954,15 @@ Calculate the total price of them?"""
             updated_answer_template = data['answer_template']
             updated_string_vars_list = data['string_variables']
 
-            string_variables, updated_string_vars, removed_string_vars, added_string_vars = qgb_question_service.update_string_variables(self._string_vars, updated_string_vars_list)
+            string_variables, updated_string_vars, removed_string_vars, added_string_vars = math_problem_service.update_string_variables(self._string_vars, updated_string_vars_list)
             # print("updated_string_vars = {}".format(updated_string_vars))
             # print("removed_string_vars = {}".format(removed_string_vars))
             # print("added_string_vars = {}".format(added_string_vars))
             # print("string_variables = {}".format(string_variables))
 
             # update question template
-            updated_question_template = qgb_question_service.update_question_template(updated_question_template,
-                                                                            updated_string_vars, removed_string_vars, added_string_vars)
+            updated_question_template = math_problem_service.update_question_template(updated_question_template,
+                                                                                      updated_string_vars, removed_string_vars, added_string_vars)
 
             # Convert problem data to xml string
             input_data = {
@@ -1076,7 +1067,7 @@ Calculate the total price of them?"""
 
         self.deserialize_data_from_context(data)
 
-        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables, self._answer_template_string)
+        generated_answer = math_problem_service.generate_answer_string(self._generated_variables, self._answer_template_string)
         print("generated_answer = {}".format(generated_answer))
         print("## END FUNCTION show_answer_handler() ##")
 
@@ -1151,13 +1142,13 @@ Calculate the total price of them?"""
         print("## Start FUNCTION reset_problem() ##")
 
         # Generate question from template if necessary
-        self._generated_question, self._generated_variables = matlab_question_service.new_problem(
-            self._question_template, self._variables, randomization=True)
-        # Append string variables to the question template
-        self._generated_question = qgb_question_service.append_string(self._generated_question, self._string_vars)
+        self._generated_question, self._generated_variables = math_problem_service.new_problem(
+            self._question_template, self._variables, self._string_vars, randomization=True)
+        # # Append string variables to the question template
+        # self._generated_question = qgb_question_service.append_string_variables(self._generated_question, self._string_vars)
         # Generate answer
-        generated_answer = matlab_question_service.generate_answer_string(self._generated_variables,
-                                                                          self._answer_template_string)
+        generated_answer = math_problem_service.generate_answer_string(self._generated_variables,
+                                                                       self._answer_template_string)
         # Update user_state fields
         setattr(self, 'runtime_generated_question', self._generated_question)
         setattr(self, 'runtime_generated_variables', self._generated_variables)
