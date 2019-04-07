@@ -66,3 +66,27 @@ Go to `Settings -> Advanced Settings` and set `advanced_modules` to `["problem-t
 Select `Advanced -> GCS Problem Builder` in your unit.
 
 ### Update
+
+### Uninstall xblock ###
+- switch to user edxapp
+```
+sudo -u edxapp -Hs
+```
+
+- Activate edxapp venvs
+```
+source /edx/app/edxapp/venvs/edxapp/bin/activate
+```
+
+- List installed xblock with partial text of its name 'xblock'. Locate the xblock name to uninstall.
+```
+pip list | grep xblock
+```
+
+- Un-install xblock by its name 'xblock-problem-template-builder'
+```
+(edxapp) edxapp@smartagrivn-ProLiant-DL360-Gen10:/home/smartagrivn/mooc$ pip uninstall xblock-problem-template-builder
+Uninstalling xblock-problem-template-builder-1.0.0:
+  /edx/app/edxapp/venvs/edxapp/lib/python2.7/site-packages/xblock-problem-template-builder.egg-link
+Proceed (y/n)? y
+```
