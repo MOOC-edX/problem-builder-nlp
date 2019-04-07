@@ -61,16 +61,18 @@ In some cases, restart edxapp is necessary to use the XBlock.
     sudo /edx/bin/supervisorctl restart edxapp:
     sudo /edx/bin/supervisorctl restart edxapp_worker:
 
-### Activate the CNVideoXBlock in your course ###
+### Activate the ProblemBuilderNLP in your course ###
 Go to `Settings -> Advanced Settings` and set `advanced_modules` to `["problem-template-builder"]`.
 
 ### Use it in a unit ###
 Select `Advanced -> GCS Problem Builder` in your unit.
 
 ### Tips & Tricks to enable adding customed xBlock into Library Content 
-#### (This tips and tricks WORKED on FICUS but IRONWOOD! Please check why???)
+#### (This tips and tricks WORKED on FICUS but NEWER VERSION! Need check why???)
 1. In this file: /edx/app/edxapp/edx-platform/cms/djangoapps/contentstore/views/item.py#L618-L623
 comment out following lines:
+
+NOTE: (This tips and tricks WORKED on FICUS but NEWER VERSION! Need check why???)
 ```
 #if isinstance(usage_key, LibraryUsageLocator):
     #    # Only these categories are supported at this time.
@@ -81,6 +83,8 @@ comment out following lines:
 ```
 
 2. in this file: /edx/app/edxapp/edx-platform/cms/envs/common.py, Add our xblock to component list:
+
+NOTE: (This tips and tricks WORKED on FICUS but NEWER VERSION! Need check why???)
 ```
 # Specify XBlocks that should be treated as advanced problems. Each entry is a
 # dict:
@@ -100,6 +104,8 @@ ADVANCED_PROBLEM_TYPES = [
 ```
 
 3. For ficus.master, it required additional modification in file /edx/app/edxapp/edx-platform/cms/djangoapps/contentstore/views/component.py, as following to add xblock into Content Library: 
+
+NOTE: (This tips and tricks WORKED on FICUS but NEWER VERSION! Need check why???)
 ```
 # TODO: canhdq changed this
         # if category == 'problem' and not library: # Comment out this line to add advanced component into content library
