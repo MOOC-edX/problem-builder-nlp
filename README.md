@@ -39,6 +39,7 @@ Several ways of installing a new Xblock on FullStack are documented. We recommen
 - then restart the server but with following command:
 ```
 $ sudo /edx/bin/supervisorctl restart edxapp:
+$ sudo /edx/bin/supervisorctl restart edxapp_worker:
 ```
 
 ### Install problem-builder-nlp
@@ -58,6 +59,7 @@ Same as [in the documentation](https://github.com/edx/edx-platform/wiki/Installi
 In some cases, restart edxapp is necessary to use the XBlock.
 
     sudo /edx/bin/supervisorctl restart edxapp:
+    sudo /edx/bin/supervisorctl restart edxapp_worker:
 
 ### Activate the CNVideoXBlock in your course ###
 Go to `Settings -> Advanced Settings` and set `advanced_modules` to `["problem-template-builder"]`.
@@ -65,7 +67,45 @@ Go to `Settings -> Advanced Settings` and set `advanced_modules` to `["problem-t
 ### Use it in a unit ###
 Select `Advanced -> GCS Problem Builder` in your unit.
 
-### Update
+### Tips & Tricks to enable adding customed xBlock into Library Content 
+#### (This tips and tricks WORKED on FICUS but IRONWOOD! Please check why???)
+1. In this file: /edx/app/edxapp/edx-platform/cms/djangoapps/contentstore/views/item.py#L618-L623
+comment out following lines:
+```
+#if isinstance(usage_key, LibraryUsageLocator):
+    #    # Only these categories are supported at this time.
+    #   if category not in ['html', 'problem', 'video']:
+    #       return HttpResponseBadRequest(
+    #          "Category '%s' not supported for Libraries" % category, content_type='text/plain'
+    #      )
+```
+
+2. in this file: /edx/app/edxapp/edx-platform/cms/envs/common.py, Add our xblock to component list:
+```
+# Specify XBlocks that should be treated as advanced problems. Each entry is a
+# dict:
+#       'component': the entry-point name of the XBlock.
+#       'boilerplate_name': an optional YAML template to be used.  Specify as
+#               None to omit.
+#
+ADVANCED_PROBLEM_TYPES = [
+    {
+    ...
+    },
+    {    
+        'component': 'tb-math-problem-template-builder',
+        'boilerplate_name': None,
+    },
+]
+```
+
+3. For ficus.master, it required additional modification in file /edx/app/edxapp/edx-platform/cms/djangoapps/contentstore/views/component.py, as following to add xblock into Content Library: 
+```
+# TODO: canhdq changed this
+        # if category == 'problem' and not library: # Comment out this line to add advanced component into content library
+        if category == 'problem': # Replaced above line by this line (it worked for ficus.master BUT newer version???)
+```
+
 
 ### Uninstall xblock ###
 - switch to user edxapp
@@ -83,10 +123,7 @@ source /edx/app/edxapp/venvs/edxapp/bin/activate
 pip list | grep xblock
 ```
 
-- Un-install xblock by its name 'xblock-problem-template-builder'
+- Uninstall an installed xblock by its name 'xblock-problem-template-builder' with command:
 ```
-(edxapp) edxapp@smartagrivn-ProLiant-DL360-Gen10:/home/smartagrivn/mooc$ pip uninstall xblock-problem-template-builder
-Uninstalling xblock-problem-template-builder-1.0.0:
-  /edx/app/edxapp/venvs/edxapp/lib/python2.7/site-packages/xblock-problem-template-builder.egg-link
-Proceed (y/n)? y
+pip uninstall xblock-problem-template-builder
 ```
